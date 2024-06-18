@@ -1,7 +1,7 @@
 import sql from "mssql";
-import { Callback, Database } from "../../types/database";
+import { Callback } from "../../types/database";
 
-export const ERPConnection = async (): Promise<Database> => {
+export const ERPConnection = async () => {
   const connection = await sql.connect({
     user: process.env.MSSQL_USER,
     password: process.env.MSSQL_PASSWORD,
@@ -17,7 +17,7 @@ export const ERPConnection = async (): Promise<Database> => {
     return connection.request().query(sql)
   };
 
-  const transaction = async (callback: Callback) => {
+  const transaction = async (callback: Callback<sql.Request>  ) => {
     const transaction = new sql.Transaction(connection);
     try {
       await transaction.begin();
