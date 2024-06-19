@@ -1,64 +1,56 @@
-import { Connection } from "ifs-ap";
+import { IFSConfig, IFSConnection } from "./providers/ifs/connection";
+import { MSSQLConfig, MSSQLConnection } from "./providers/mssql/connection";
+
+const ifs_config: IFSConfig = {
+  server: process.env.IFS_HOST,
+  user: process.env.IFS_USERNAME,
+  password: process.env.IFS_PASSWORD,
+  version: process.env.IFS_VERSION,
+  os_user: process.env.IFS_OS_USER,
+};
+
+const mssql_config: MSSQLConfig = {
+  domain: process.env.MSSQL_DOMAIN,
+  user: process.env.MSSQL_USERNAME,
+  password: process.env.MSSQL_PASSWORD,
+  server: process.env.MSSQL_HOST,
+  database: process.env.MSSQL_DATABASE,
+};
 
 export const run = async () => {
-  const IFS_APP = new Connection(process.env.IFS_BASE_URL, process.env.IFS_USERNAME, process.env.IFS_PASSWORD, "IFS9");
 
-  IFS_APP.debug = true;
+  await run_mssql_query();
+  // await run_ifs_query();
 
-  IFS_APP.Sql(
-    `select
-        objid,
-        PROJECT_ID,
-        NAME,
-        COMPANY,
-        &AO.COMPANY_FINANCE_API.Get_Description(COMPANY),
-        STATE,
-        MANAGER,
-        &AO.PERSON_INFO_API.Get_Name(MANAGER)
-      from                                                                                                                                                                                                                                                                                                                                                                        from
-        &AO.PROJECT
-      where
-        (PROJECT_ID = '180900')`
-  )
-    .then((result) => console.log(result))
-    .catch((err) => console.log(err));
 };
 
-/**
- * 
- * try {
-    const endpoint = new URL("fndext/clientgateway/ObjectConnectionServices/GetCountAttachments", process.env.IFS_BASE_URL);
+const run_mssql_query = async () => {
+  const sql_connection = new MSSQLConnection(mssql_config);
 
-    const auth = Buffer.from(`${process.env.IFS_USERNAME}:${process.env.IFS_PASSWORD}`).toString("base64");
+  const sql_client = await sql_connection.instance();
 
-    const res = await fetch(endpoint.href, {
-      method: "POST",
-      headers: {
-        // Authorization: `Basic ${auth}`,
-        'User-Agent': 'IFS .NET Access Provider/1.2',
-        'Os-User': 'SEAONICS\\einar.aglen',
-        'Program': 'Ifs.Fnd.Explorer.exe',
-        'Machine': 'console@selt425.seaonics.com',
-        'X-Ifs-Capabilities': '02',
-        'Content-Type': 'application/octet-stream',
-        'Accept-Encoding': 'gzip',
-        'Host': 'ifs-app1.akeryards.as:58080',  // Ensure this matches your server host and port
-        'Cookie': 'JSESSIONID=Cl0lsukqZ5R95yhJtAE4X319imxyQco_hteh1BrdFQRa_b-UW2G5!-2101279563',  // Set your session ID
-      },
-      body: JSON.stringify({})
-    });
+  const result = await sql_client.query`SELECT TOP (10) * FROM [ERP].[dbo].[BOM] ORDER BY [LastUpdate] DESC`;
+  
+  console.log(result);
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("FETCH", { code: res.status, message: res.statusText, text });
-      return;
-    }
+  await sql_connection.close();
+};
 
-    const text = await res.text();
+const run_ifs_query = async () => {
+  const ifs_connection = new IFSConnection(ifs_config);
 
-    console.log(text);
-  } catch (err) {
-    console.error("CATCH", err);
+  const ifs_client = await ifs_connection.instance();
+
+  const response = await ifs_client.Sql(
+    `SELECT * FROM &AO.customer_info WHERE ROWNUM <= :count`,
+    { count: 20 }
+  );
+
+  if (!response.ok) {
+    throw Error(response.errorText);
   }
+
+  console.log(response.result);
+
+  await ifs_connection.close();
 };
- */

@@ -14,18 +14,13 @@
   "devDependencies": {
     "@types/mssql": "^9.1.5",
     "@types/node": "^20.12.13",
-    "@types/node-cron": "^3.0.11",
-    "@types/oracledb": "^6.5.1",
-    "@types/uuid": "^9.0.8",
     "tsx": "^3.13.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "cross-fetch": "^4.0.0",
     "dotenv": "^16.4.5",
-    "ifs-ap": "^1.0.0",
-    "mssql": "^10.0.2",
-    "node-cron": "^3.0.3",
-    "oracledb": "^6.5.1",
-    "uuid": "^9.0.1"
+    "msnodesqlv8": "^4.2.1",
+    "mssql": "^11.0.0"
   }
 }
