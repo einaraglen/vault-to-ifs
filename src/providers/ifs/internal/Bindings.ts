@@ -97,7 +97,7 @@ export class Bindings {
         } else if (value instanceof Uint8Array || value instanceof ArrayBuffer) {
             return "R.B64";
         }
-        throw new Error(`Invalid bind variable type for name=${name}. Should be one of (string|nmber|Date|Uint8Array|ArrayBuffer)`);
+        throw new Error(`Invalid bind variable type for name=${name}. Should be one of (string|number|Date|Uint8Array|ArrayBuffer)`);
     }
 
 }

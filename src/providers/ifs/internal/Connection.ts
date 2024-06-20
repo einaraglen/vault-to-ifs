@@ -57,6 +57,7 @@ export class Connection implements ConnectionInterface {
         newConnection._runAs = this._runAs;
         newConnection._timeout = this._timeout;
         newConnection._ifsVersion = this._ifsVersion;
+        newConnection._osUser = this._osUser;
         return newConnection;
     }
 

@@ -1,0 +1,323 @@
+POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 530
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.b1a91026-e28a-40b2-abad-f537fd766e49.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.ab6d9a0a-1b64-49a3-b313-d378380bce03..COMMANDS.ARRAY.*..DATA.COMMAND.Create.11f8026c-45ce-4ed3-9c8b-b45ca363334d..STATEMENT.LPA.C.BEGIN 
+&AO.ENG_PART_MASTER_API.NEW__( :p0        , :p1      , :p2            , :p3      , :p4        ); 
+EXCEPTION 
+WHEN &AO.Error_SYS.Err_Security_Checkpoint THEN 
+raise; 
+WHEN OTHERS THEN 
+rollback; 
+raise; 
+END;.BIND_VARIABLES.R.B64.!...x..p0.LPA.IN_OUT..p1.LPA.IN_OUT..AAAVYjAAQAAPzIuAAF.p2.LPA.IN_OUT..20240620120811.p3.LPA.IN_OUT...p4.LPA.IN_OUT..PREPARE..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:49 GMT
+Content-Length: 580
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50c3
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:49 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.b1a91026-e28a-40b2-abad-f537fd766e49.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.ab6d9a0a-1b64-49a3-b313-d378380bce03..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.11f8026c-45ce-4ed3-9c8b-b45ca363334d..BIND_VARIABLES.R.B64.*.!...b..p0.LPA.OUT..p1.LPA.OUT..p2.LPA.OUT..p3.LPA.OUT.D.FIRST_REVISION.A01.DT_CRE.2024-06-20-12.09.49.USER_CREATED.EIA.PROVIDE.Make.LOT_TRACKING_CODE.Not Lot Tracking.SERIAL_TYPE.Not Serial Tracking.SERIAL_TRACKING_CODE.Not Serial Tracking.REV_NO_MAX.1.REV_NO_APP.0.UNIT_CODE.PCS.AQUISITION_CODE.Demand.STD_NAME_ID.0.PLANNING_METHOD.None..p4.LPA.OUT..PREPARE..MAX_ROWS.I.Q.103.RESULT_RECORD_TYPE.LPA.Q..GENERATE_OUTER_BLOCK.B.Q.TRUE.....POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 435
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.530df004-264b-40bb-a861-66d65373dfb4.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.77e2b488-619f-4fb9-8f81-de861c48726b..COMMANDS.ARRAY.*..DATA.COMMAND.Create.6529136a-3862-4ca9-b21c-9d9c788bf4d8..STATEMENT.LPA.B.select &AO.ISO_UNIT_API.Get_Description(:p0                                       , NULL)                                                 from dual.BIND_VARIABLES.R.B64.!......p0.LPA.IN..PCS..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.SELECT_COLUMNS.LPA..LPT^2000.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:49 GMT
+Content-Length: 481
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50c5
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:49 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.530df004-264b-40bb-a861-66d65373dfb4.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.77e2b488-619f-4fb9-8f81-de861c48726b..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.6529136a-3862-4ca9-b21c-9d9c788bf4d8..BIND_VARIABLES.R.B64.Q.!......p0.LPA.IN..PCS..MAX_ROWS.I.Q.103.PARTIAL_RESULT.B.*.FALSE.RESULT.R.B64.*.!...A..DATA..IFSAPP.ISO_UNIT_API.GET_DESCRIPTION(:1,NULL).LPT..piece...RESULT_RECORD_TYPE.LPA.Q..ROW_COUNT.I.*.1.CURSOR_ID.LPT.*..GENERATE_OUTER_BLOCK.B.Q.TRUE.....POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 435
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.61cb0666-0c89-4a7d-9788-5a15fc821d14.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.10f0150e-fc21-4da5-a843-d68efcdb7f22..COMMANDS.ARRAY.*..DATA.COMMAND.Create.fc0bfc4c-c81b-4c55-861d-bc9773d9bf5b..STATEMENT.LPA.B'select &AO.Standard_Names_Language_API.Get_Std_Name(NULL, :p0                                        )                                                        from dual.BIND_VARIABLES.R.B64.!......p0.DEC.IN.0..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.SELECT_COLUMNS.LPA..LPT^2000.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:49 GMT
+Content-Length: 478
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50c6
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:49 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.61cb0666-0c89-4a7d-9788-5a15fc821d14.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.10f0150e-fc21-4da5-a843-d68efcdb7f22..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.fc0bfc4c-c81b-4c55-861d-bc9773d9bf5b..BIND_VARIABLES.R.B64.Q.!......p0.DEC.IN.0..MAX_ROWS.I.Q.103.PARTIAL_RESULT.B.*.FALSE.RESULT.R.B64.*.!...I..DATA..IFSAPP.STANDARD_NAMES_LANGUAGE_API.GET_STD_NAME(NULL,:1).LPT..*...RESULT_RECORD_TYPE.LPA.Q..ROW_COUNT.I.*.1.CURSOR_ID.LPT.*..GENERATE_OUTER_BLOCK.B.Q.TRUE.....POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 841
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.292d97af-7a0c-423b-8344-78ca5e6fcffe.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.475561b0-470e-4504-8735-a690f01c269a..COMMANDS.ARRAY.*..DATA.COMMAND.Create.16f35c41-6594-4d4d-b401-29304ddd004c..STATEMENT.LPA.R5BEGIN 
+DECLARE exist_part_catalog_ NUMBER; BEGIN exist_part_catalog_:= &AO.Part_Catalog_API.Check_Part_Exists2(:p0                                  ); IF exist_part_catalog_ =1 THEN :p1                                   := 1; SELECT DESCRIPTION, UNIT_CODE, &AO.Part_Serial_Tracking_API.Decode(DECODE(RECEIPT_ISSUE_SERIAL_TRACK_DB, 'TRUE', SERIAL_TRACKING_CODE_DB, 'NOT SERIAL TRACKING')), ENG_SERIAL_TRACKING_CODE, CONFIGURABLE_DB, STD_NAME_ID, &AO.Standard_Names_API.Get_Std_Name(STD_NAME_ID), &AO.Standard_Names_Language_API.Get_Std_Name(NULL,STD_NAME_ID), &AO.ISO_UNIT_API.Get_Description(UNIT_CODE,NULL) INTO :p2                                       , :p3                                    , :p4                                              , :p5                                      , :p6                                        , :p7                                     , :p8                                   , :p9                                           , :p10                                   FROM &AO.PART_CATALOG WHERE PART_NO= :p0                                  ; END IF; END; 
+EXCEPTION 
+WHEN &AO.Error_SYS.Err_Security_Checkpoint THEN 
+raise; 
+WHEN OTHERS THEN 
+rollback; 
+raise; 
+END;.BIND_VARIABLES.R.B64.!......p0.LPA.IN_OUT..123321.p1.LPA.IN_OUT...p2.LPA.IN_OUT..123321.p3.LPA.IN_OUT...p4.LPA.IN_OUT...p5.LPA.IN_OUT...p6.LPA.IN_OUT...p7.DEC.IN_OUT.0.p8.LPA.IN_OUT..*.p9.LPA.IN_OUT..*.p10.LPA.IN_OUT..piece..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:51 GMT
+Content-Length: 487
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50db
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:51 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.292d97af-7a0c-423b-8344-78ca5e6fcffe.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.475561b0-470e-4504-8735-a690f01c269a..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.16f35c41-6594-4d4d-b401-29304ddd004c..BIND_VARIABLES.R.B64.*.!......p0.LPA.OUT..123321.p1.LPA.OUT..1.p2.LPA.OUT..123321.p3.LPA.OUT..PCS.p4.LPA.OUT..Not Serial Tracking.p5.LPA.OUT..Not Serial Tracking.p6.LPA.OUT..NOT CONFIGURED.p7.DEC.OUT.0.p8.LPA.OUT..*.p9.LPA.OUT..*.p10.LPA.OUT..piece..MAX_ROWS.I.Q.103.RESULT_RECORD_TYPE.LPA.Q..GENERATE_OUTER_BLOCK.B.Q.TRUE.....POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 504
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.03e316b3-9e03-44f9-a0b6-c0788800b765.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.cfa00d27-1aea-4cac-bcb9-7f62844fe16d..COMMANDS.ARRAY.*..DATA.COMMAND.Create.c0fe1a88-92d9-4647-97c2-bc92a6a5dd3d..STATEMENT.LPA.D.BEGIN 
+BEGIN :p0                                       := &AO.PART_SERIAL_TRACKING_API.Encode(:p1                                         ); END; 
+EXCEPTION 
+WHEN &AO.Error_SYS.Err_Security_Checkpoint THEN 
+raise; 
+WHEN OTHERS THEN 
+rollback; 
+raise; 
+END;.BIND_VARIABLES.R.B64.!...D..p0.LPA.IN_OUT..Not Serial Tracking.p1.LPA.IN..Not Serial Tracking..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:53 GMT
+Content-Length: 431
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50f5
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:53 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.03e316b3-9e03-44f9-a0b6-c0788800b765.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.cfa00d27-1aea-4cac-bcb9-7f62844fe16d..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.c0fe1a88-92d9-4647-97c2-bc92a6a5dd3d..BIND_VARIABLES.R.B64.*.!...A..p0.LPA.OUT..NOT SERIAL TRACKING.p1.LPA.IN..Not Serial Tracking..MAX_ROWS.I.Q.103.RESULT_RECORD_TYPE.LPA.Q..GENERATE_OUTER_BLOCK.B.Q.TRUE.....POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 693
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.45cc1105-a5d2-45da-803f-2b8ef5798230.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.22c0ebfb-07fd-48e1-829e-0d09ddea84e4..COMMANDS.ARRAY.*..DATA.COMMAND.Create.29b35cfc-6322-426b-99fd-877cdb6cfbd2..STATEMENT.LPA.C.BEGIN 
+&AO.ENG_PART_MASTER_API.NEW__( :p0        , :p1      , :p2            , :p3      , :p4        ); 
+EXCEPTION 
+WHEN &AO.Error_SYS.Err_Security_Checkpoint THEN 
+raise; 
+WHEN OTHERS THEN 
+rollback; 
+raise; 
+END;.BIND_VARIABLES.R.B64.!......p0.LPA.IN_OUT..p1.LPA.IN_OUT...p2.LPA.IN_OUT...p3.LPA.IN_OUT.E.PART_NO.123321.STD_NAME_ID.0.FIRST_REVISION.A01.DESCRIPTION.123321.UNIT_CODE.PCS.PROVIDE.Make.AQUISITION_CODE.Demand.PLANNING_METHOD.None.CONFIGURABLE.0.LOT_TRACKING_CODE.Not Lot Tracking.SERIAL_TYPE.Not Serial Tracking.SERIAL_TRACKING_CODE.Not Serial Tracking.REV_NO_MAX.1.REV_NO_APP.0.DT_CRE.2024-06-20-12.09.49.USER_CREATED.EIA.FIRST_REVISION.A01..p4.LPA.IN_OUT..CHECK..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:53 GMT
+Content-Length: 525
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50f6
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:53 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.45cc1105-a5d2-45da-803f-2b8ef5798230.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.22c0ebfb-07fd-48e1-829e-0d09ddea84e4..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.29b35cfc-6322-426b-99fd-877cdb6cfbd2..BIND_VARIABLES.R.B64.*.!...6..p0.LPA.OUT..p1.LPA.OUT..p2.LPA.OUT..p3.LPA.OUT.C0STD_NAME_ID.0.FIRST_REVISION.A01.DESCRIPTION.123321.UNIT_CODE.PCS.CONFIGURABLE.0.LOT_TRACKING_CODE.Not Lot Tracking.SERIAL_TYPE.Not Serial Tracking.SERIAL_TRACKING_CODE.Not Serial Tracking.FIRST_REVISION.A01.SERIAL_TYPE.Not Serial Tracking..p4.LPA.OUT..CHECK..MAX_ROWS.I.Q.103.RESULT_RECORD_TYPE.LPA.Q..GENERATE_OUTER_BLOCK.B.Q.TRUE.....POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 687
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.e08d2807-0bb7-4f09-affb-86a0c2291fb4.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.aafdd47f-553c-4aef-ae2c-d6bb65d78e6b..COMMANDS.ARRAY.*..DATA.COMMAND.Create.b8605c87-5729-4216-956c-c56083daefbc..STATEMENT.LPA.C.BEGIN 
+&AO.ENG_PART_MASTER_API.NEW__( :p0        , :p1      , :p2            , :p3      , :p4        ); 
+EXCEPTION 
+WHEN &AO.Error_SYS.Err_Security_Checkpoint THEN 
+raise; 
+WHEN OTHERS THEN 
+rollback; 
+raise; 
+END;.BIND_VARIABLES.R.B64.!......p0.LPA.IN_OUT..p1.LPA.IN_OUT..p2.LPA.IN_OUT..p3.LPA.IN_OUT.E.PART_NO.123321.STD_NAME_ID.0.DESCRIPTION.123321.UNIT_CODE.PCS.PROVIDE.Make.AQUISITION_CODE.Demand.PLANNING_METHOD.None.CONFIGURABLE.0.LOT_TRACKING_CODE.Not Lot Tracking.SERIAL_TYPE.Not Serial Tracking.SERIAL_TRACKING_CODE.Not Serial Tracking.REV_NO_MAX.1.REV_NO_APP.0.DT_CRE.2024-06-20-12.09.49.USER_CREATED.EIA.FIRST_REVISION.A01..p4.LPA.IN_OUT..DO..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:53 GMT
+Content-Length: 536
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50f7
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:53 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.e08d2807-0bb7-4f09-affb-86a0c2291fb4.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.aafdd47f-553c-4aef-ae2c-d6bb65d78e6b..TRANSACTION_ID.LPT.*.
+3.33.10928593.COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.b8605c87-5729-4216-956c-c56083daefbc..BIND_VARIABLES.R.B64.*.!......p0.LPA.OUT..p1.LPA.OUT..AAAVYjAAQAAPzIuAAG.p2.LPA.OUT..20240620120953.p3.LPA.OUT.A.DT_CRE.2024-06-20-12.09.53.USER_CREATED.EIA.CONFIGURABLE.0.OBJKEY.B7AC34DFB63D41059896D6723C14FEA1.STD_NAME.*..p4.LPA.OUT..DO..MAX_ROWS.I.Q.103.RESULT_RECORD_TYPE.LPA.Q..GENERATE_OUTER_BLOCK.B.Q.TRUE.....POST /fndext/clientgateway/AccessPlsql/Invoke HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 290
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.cd8e4332-8872-44f4-8af3-99c062aab5c5.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.36d9cd54-da12-4f30-b95b-e0bb8cf71785..TRANSACTION_ID.LPT.
+3.33.10928593.COMMANDS.ARRAY.*..DATA.COMMAND.Create.2caeff5a-be8c-469a-9c2f-90dd2c49628d..STATEMENT.LPA..COMMIT.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:53 GMT
+Content-Length: 324
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50f8
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:53 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.cd8e4332-8872-44f4-8af3-99c062aab5c5.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.36d9cd54-da12-4f30-b95b-e0bb8cf71785..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.2caeff5a-be8c-469a-9c2f-90dd2c49628d..STATEMENT.LPA.Q..COMMIT.....POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 961
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.46bcbad8-bed2-411c-a775-940c0b63f368.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.b03a94d1-d04a-474b-9c9d-ece9dfbdc220..COMMANDS.ARRAY.*..DATA.COMMAND.Create.aa72ad4d-8590-4f8d-bbbe-08d5f33edb62..STATEMENT.LPA.k4select OBJID, OBJVERSION, PART_NO, STD_NAME_ID, STD_NAME, &AO.Standard_Names_Language_API.Get_Std_Name(NULL,STD_NAME_ID), FIRST_REVISION, DESCRIPTION, LANGUAGE_PART_DESCRIPTION, PART_CLASS, &AO.ENG_PART_CLASS_API.Get_Description(PART_CLASS), &AO.Technical_Object_Reference_API.Get_Technical_Class_With_Key('PartCatalog',&AO.Client_SYS.Get_Key_Reference('PartCatalog','PART_NO',PART_NO)), &AO.Eng_Part_Class_API.Get_Doc_Req_Profile(PART_CLASS), PROJECT_DOC_REQ_PROFILE, PART_MAIN_GROUP, &AO.ENG_PART_MAIN_GROUP_API.Get_Description(PART_MAIN_GROUP), UNIT_CODE, &AO.ISO_UNIT_API.Get_Description(UNIT_CODE,NULL), &AO.ENG_PART_MASTER_API.GET_LAST_REV_NO(PART_NO), &AO.ENG_PART_MASTER_API.GET_LAST_REV(PART_NO), PROVIDE, AQUISITION_CODE, PLANNING_METHOD, CONFIGURABLE, LOT_TRACKING_CODE, SERIAL_TYPE, SERIAL_TRACKING_CODE, REV_NO_MAX, REV_NO_APP, PART_RESPONSIBLE, &AO.PERSON_INFO_API.Get_Name(PART_RESPONSIBLE), DT_CHG, USER_SIGN, DT_CRE, USER_CREATED, &AO.PART_CATALOG_API.Check_Part_Exists2(part_no)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            from &AO.ENG_PART_MASTER_MAIN where objid = :p0                                     .BIND_VARIABLES.R.B64.!... ..p0.LPA.IN..AAAVYjAAQAAPzIuAAG..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.SELECT_COLUMNS.LPA.D.LPT^100,LPT^2000,LPT^25,DEC^10,LPT^200,LPT^2000,LPT^6,LPT^200,LPT^200,LPT^10,LPT^2000,LPT^10,LPT^10,LPT^10,LPT^20,LPT^2000,LPT^30,LPT^2000,DEC^2000,LPT^2000,LPT^20,LPT^20,LPT^200,DEC^1,LPT^200,LPT^200,LPT^200,DEC^6,DEC^6,LPT^100,LPT^2000,DTS^100,LPT^30,DTS^100,LPT^30,DEC^100.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:53 GMT
+Content-Length: 982
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50f9
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:53 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.46bcbad8-bed2-411c-a775-940c0b63f368.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.b03a94d1-d04a-474b-9c9d-ece9dfbdc220..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.aa72ad4d-8590-4f8d-bbbe-08d5f33edb62..BIND_VARIABLES.R.B64.Q.!... ..p0.LPA.IN..AAAVYjAAQAAPzIuAAG..MAX_ROWS.I.Q.103.PARTIAL_RESULT.B.*.FALSE.RESULT.R.B64.*.!...M..DATA..OBJID.LPT..AAAVYjAAQAAPzIuAAG.OBJVERSION.LPT..20240620120953.PART_NO.LPT..123321.STD_NAME_ID.DEC.0.STD_NAME.LPT..*.IFSAPP.STANDARD_NAMES_LANGUAGE_API.GET_STD_NAME(NULL,STD_NAME_ID).LPT..*.FIRST_REVISION.LPT..A01.DESCRIPTION.LPT..123321.LANGUAGE_PART_DESCRIPTION.LPT..123321.PART_CLASS.LPT..IFSAPP.ENG_PART_CLASS_API.GET_DESCRIPTION(PART_CLASS).LPT..IFSAPP.TECHNICAL_OBJECT_REFERENCE_API.GET_TECHNICAL_CLASS_WITH_KEY('PARTCATALOG',IFSAPP.CLIENT_SYS.GET_KEY_REFERENCE('PARTCATALOG','PART_NO',PART_NO)).LPT..IFSAPP.ENG_PART_CLASS_API.GET_DOC_REQ_PROFILE(PART_CLASS).LPT..PROJECT_DOC_REQ_PROFILE.LPT..PART_MAIN_GROUP.LPT..IFSAPP.ENG_PART_MAIN_GROUP_API.GET_DESCRIPTION(PART_MAIN_GROUP).LPT..UNIT_CODE.LPT..PCS.IFSAPP.ISO_UNIT_API.GET_DESCRIPTION(UNIT_CODE,NULL).LPT..piece.IFSAPP.ENG_PART_MASTER_API.GET_LAST_REV_NO(PART_NO).DEC.1.IFSAPP.ENG_PART_MASTER_API.GET_LAST_REV(PART_NO).LPT..A01.PROVIDE.LPT..Make.AQUISITION_CODE.LPT..Demand.PLANNING_METHOD.LPT..None.CONFIGURABLE.DEC.0.LOT_TRACKING_CODE.LPT..Not Lot Tracking.SERIAL_TYPE.LPT..Not Serial Tracking.SERIAL_TRACKING_CODE.LPT..Not Serial Tracking.REV_NO_MAX.DEC.1.REV_NO_APP.DEC.0.PART_RESPONSIBLE.LPT..IFSAPP.PERSON_INFO_API.GET_NAME(PART_RESPONSIBLE).LPT..DT_CHG.DTS..USER_SIGN.LPT..DT_CRE.DTS.2024-06-20-12.09.53.USER_CREATED.LPT..EIA.IFSAPP.PART_CATALOG_API.CHECK_PART_EXISTS2(PART_NO).DEC.1...RESULT_RECORD_TYPE.LPA.Q..ROW_COUNT.I.*.1.CURSOR_ID.LPT.*..GENERATE_OUTER_BLOCK.B.Q.TRUE.....POST /fndext/clientgateway/AccessPlsql/Invoke?tbwEngPartMaster HTTP/1.1
+User-Agent: IFS .NET Access Provider/1.2
+Os-User: SEAONICS\einar.aglen
+Program: Ifs.Fnd.Explorer.exe
+Machine: console@selt425.seaonics.com
+X-Ifs-Capabilities: 02
+Content-Type: application/octet-stream
+Request-Header-Length: 139
+Client-Session-Id: d30bcb2b-685c-4e38-af6b-c44207576137
+Accept-Encoding: gzip
+Content-Encoding: gzip
+Host: ifs-app1.akeryards.as:58080
+Cookie: JSESSIONID=1Eo1HGgntDCPgnv7EmzANcLEsFQgl7Te9pODIXBV2Jm2jO66zDT6!1521692794
+Content-Length: 962
+
+..FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.525fa311-75b0-4a27-9216-95c88f79a468.LOCALE.en-US.ENCODE_BINARY_VALUE.FALSE....PLSQL_INVOCATION..DATA.PLSQL_INVOCATION.Create.6311c8ca-e765-4ce1-b6dc-3330983640f8..COMMANDS.ARRAY.*..DATA.COMMAND.Create.956ff7cc-db2d-4b64-98bc-0b82d4d4a6b7..STATEMENT.LPA.k4select OBJID, OBJVERSION, PART_NO, STD_NAME_ID, STD_NAME, &AO.Standard_Names_Language_API.Get_Std_Name(NULL,STD_NAME_ID), FIRST_REVISION, DESCRIPTION, LANGUAGE_PART_DESCRIPTION, PART_CLASS, &AO.ENG_PART_CLASS_API.Get_Description(PART_CLASS), &AO.Technical_Object_Reference_API.Get_Technical_Class_With_Key('PartCatalog',&AO.Client_SYS.Get_Key_Reference('PartCatalog','PART_NO',PART_NO)), &AO.Eng_Part_Class_API.Get_Doc_Req_Profile(PART_CLASS), PROJECT_DOC_REQ_PROFILE, PART_MAIN_GROUP, &AO.ENG_PART_MAIN_GROUP_API.Get_Description(PART_MAIN_GROUP), UNIT_CODE, &AO.ISO_UNIT_API.Get_Description(UNIT_CODE,NULL), &AO.ENG_PART_MASTER_API.GET_LAST_REV_NO(PART_NO), &AO.ENG_PART_MASTER_API.GET_LAST_REV(PART_NO), PROVIDE, AQUISITION_CODE, PLANNING_METHOD, CONFIGURABLE, LOT_TRACKING_CODE, SERIAL_TYPE, SERIAL_TRACKING_CODE, REV_NO_MAX, REV_NO_APP, PART_RESPONSIBLE, &AO.PERSON_INFO_API.Get_Name(PART_RESPONSIBLE), DT_CHG, USER_SIGN, DT_CRE, USER_CREATED, &AO.PART_CATALOG_API.Check_Part_Exists2(part_no)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            from &AO.ENG_PART_MASTER_MAIN where objid = :p0                                     .BIND_VARIABLES.R.B64.!... ..p0.LPA.IN..AAAVYjAAQAAPzIuAAG..GENERATE_OUTER_BLOCK.B.TRUE.RESULT_RECORD_TYPE.LPA...MAX_ROWS.I.103.SELECT_COLUMNS.LPA.D.LPT^100,LPT^2000,LPT^25,DEC^10,LPT^200,LPT^2000,LPT^6,LPT^200,LPT^200,LPT^10,LPT^2000,LPT^10,LPT^10,LPT^10,LPT^20,LPT^2000,LPT^30,LPT^2000,DEC^2000,LPT^2000,LPT^20,LPT^20,LPT^200,DEC^1,LPT^200,LPT^200,LPT^200,DEC^6,DEC^6,LPT^100,LPT^2000,DTS^100,LPT^30,DTS^100,LPT^30,DEC^100.....HTTP/1.1 200 OK
+Date: Thu, 20 Jun 2024 10:09:53 GMT
+Content-Length: 983
+X-ORACLE-DMS-RID: 0
+X-Ifs-Capabilities: 02
+Requested-URL: http://ifs-app1.akeryards.as:58080/fndext/clientgateway/AccessPlsql/Invoke
+Response-Header-Length: 193
+X-ORACLE-DMS-ECID: 855fca00-49b6-4935-ace8-000e21403d8f-001a50fb
+Content-Encoding: gzip
+Cache-Control: max-age=2592000
+Expires: Sat, 20 Jul 2024 10:09:53 GMT
+Content-Type: application/octet-stream
+
+..STATUS.LPT.Q..DONE.FND_CONTEXT..CLIENT_ID.SELT425-EIA-CONSOLE-22704.REQUEST_ID.525fa311-75b0-4a27-9216-95c88f79a468.LOCALE.*.en-US.ENCODE_BINARY_VALUE.FALSE.LANGUAGE.LPT.*..en..APP_CONTEXT.....PLSQL_INVOCATION..DATA.PLSQL_SERVER.PLSQL_INVOCATION.Create.6311c8ca-e765-4ce1-b6dc-3330983640f8..TRANSACTION_ID.LPT.*..COMMANDS.ARRAY.*..DATA.PLSQL_SERVER.COMMAND.Create.956ff7cc-db2d-4b64-98bc-0b82d4d4a6b7..BIND_VARIABLES.R.B64.Q.!... ..p0.LPA.IN..AAAVYjAAQAAPzIuAAG..MAX_ROWS.I.Q.103.PARTIAL_RESULT.B.*.FALSE.RESULT.R.B64.*.!...M..DATA..OBJID.LPT..AAAVYjAAQAAPzIuAAG.OBJVERSION.LPT..20240620120953.PART_NO.LPT..123321.STD_NAME_ID.DEC.0.STD_NAME.LPT..*.IFSAPP.STANDARD_NAMES_LANGUAGE_API.GET_STD_NAME(NULL,STD_NAME_ID).LPT..*.FIRST_REVISION.LPT..A01.DESCRIPTION.LPT..123321.LANGUAGE_PART_DESCRIPTION.LPT..123321.PART_CLASS.LPT..IFSAPP.ENG_PART_CLASS_API.GET_DESCRIPTION(PART_CLASS).LPT..IFSAPP.TECHNICAL_OBJECT_REFERENCE_API.GET_TECHNICAL_CLASS_WITH_KEY('PARTCATALOG',IFSAPP.CLIENT_SYS.GET_KEY_REFERENCE('PARTCATALOG','PART_NO',PART_NO)).LPT..IFSAPP.ENG_PART_CLASS_API.GET_DOC_REQ_PROFILE(PART_CLASS).LPT..PROJECT_DOC_REQ_PROFILE.LPT..PART_MAIN_GROUP.LPT..IFSAPP.ENG_PART_MAIN_GROUP_API.GET_DESCRIPTION(PART_MAIN_GROUP).LPT..UNIT_CODE.LPT..PCS.IFSAPP.ISO_UNIT_API.GET_DESCRIPTION(UNIT_CODE,NULL).LPT..piece.IFSAPP.ENG_PART_MASTER_API.GET_LAST_REV_NO(PART_NO).DEC.1.IFSAPP.ENG_PART_MASTER_API.GET_LAST_REV(PART_NO).LPT..A01.PROVIDE.LPT..Make.AQUISITION_CODE.LPT..Demand.PLANNING_METHOD.LPT..None.CONFIGURABLE.DEC.0.LOT_TRACKING_CODE.LPT..Not Lot Tracking.SERIAL_TYPE.LPT..Not Serial Tracking.SERIAL_TRACKING_CODE.LPT..Not Serial Tracking.REV_NO_MAX.DEC.1.REV_NO_APP.DEC.0.PART_RESPONSIBLE.LPT..IFSAPP.PERSON_INFO_API.GET_NAME(PART_RESPONSIBLE).LPT..DT_CHG.DTS..USER_SIGN.LPT..DT_CRE.DTS.2024-06-20-12.09.53.USER_CREATED.LPT..EIA.IFSAPP.PART_CATALOG_API.CHECK_PART_EXISTS2(PART_NO).DEC.1...RESULT_RECORD_TYPE.LPA.Q..ROW_COUNT.I.*.1.CURSOR_ID.LPT.*..GENERATE_OUTER_BLOCK.B.Q.TRUE.....

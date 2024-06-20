@@ -1,5 +1,24 @@
+import { create_catalog_part } from "./procedures/create_catalog_part";
 import { IFSConfig, IFSConnection } from "./providers/ifs/connection";
-import { MSSQLConfig, MSSQLConnection } from "./providers/mssql/connection";
+
+/**
+ * To Insert Parts from Vault to IFS the following procedure can be followed:
+ * 
+ * -- Insert Parts --
+ * 1. Create Part Catalog
+ * 2. Add Technical Spesfication
+ * 3. Create Engineering Part
+ * 4. Create Inventory Part
+ * 5. Create Purchase Part
+ * 6. Create Sales Part
+ * 
+ * -- Build BOM Struct --
+ * 7. Create Engineering Structure
+ * 8. Create Sales Part List
+ * 
+ * Commit if no errors
+ * Rollback if errors
+ */
 
 const ifs_config: IFSConfig = {
   server: process.env.IFS_HOST,
@@ -9,48 +28,25 @@ const ifs_config: IFSConfig = {
   os_user: process.env.IFS_OS_USER,
 };
 
-const mssql_config: MSSQLConfig = {
-  domain: process.env.MSSQL_DOMAIN,
-  user: process.env.MSSQL_USERNAME,
-  password: process.env.MSSQL_PASSWORD,
-  server: process.env.MSSQL_HOST,
-  database: process.env.MSSQL_DATABASE,
-};
-
 export const run = async () => {
+  const connection = new IFSConnection(ifs_config);
+  const client = await connection.instance();
 
-  await run_mssql_query();
-  // await run_ifs_query();
+  const { connection: tx } = await client.BeginTransaction();
 
-};
+  try {
 
-const run_mssql_query = async () => {
-  const sql_connection = new MSSQLConnection(mssql_config);
+    await create_catalog_part(tx, { part_no: "99.99.01", description: "Test 1", objid: "", objversion: "" })
+    await create_catalog_part(tx, { part_no: "99.99.02", description: "Test 2", objid: "", objversion: "" })
+    await create_catalog_part(tx, { part_no: "99.99.03", description: "Test 2", objid: "", objversion: "" })
 
-  const sql_client = await sql_connection.instance();
-
-  const result = await sql_client.query`SELECT TOP (10) * FROM [ERP].[dbo].[BOM] ORDER BY [LastUpdate] DESC`;
-  
-  console.log(result);
-
-  await sql_connection.close();
-};
-
-const run_ifs_query = async () => {
-  const ifs_connection = new IFSConnection(ifs_config);
-
-  const ifs_client = await ifs_connection.instance();
-
-  const response = await ifs_client.Sql(
-    `SELECT * FROM &AO.customer_info WHERE ROWNUM <= :count`,
-    { count: 20 }
-  );
-
-  if (!response.ok) {
-    throw Error(response.errorText);
+    // await tx.Commit();
+    await tx.Rollback()
+  } catch (err) {
+    console.log(err); 
+  } finally {
+    await tx.Rollback()
+    await tx.EndSession();
+    await connection.close()
   }
-
-  console.log(response.result);
-
-  await ifs_connection.close();
 };

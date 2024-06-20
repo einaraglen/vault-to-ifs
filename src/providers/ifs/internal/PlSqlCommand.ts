@@ -450,6 +450,7 @@ export class _PlSqlCommand extends _Message implements _IPlSqlCommand, _ISqlComm
                  { name: "PLSQL_INVOCATION", buffer: true },
                  { buffer: true, name: "" }]);
         this._connection.transactionId = "";
+
         if (tmpResultData) {
             const tmpTransactionId = MasrshalObject.ExtractSubobject(tmpResultData, [{ name: "TRANSACTION_ID" }]) as IfsDataObjectType;
             if (tmpTransactionId) {

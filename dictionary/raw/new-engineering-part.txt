@@ -1,0 +1,40 @@
+BEGIN 
+    &AO.ENG_PART_MASTER_API.NEW__( :p0, :p1, :p2, :p3, :p4 ); 
+EXCEPTION 
+WHEN &AO.Error_SYS.Err_Security_Checkpoint THEN 
+    raise; 
+WHEN OTHERS THEN 
+    rollback; 
+    raise; 
+END;
+
+SELECT &AO.ISO_UNIT_API.Get_Description( :p0, NULL ) FROM dual
+
+SELECT &AO.Standard_Names_Language_API.Get_Std_Name( NULL, :p0 ) FROM dual
+
+BEGIN 
+DECLARE exist_part_catalog_ NUMBER;
+    BEGIN exist_part_catalog_:= &AO.Part_Catalog_API.Check_Part_Exists2(:p0); 
+        IF exist_part_catalog_ = 1 
+            THEN :p1 := 1; 
+            SELECT 
+                DESCRIPTION, 
+                UNIT_CODE, 
+                &AO.Part_Serial_Tracking_API.Decode(DECODE(RECEIPT_ISSUE_SERIAL_TRACK_DB, 'TRUE', SERIAL_TRACKING_CODE_DB, 'NOT SERIAL TRACKING')), 
+                ENG_SERIAL_TRACKING_CODE, 
+                CONFIGURABLE_DB, 
+                STD_NAME_ID, 
+                &AO.Standard_Names_API.Get_Std_Name(STD_NAME_ID), 
+                &AO.Standard_Names_Language_API.Get_Std_Name(NULL,STD_NAME_ID), 
+                &AO.ISO_UNIT_API.Get_Description(UNIT_CODE,NULL) 
+            INTO :p2, :p3, :p4, :p5, :p6, :p7, :p8, :p9, :p10
+            FROM &AO.PART_CATALOG WHERE PART_NO= :p0; 
+        END IF; 
+    END; 
+EXCEPTION 
+WHEN &AO.Error_SYS.Err_Security_Checkpoint THEN 
+    raise; 
+WHEN OTHERS THEN 
+    rollback; 
+    raise; 
+END;

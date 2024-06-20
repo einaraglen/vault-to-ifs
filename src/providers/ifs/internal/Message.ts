@@ -1,4 +1,3 @@
-import { fetch } from "cross-fetch";
 import { NewId, ToIfsString } from "../utils";
 import { BindingsArray, Bindings, BindingParameterType, BindingValueType } from "./Bindings"
 import { MasrshalObject, IfsDataType, IfsDataObjectType, transfromFuncType } from "../buffer/MarshalObject"
@@ -246,6 +245,7 @@ export abstract class _Message implements Message {
         //fs.writeFileSync("Response.dat", new Uint8Array( buffer));
         
         let ifsData = MasrshalObject.Unmarshall(new Uint8Array(buffer), transfrmFunc);
+
         if (Array.isArray(ifsData) && ifsData.length > 0 && !Array.isArray(ifsData[0])) {
             ifsData = [ifsData, undefined];// response with error don't have body part
         }

@@ -1,0 +1,40 @@
+## PARTS ##
+C01     ItemNumber      Part Number
+C02     RevNumber       A
+C03     Units           Each
+C04     ItemType        Part / Purchase Part / Assembly
+C05     LastModUser     EIA
+C06     LifeCycleState  Released / Work_In_Progress
+C07     Title           Pipe
+C08     Description     Some Pipe
+C09     InternalDesc    Supplier Part Number (1)
+C10     MaterialCert    N/A
+C11     CAT1            CAT1
+C12     CAT2            CAT2
+C13     CAT3            CAT3
+C14     CAT4            CAT4
+C15     SparePart       0 = No | 1 = Yes
+C16     Vendor          Parker / Dimo
+C17     SerialNo        "N" | "Y" (Is Serial Tracked?)
+C18     DrawingState    Released / Work_In_Progress
+C19     DrawingRev      A
+C20     CriticalItem    "N" | "Y" (Is Critical Item?)
+C21     LongLeadItem    "N" | "Y" (Is Long Lead Item?)
+C22     SupplierPart    Supplier Part Number (2)
+C23     Material        STEEL   
+C24     Project         UNKNOWN
+C25     Mass_g          Mass in Grams (123,12300)
+C30     TransactionID   ID from Vault TransactionID
+C31     CreatedBy       Person of Origin
+C32     CreatedDate     Date of Origin
+D01     LastModDate     2024-01-01 01:00:00.000
+
+## BOM ##
+C02     PART_NO         SE20%
+C03     PART_REV        A
+C04     POS             9
+C06     SUB_PART_NO     SE16%
+C07     SUB_PART_REV    A
+C08     CompRevNumber   UNKNOWN
+C09     SPARE_PART      0 = No | 1 = Yes
+N01     QTY             2

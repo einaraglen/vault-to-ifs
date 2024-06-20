@@ -1,6 +1,5 @@
 import { ConnectionInterface } from "./ConnectionInterface"
 import { _Message } from "./Message"
-import { fetch } from "cross-fetch";
 import { MasrshalObject, IfsDataType, IfsDataObjectType  } from "../buffer/MarshalObject"
 import { UTF8Length } from "../buffer/utf8";
 import { assert } from "console";

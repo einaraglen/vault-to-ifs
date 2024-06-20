@@ -25,34 +25,21 @@ export class IFSConnection {
 
     this.client = new Connection(server, user, password, version, os_user);
 
-    await this.connect();
-
     return this.client;
   }
 
-  private async connect() {
+  public async transaction(cb: () => Promise<void>) {
     if (this.client == null) {
-      throw Error("Cannot connect IFS when client is null");
+      throw Error("Cannot start IFS when client is null");
     }
 
-    // TEST QUERY
-    const response = await this.client.Sql(
-      `SELECT customer_id,
-          name,
-          country
-        FROM &AO.customer_info
-        WHERE ROWNUM <= :count `,
-      { count: 20 }
-    );
+    const { connection: tx } = await this.client.BeginTransaction();
 
-    if (!response.ok) {
-      throw Error(response.errorText);
-    }
   }
 
   public async close() {
     if (this.client == null) {
-      throw Error("Cannot close MSSQL when client is null");
+      throw Error("Cannot close IFS when client is null");
     }
 
     return this.client.EndSession();
