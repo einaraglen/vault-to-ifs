@@ -1,64 +1,131 @@
-import { Connection } from "ifs-ap";
-
-export const run = async () => {
-  const IFS_APP = new Connection(process.env.IFS_BASE_URL, process.env.IFS_USERNAME, process.env.IFS_PASSWORD, "IFS9");
-
-  IFS_APP.debug = true;
-
-  IFS_APP.Sql(
-    `select
-        objid,
-        PROJECT_ID,
-        NAME,
-        COMPANY,
-        &AO.COMPANY_FINANCE_API.Get_Description(COMPANY),
-        STATE,
-        MANAGER,
-        &AO.PERSON_INFO_API.Get_Name(MANAGER)
-      from                                                                                                                                                                                                                                                                                                                                                                        from
-        &AO.PROJECT
-      where
-        (PROJECT_ID = '180900')`
-  )
-    .then((result) => console.log(result))
-    .catch((err) => console.log(err));
-};
+import { create_catalog_part } from "./procedures/parts/create_catalog_part";
+import { create_engineering_part } from "./procedures/parts/create_engineering_part";
+import { create_inventory_part } from "./procedures/parts/create_inventory_part";
+import { create_purchase_part } from "./procedures/parts/create_purchase_part";
+import { create_sales_part } from "./procedures/parts/create_sales_part";
+import { add_technical_spesification } from "./procedures/parts/add_technical_spesification";
+import { get_master_parts } from "./procedures/vault/get_master_parts";
+import { IFSConfig, IFSConnection } from "./providers/ifs/connection";
+import { MSSQLConfig, MSSQLConnection } from "./providers/mssql/connection";
+import { convert_to_in_mesage } from "./procedures/vault/convert_to_in_message";
+import { Connection } from "./providers/ifs/internal/Connection";
 
 /**
- * 
- * try {
-    const endpoint = new URL("fndext/clientgateway/ObjectConnectionServices/GetCountAttachments", process.env.IFS_BASE_URL);
+ * To Insert Parts from Vault to IFS the following procedure can be followed:
+ *
+ * -- Insert Parts --
+ * 1. Create Part Catalog
+ * 2. Add Technical Spesfication
+ * 3. Create Engineering Part
+ * 4. Create Inventory Part
+ * 5. Create Purchase Part
+ * 6. Create Sales Part
+ *
+ * -- Build BOM Struct --
+ * 7. Create Engineering Structure
+ * 8. Create Sales Part List
+ *
+ * Commit if no errors
+ * Rollback if errors
+ */
 
-    const auth = Buffer.from(`${process.env.IFS_USERNAME}:${process.env.IFS_PASSWORD}`).toString("base64");
+const ifs_config: IFSConfig = {
+  server: process.env.IFS_HOST,
+  user: process.env.IFS_USERNAME,
+  password: process.env.IFS_PASSWORD,
+  version: process.env.IFS_VERSION,
+  os_user: process.env.IFS_OS_USER,
+};
 
-    const res = await fetch(endpoint.href, {
-      method: "POST",
-      headers: {
-        // Authorization: `Basic ${auth}`,
-        'User-Agent': 'IFS .NET Access Provider/1.2',
-        'Os-User': 'SEAONICS\\einar.aglen',
-        'Program': 'Ifs.Fnd.Explorer.exe',
-        'Machine': 'console@selt425.seaonics.com',
-        'X-Ifs-Capabilities': '02',
-        'Content-Type': 'application/octet-stream',
-        'Accept-Encoding': 'gzip',
-        'Host': 'ifs-app1.akeryards.as:58080',  // Ensure this matches your server host and port
-        'Cookie': 'JSESSIONID=Cl0lsukqZ5R95yhJtAE4X319imxyQco_hteh1BrdFQRa_b-UW2G5!-2101279563',  // Set your session ID
-      },
-      body: JSON.stringify({})
-    });
+const mssql_config: MSSQLConfig = {
+  domain: process.env.MSSQL_DOMAIN,
+  user: process.env.MSSQL_USERNAME,
+  password: process.env.MSSQL_PASSWORD,
+  server: process.env.MSSQL_HOST,
+  database: process.env.MSSQL_DATABASE,
+};
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("FETCH", { code: res.status, message: res.statusText, text });
-      return;
+let ifs_connection: IFSConnection;
+let sql_connection: MSSQLConnection;
+let tx: Connection 
+
+const init = async () => {
+  ifs_connection = new IFSConnection(ifs_config);
+  sql_connection = new MSSQLConnection(mssql_config);
+}
+
+const cleanup = async () => {
+  await tx.Rollback()
+  await ifs_connection.close()
+  await sql_connection.close()
+}
+
+export const run = async () => {
+  init()
+
+  const ifs = await ifs_connection.instance();
+  const sql = await sql_connection.instance();
+
+  const res = await get_master_parts(sql);
+  const messages = res.map((row) => convert_to_in_mesage(row))
+
+  tx = (await ifs.BeginTransaction()).connection;
+
+  let cursor: any | null = null;
+
+  try {
+    
+    console.log("Starting Transfer")
+
+    for (const message of messages) {
+      cursor = message;
+
+      await create_catalog_part(tx, message); // WORKING!
+      process.stdout.write(`\tcatalog\t`);
+
+      await add_technical_spesification(tx, message); // WORKING!
+      process.stdout.write(`\ttechnical\t`);
+
+      await create_engineering_part(tx, message); // insufficient privileges
+      process.stdout.write(`\engineering\t`);
+
+      await create_inventory_part(tx, message); // WORKING!
+      process.stdout.write(`\tinventory\t`);
+
+      await create_purchase_part(tx, message); // WORKING!
+      process.stdout.write(`\purchase\t`);
+
+      await create_sales_part(tx, message); // WORKING!
+      process.stdout.write(`\tsales\t`);
+
+      // quick fix to prevent AccessProvider rate-limit
+      await new Promise((res) => setTimeout(res, 500))
+
+      console.log("Completed", message.c01)
     }
 
-    const text = await res.text();
+    console.log("Completed Transfer")
 
-    console.log(text);
+    // await tx.Commit(); // commit changes to database write
+    await tx.Rollback(); // rollback to prevent database write
   } catch (err) {
-    console.error("CATCH", err);
+    // fliush
+    console.log("")
+    console.error(err);
+
+    if (cursor) {
+      console.log(cursor)
+    }
+  } finally {
+    await tx.Rollback();
+    await tx.EndSession();
   }
+
+  await cleanup();
 };
- */
+
+
+process.on('exit', async (code) => {
+  await cleanup();
+  console.log(`About to exit with code: ${code}`);
+});
