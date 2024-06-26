@@ -1,0 +1,220 @@
+DECLARE
+   ignore_released_ VARCHAR2(200) := 'TRUE';
+   CURSOR get_m IS
+      SELECT *
+      FROM   IFSAPP.in_message m
+      WHERE  objstate IN ('Posted', 'Transferred')
+      AND    class_id = 'SE_PART_STRUCT'
+      AND   application_message_id IS NOT NULL
+      AND    EXISTS (SELECT 1
+              FROM   IFSAPP.eng_part_revision r
+              WHERE  r.part_no = m.sender_message_id
+              AND    r.part_rev = m.application_message_id)
+      AND    NOT EXISTS (SELECT 1
+              FROM   IFSAPP.in_message_line l
+              WHERE  l.message_id = m.message_id
+              AND    NOT EXISTS (SELECT 1
+                      FROM   IFSAPP.eng_part_revision c
+                      WHERE  c.part_no = l.c06
+                      AND    c.part_rev = l.c07))
+      AND    (sender_id = 'VAULT_QUICK_CHANGE' AND ignore_released_ = 'TRUE' OR
+            sender_id = 'SEFLOW');
+
+   CURSOR get_line(message_id_ IN NUMBER) IS
+      SELECT * FROM IFSAPP.in_message_line WHERE message_id = message_id_;
+
+   CURSOR get_first_line(message_id_ IN NUMBER) IS
+      SELECT c10 file_state
+      FROM   IFSAPP.in_message_line m
+      WHERE  message_id = message_id_
+      AND    m.message_line = 1;
+
+   CURSOR check_struct(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2) IS
+      SELECT 1
+      FROM   ifsapp.ENG_PART_STRUCTURE epr
+      WHERE  epr.part_no = part_no_
+      AND    epr.part_rev = part_rev_;
+
+   CURSOR get_struct(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2) IS
+      SELECT objid, objversion
+      FROM   ifsapp.ENG_PART_STRUCTURE epr
+      WHERE  epr.part_no = part_no_
+      AND    epr.part_rev = part_rev_;
+
+   CURSOR get_spare(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2) IS
+      SELECT 1
+      FROM   ifsapp.ENG_PART_SPARE_SUM epr
+      WHERE  epr.part_no = part_no_
+      AND    epr.part_rev = part_rev_;
+
+   CURSOR get_spare_remove(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2) IS
+      SELECT objid, objversion
+      FROM   ifsapp.ENG_PART_SPARE_SUM epr
+      WHERE  epr.part_no = part_no_
+      AND    epr.part_rev = part_rev_;
+
+   CURSOR get_spare_parts(message_id_ IN NUMBER) IS
+      SELECT *
+      FROM   IFSAPP.in_message_line
+      WHERE  message_id = message_id_
+      AND    c09 = '1';
+
+   attr_               VARCHAR2(2000);
+   info_               VARCHAR2(2000);
+   objid_              VARCHAR2(2000);
+   objversion_         VARCHAR2(2000);
+   objstate_           VARCHAR2(200);
+   error_message_      VARCHAR2(2000);
+   error_message2_     VARCHAR2(2000);
+   line_error_message_ VARCHAR2(2000);
+   file_state_         VARCHAR2(2000);
+   line_               NUMBER;
+   item_               VARCHAR2(200);
+   struct_found_       NUMBER;
+   spare_found_        NUMBER;
+
+BEGIN
+   FOR r_ IN get_m LOOP
+      objstate_   := IFSAPP.Eng_Part_Revision_API.Get_Obj_State(r_.sender_message_id,
+                                                                r_.application_message_id);
+      file_state_ := NULL;
+      FOR d_ IN get_first_line(r_.message_id) LOOP
+         file_state_ := d_.file_state;
+      END LOOP;
+   
+      BEGIN
+         line_          := 0;
+         attr_          := NULL;
+         error_message_ := NULL;
+         IF r_.objstate = 'Posted' THEN
+            IFSAPP.In_Message_API.Activate__(info_, r_.objid, r_.objversion, attr_, 'DO');
+            IFSAPP.In_Message_API.Transfer__(info_, r_.objid, r_.objversion, attr_, 'DO');
+            COMMIT;
+         END IF;
+         OPEN check_struct(r_.sender_message_id, r_.application_message_id);
+         FETCH check_struct
+            INTO struct_found_;
+         IF struct_found_ = 0 OR check_struct%NOTFOUND THEN
+            struct_found_ := 0;
+         END IF;
+         CLOSE check_struct;
+         IF struct_found_ = 0 AND objstate_ = 'Preliminary' THEN
+            FOR l_ IN get_line(r_.message_id) LOOP
+               attr_               := NULL;
+               line_error_message_ := NULL;
+               line_               := l_.MESSAGE_LINE;
+               item_               := l_.c06;
+               IFSAPP.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
+               IFSAPP.Client_SYS.Add_To_Attr('STRUCTURE_ID', 'STD', attr_);
+               IFSAPP.Client_SYS.Add_To_Attr('PART_NO', l_.c02, attr_);
+               IFSAPP.Client_SYS.Add_To_Attr('PART_REV', l_.c03, attr_);
+               IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_NO', l_.c06, attr_);
+               IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_REV', l_.c07, attr_);
+               IFSAPP.Client_SYS.Add_To_Attr('POS', SUBSTR(l_.c04,1,10), attr_);
+               IFSAPP.Client_SYS.Set_Item_Value('QTY', l_.n01, attr_);
+               BEGIN
+                  IFSAPP.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
+               EXCEPTION
+                  WHEN OTHERS THEN
+                     ROLLBACK;
+                     attr_               := NULL;
+                     line_error_message_ := 'Error=' || SUBSTR(SQLERRM, 1, 200);
+                     IFSAPP.Client_SYS.Add_To_Attr('ERROR_MESSAGE', line_error_message_, attr_);
+                     IFSAPP.In_Message_Line_API.Modify__(info_,
+                                                         l_.objid,
+                                                         l_.objversion,
+                                                         attr_,
+                                                         'DO');
+                     COMMIT;
+                     RAISE;
+               END;
+            END LOOP;
+         ELSE
+            IF objstate_ = 'Preliminary' OR struct_found_ = 0 OR
+               objstate_ != 'Preliminary' AND ignore_released_ = 'TRUE' THEN
+               IF objstate_ != 'Preliminary' AND ignore_released_ = 'TRUE' THEN
+                  UPDATE IFSAPP.Eng_Part_Revision_TAB
+                  SET    ROWSTATE = 'Preliminary'
+                  WHERE  part_no = r_.sender_message_id
+                  AND    part_rev = r_.application_message_id;
+               END IF;
+               BEGIN
+                  FOR c_ IN get_struct(r_.sender_message_id, r_.application_message_id) LOOP
+                     IFSAPP.Eng_Part_Structure_API.Remove__(info_, c_.objid, c_.objversion, 'DO');
+                  END LOOP;
+                  FOR l_ IN get_line(r_.message_id) LOOP
+                     attr_               := NULL;
+                     line_error_message_ := NULL;
+                     line_               := l_.MESSAGE_LINE;
+                     item_               := l_.c06;
+                     IFSAPP.ENG_PART_STRUCTURE_API.New__(info_,
+                                                         objid_,
+                                                         objversion_,
+                                                         attr_,
+                                                         'PREPARE');
+                     IFSAPP.Client_SYS.Add_To_Attr('STRUCTURE_ID', 'STD', attr_);
+                     IFSAPP.Client_SYS.Add_To_Attr('PART_NO', l_.c02, attr_);
+                     IFSAPP.Client_SYS.Add_To_Attr('PART_REV', l_.c03, attr_);
+                     IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_NO', l_.c06, attr_);
+                     IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_REV', l_.c07, attr_);
+                     IFSAPP.Client_SYS.Add_To_Attr('POS', SUBSTR(l_.c04,1,10), attr_);
+                     IFSAPP.Client_SYS.Set_Item_Value('QTY', l_.n01, attr_);
+                     IFSAPP.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
+                  END LOOP;
+               EXCEPTION
+                  WHEN OTHERS THEN
+                     ROLLBACK;
+                     line_error_message_ := SUBSTR(SQLERRM, 1, 50);
+                     RAISE;
+               END;
+            ELSE
+               error_message2_ := 'You may not modify existing revision which is in state Active or Released.';
+            END IF;
+         END IF;
+         OPEN get_spare(r_.sender_message_id, r_.application_message_id);
+         FETCH get_spare
+            INTO spare_found_;
+         IF spare_found_ = 0 OR get_spare%NOTFOUND THEN
+            spare_found_ := 0;
+         END IF;
+         CLOSE get_spare;
+         IF spare_found_ = 1 THEN
+            FOR s_ IN get_spare_remove(r_.sender_message_id, r_.application_message_id) LOOP
+               ifsapp.ENG_PART_SPARE_API.Remove__(info_, s_.objid, s_.objversion, 'DO');
+            END LOOP;
+         END IF;
+         FOR s_ IN get_spare_parts(r_.message_id) LOOP
+            attr_ := NULL;
+            IFSAPP.Client_SYS.Add_To_Attr('PART_NO', s_.c02, attr_);
+            IFSAPP.Client_SYS.Add_To_Attr('PART_REV', s_.c03, attr_);
+            IFSAPP.Client_SYS.Add_To_Attr('SPARE_PART_NO', s_.c06, attr_);
+            IFSAPP.Client_SYS.Add_To_Attr('SPARE_PART_REV', s_.c07, attr_);
+            IFSAPP.Client_SYS.Add_To_Attr('QTY', s_.n01, attr_);
+            IFSAPP.Client_SYS.Add_To_Attr('INFO', 'VAULT', attr_);
+            IFSAPP.Eng_Part_Spare_API.New__(info_, objid_, objversion_, attr_, 'DO');
+         END LOOP;
+         IF objstate_ = 'Active' THEN
+            UPDATE IFSAPP.Eng_Part_Revision_TAB
+            SET    ROWSTATE = 'Active'
+            WHERE  part_no = r_.sender_message_id
+            AND    part_rev = r_.application_message_id;
+         END IF;
+         IFSAPP.In_Message_API.Accept__(info_, r_.objid, r_.objversion, attr_, 'DO');
+         COMMIT;
+      EXCEPTION
+         WHEN OTHERS THEN
+            ROLLBACK;
+            error_message_ := 'Message Line ' || TO_CHAR(line_) || ', Item ' || item_ ||
+                              ' failed. Error=' || SUBSTR(SQLERRM, 1, 200);
+            attr_          := NULL;
+            IFSAPP.In_Message_API.Reject__(info_, r_.objid, r_.objversion, attr_, 'DO');
+            COMMIT;
+            attr_ := NULL;
+            IFSAPP.Client_SYS.Add_To_Attr('ERROR_MESSAGE',
+                                          NVL(error_message_, line_error_message_),
+                                          attr_);
+            IFSAPP.In_Message_API.Modify__(info_, r_.objid, r_.objversion, attr_, 'DO');
+            COMMIT;
+      END;
+   END LOOP;
+END;

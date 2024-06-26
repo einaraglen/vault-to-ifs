@@ -25,16 +25,23 @@ export class IFSConnection {
 
     this.client = new Connection(server, user, password, version, os_user);
 
+    await this.connect()
+
     return this.client;
   }
 
-  public async transaction(cb: () => Promise<void>) {
+  private async connect() {
     if (this.client == null) {
-      throw Error("Cannot start IFS when client is null");
+      throw Error("Cannot connect IFS when client is null");
     }
 
-    const { connection: tx } = await this.client.BeginTransaction();
+    // Simple transaction + rollback to test connection
+    const tx = await this.client.BeginTransaction()
+    const res = await tx.Rollback()
 
+    if (!res.ok) {
+      throw Error(res.errorText)
+    }
   }
 
   public async close() {

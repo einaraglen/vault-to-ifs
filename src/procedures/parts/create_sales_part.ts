@@ -1,6 +1,5 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
-import { get_bind_keys, get_bindings } from "../../utils";
-import { InMessage } from "../vault/convert_to_in_message";
+import { InMessage, get_bind_keys, get_bindings } from "../../utils";
 
 const plsql = `
 DECLARE
@@ -14,13 +13,13 @@ DECLARE
 
     CURSOR check_sales_part(part_ IN VARCHAR2, contr_ IN VARCHAR2) IS
         SELECT COUNT(1)
-        FROM   IFSAPP.sales_part
+        FROM   &AO.sales_part
         WHERE  catalog_no = part_
         AND    contract = contr_;
 
     CURSOR sales_part_get_version(part_ IN VARCHAR2) IS
         SELECT objid, objversion
-        FROM   IFSAPP.sales_part
+        FROM   &AO.sales_part
         WHERE  contract = contract_
         AND    catalog_no = part_;
 
@@ -32,40 +31,40 @@ BEGIN
     CLOSE check_sales_part;
 
     IF (cnt_ = 0) THEN
-        IFSAPP.Client_SYS.Clear_Attr(attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CONTRACT', 'SE', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CATALOG_TYPE_DB', 'INV', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('PRIMARY_CATALOG_DB', 'FALSE', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('ACTIVEIND_DB', 'Y', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('BONUS_BASIS_FLAG_DB', 'N', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('BONUS_VALUE_FLAG_DB', 'N', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CONV_FACTOR', 1, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('PRICE_CONV_FACTOR', 1, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('DATE_ENTERED', SYSDATE, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CLOSE_TOLERANCE', 0, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('QUICK_REGISTERED_PART_DB', 'FALSE', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('ALLOW_PARTIAL_PKG_DELIV_DB', 'TRUE', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CATALOG_NO', :c01, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('PART_NO', :c01, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CATALOG_DESC', NVL(:c07, 'Description does not exist in Vault for article ' || :c01), attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CATALOG_GROUP', 'SE', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('SALES_PRICE_GROUP_ID', 'SE', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('SALES_UNIT_MEAS', :c03, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('ACTIVEIND_DB', 'Y', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CONV_FACTOR', 1, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('COST', 0, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('LIST_PRICE', 0, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('PRICE_CONV_FACTOR', 1, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('PRICE_UNIT_MEAS', :c03, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('COMPANY', 'SE', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('TAXABLE_DB', 'Use sales tax', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('FEE_CODE', '1', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CLOSE_TOLERANCE', 0, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('PURCHASE_PART_NO', :c01, attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('NON_INV_PART_TYPE_DB', 'GOODS', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('SOURCING_OPTION_DB', 'INVENTORYORDER', attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('USE_PRICE_INCL_TAX', ifsapp.fnd_boolean_api.Decode('FALSE'), attr_);
-        IFSAPP.SALES_PART_API.New__(info_, objid_, objversion_, attr_, 'DO');
+        &AO.Client_SYS.Clear_Attr(attr_);
+        &AO.Client_SYS.Add_To_Attr('CONTRACT', 'SE', attr_);
+        &AO.Client_SYS.Add_To_Attr('CATALOG_TYPE_DB', 'INV', attr_);
+        &AO.Client_SYS.Add_To_Attr('PRIMARY_CATALOG_DB', 'FALSE', attr_);
+        &AO.Client_SYS.Add_To_Attr('ACTIVEIND_DB', 'Y', attr_);
+        &AO.Client_SYS.Add_To_Attr('BONUS_BASIS_FLAG_DB', 'N', attr_);
+        &AO.Client_SYS.Add_To_Attr('BONUS_VALUE_FLAG_DB', 'N', attr_);
+        &AO.Client_SYS.Add_To_Attr('CONV_FACTOR', 1, attr_);
+        &AO.Client_SYS.Add_To_Attr('PRICE_CONV_FACTOR', 1, attr_);
+        &AO.Client_SYS.Add_To_Attr('DATE_ENTERED', SYSDATE, attr_);
+        &AO.Client_SYS.Add_To_Attr('CLOSE_TOLERANCE', 0, attr_);
+        &AO.Client_SYS.Add_To_Attr('QUICK_REGISTERED_PART_DB', 'FALSE', attr_);
+        &AO.Client_SYS.Add_To_Attr('ALLOW_PARTIAL_PKG_DELIV_DB', 'TRUE', attr_);
+        &AO.Client_SYS.Add_To_Attr('CATALOG_NO', :c01, attr_);
+        &AO.Client_SYS.Add_To_Attr('PART_NO', :c01, attr_);
+        &AO.Client_SYS.Add_To_Attr('CATALOG_DESC', NVL(:c07, 'Description does not exist in Vault for article ' || :c01), attr_);
+        &AO.Client_SYS.Add_To_Attr('CATALOG_GROUP', 'SE', attr_);
+        &AO.Client_SYS.Add_To_Attr('SALES_PRICE_GROUP_ID', 'SE', attr_);
+        &AO.Client_SYS.Add_To_Attr('SALES_UNIT_MEAS', :c03, attr_);
+        &AO.Client_SYS.Add_To_Attr('ACTIVEIND_DB', 'Y', attr_);
+        &AO.Client_SYS.Add_To_Attr('CONV_FACTOR', 1, attr_);
+        &AO.Client_SYS.Add_To_Attr('COST', 0, attr_);
+        &AO.Client_SYS.Add_To_Attr('LIST_PRICE', 0, attr_);
+        &AO.Client_SYS.Add_To_Attr('PRICE_CONV_FACTOR', 1, attr_);
+        &AO.Client_SYS.Add_To_Attr('PRICE_UNIT_MEAS', :c03, attr_);
+        &AO.Client_SYS.Add_To_Attr('COMPANY', 'SE', attr_);
+        &AO.Client_SYS.Add_To_Attr('TAXABLE_DB', 'Use sales tax', attr_);
+        &AO.Client_SYS.Add_To_Attr('FEE_CODE', '1', attr_);
+        &AO.Client_SYS.Add_To_Attr('CLOSE_TOLERANCE', 0, attr_);
+        &AO.Client_SYS.Add_To_Attr('PURCHASE_PART_NO', :c01, attr_);
+        &AO.Client_SYS.Add_To_Attr('NON_INV_PART_TYPE_DB', 'GOODS', attr_);
+        &AO.Client_SYS.Add_To_Attr('SOURCING_OPTION_DB', 'INVENTORYORDER', attr_);
+        &AO.Client_SYS.Add_To_Attr('USE_PRICE_INCL_TAX', &AO.fnd_boolean_api.Decode('FALSE'), attr_);
+        &AO.SALES_PART_API.New__(info_, objid_, objversion_, attr_, 'DO');
     ELSE
         OPEN sales_part_get_version(:c01);
         FETCH sales_part_get_version
@@ -76,9 +75,9 @@ BEGIN
         :temp := objid_;
         :temp := objversion_;
 
-        IFSAPP.Client_SYS.Clear_Attr(attr_);
-        IFSAPP.Client_SYS.Add_To_Attr('CATALOG_DESC', NVL(:c07, 'Description does not exist in Vault for article ' || :c01), attr_);
-        IFSAPP.SALES_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
+        &AO.Client_SYS.Clear_Attr(attr_);
+        &AO.Client_SYS.Add_To_Attr('CATALOG_DESC', NVL(:c07, 'Description does not exist in Vault for article ' || :c01), attr_);
+        &AO.SALES_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
     END IF;
 END;
 `;

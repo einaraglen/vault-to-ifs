@@ -242,12 +242,12 @@ export class Connection implements ConnectionInterface {
         }
     }
 
-    public async BeginTransaction(): Promise<PlSqlOneResponse> {
+    public async BeginTransaction(): Promise<Connection> {
         const newConnection = this.Clone();
         newConnection._autoCommit = false;
-        const plSql = new _PlSqlCommand(this, "");
-        plSql.response = { ok: true, errorText: "", partialResult: false, bindings: {}, result: [], request: plSql as PlSqlOneCommand, connection: newConnection };
-        return plSql.response;
+        return newConnection;
+        // plSql.response = { ok: true, errorText: "", partialResult: false, bindings: {}, result: [], request: plSql as PlSqlOneCommand, connection: newConnection };
+        // return plSql.response;
     }
 
     private async _CommitRollback(procName: string): Promise<PlSqlOneResponse> {
@@ -263,11 +263,27 @@ export class Connection implements ConnectionInterface {
     }
 
     public async Commit(): Promise<PlSqlOneResponse> {
-        return this._CommitRollback( "COMMIT" );
+        return await this._CommitRollback( "COMMIT" );
     }
 
     public async Rollback(): Promise<PlSqlOneResponse> {
         return this._CommitRollback( "ROLLBACK" );
+    }
+
+    public async DoCommit(): Promise<void> {
+        const res = await this._CommitRollback( "COMMIT" );
+
+        if (!res.ok) {
+            throw Error(res.errorText)
+        }
+    }
+
+    public async DoRollback(): Promise<void> {
+        const res = await this._CommitRollback( "ROLLBACK" );
+
+        if (!res.ok) {
+            throw Error(res.errorText)
+        }
     }
 
     public async EndSession(): Promise<PlSqlOneResponse> {

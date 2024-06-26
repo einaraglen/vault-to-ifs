@@ -2,3 +2,12 @@
 
 IFS Provider copied from https://github.com/sjc-syjupl/ifs-ap
 With minor changes to allow for OS-USER header to be added in requests
+
+# Dev
+`npm run dev`
+
+# Test
+`npm run test`
+
+# Build
+`npm run build` 

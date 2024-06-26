@@ -1,6 +1,5 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
-import { get_bind_keys, get_bindings } from "../../utils";
-import { InMessage } from "../vault/convert_to_in_message";
+import { InMessage, get_bind_keys, get_bindings } from "../../utils";
 
 const plsql = `
 DECLARE
