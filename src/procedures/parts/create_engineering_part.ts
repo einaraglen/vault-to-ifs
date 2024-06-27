@@ -75,7 +75,7 @@ BEGIN
         &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'DO');
 
         -- Fix?
-        &AO.ENG_PART_REVISION_API.Set_Active(part_no_, :c02);
+        --&AO.ENG_PART_REVISION_API.Set_Active(part_no_, :c02);
 
         new_revision_ := :c02;
 
@@ -117,7 +117,12 @@ BEGIN
             END IF;
 
         CLOSE get_latest_revision;
+
+        IF new_rev_ IS NOT NULL THEN
+            &AO.Eng_Part_Revision_API.New_Revision_(:c01, new_rev_, current_part_rev_, NULL, NULL);
+        END IF;
         
+        /*
         IF new_rev_ IS NOT NULL THEN
             &AO.Eng_Part_Revision_API.New_Revision_(:c01, new_rev_, current_part_rev_, NULL, NULL);
 
@@ -138,6 +143,7 @@ BEGIN
             &AO.ENG_PART_REVISION_API.Set_Obsolete(part_no_, new_rev_);
             &AO.ENG_PART_REVISION_API.Set_Obsolete(part_no_, new_revision_);
         END IF;
+        */
     END IF;
 END;
 `;

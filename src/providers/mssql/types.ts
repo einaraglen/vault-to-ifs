@@ -1,41 +1,41 @@
 export type MSSQLRow = {
-    rowID: string,
-      ItemNumber: string | null,
-      Revision: string | null,
-      Quantity: string | null,
-      Pos: string | null,
-      ParentItemNumber: string | null,
-      ParentItemRevision: string | null,
-      ChildCount: string | null,
-      Category: string | null,
-      Title: string | null,
-      Description: string | null,
-      Units: string | null,
-      LifecycleState: 'Work in Progress' | 'Released',
-      Category_1: string,
-      Category_2: string,
-      Category_3: string,
-      Category_4: string,
-      InternalDescription: string,
-      Mass_g: string,
-      Material: string,
-      MaterialCertifikate: string,
-      Project: string,
-      SerialNo: string,
-      SparePart: string,
-      Vendor: string,
-      CriticalItem: 'True' | 'False',
-      LongLeadItem: 'True' | 'False',
-      SupplierPartNo: string,
-      ReleaseDate: string,
-      LastUpdate: Date,
-      Status: 'Accepted' | 'AcceptedBOM' | 'Posted' | 'Error',
-      ErrorDescription: string | null,
-      ReleasedBy: string,
-      LastUpdatedBy: string,
-      'State(Historical)': 'Work in Progress' | 'Released',
-      TransactionId: string,
-      InventorQuantity: string | null,
-      NewRevision: string | null,
-      NewParentItemRevision: string | null
-}
+  rowID?: string;
+  ItemNumber: string | null;
+  Revision: string | null;
+  Quantity: string | null;
+  Pos: string | null;
+  ParentItemNumber: string | null;
+  ParentItemRevision: string | null;
+  ChildCount: string | null;
+  Category: string | null;
+  Title: string | null;
+  Description: string | null;
+  Units: string | null;
+  LifecycleState: "Work in Progress" | "Released";
+  Category_1: string;
+  Category_2: string;
+  Category_3: string;
+  Category_4: string;
+  InternalDescription: string;
+  Mass_g: string;
+  Material: string;
+  MaterialCertifikate: string;
+  Project: string;
+  SerialNo: string;
+  SparePart: string;
+  Vendor: string;
+  CriticalItem: "True" | "False";
+  LongLeadItem: "True" | "False";
+  SupplierPartNo: string;
+  ReleaseDate: string;
+  LastUpdate?: Date;
+  Status: "Accepted" | "AcceptedBOM" | "Posted" | "Error";
+  ErrorDescription: string | null;
+  ReleasedBy: string;
+  LastUpdatedBy: string;
+  "State(Historical)": "Work in Progress" | "Released";
+  TransactionId?: string;
+  InventorQuantity: string | null;
+  NewRevision: string | null;
+  NewParentItemRevision: string | null;
+};

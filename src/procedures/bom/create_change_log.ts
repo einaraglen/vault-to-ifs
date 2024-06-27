@@ -83,16 +83,18 @@ BEGIN
             objstate_ := p_.objstate;
         END LOOP;
 
-        /*
+        :temp := objstate_;
+
         IF objstate_ = 'Active' Then
 
+        RAISE VALUE_ERROR;
+            /*
             UPDATE ifsapp.eng_part_revision_tab
             SET rowstate = 'Preliminary'
             WHERE part_no = r_.part_no
             AND part_rev = r_.part_rev;
-
+            */
         END IF;
-        */
 
         rev_changed_ := FALSE;
         prev_sub_rev_ := '';
@@ -130,15 +132,11 @@ BEGIN
 
             END IF;
 
+            /*
             IF objstate_ = 'Active' THEN
-
-                UPDATE ifsapp.eng_part_revision_tab
-                SET rowstate = 'Active'
-                WHERE part_no = r_.part_no
-                AND part_rev = r_.part_rev;
-
+                &AO.ENG_PART_REVISION_API.Set_Active(r_.part_no, r_.part_rev);
             END IF;
-
+            */
         END IF;
 
         IF r_.num_children > 0 THEN
@@ -155,16 +153,16 @@ BEGIN
 END;
 
 BEGIN
-    OPEN get_prev_rev( :firstTop__partNo, :firstTop__partRev ); 
+    OPEN get_prev_rev(:c02, :c03); 
 
     FETCH get_prev_rev 
         INTO prev_part_rev_;
     
-        CLOSE get_prev_rev;
+    CLOSE get_prev_rev;
     
     IF prev_part_rev_ IS NOT NULL THEN
 
-        Check_Level( :firstTop__partNo, :firstTop__partRev, prev_part_rev_ );
+        Check_Level(:c02, :c03, prev_part_rev_);
         
     END IF;
 END;
@@ -173,7 +171,7 @@ END;
 export const create_change_log = async (client: Connection, message: InMessage) => {
   const bind = get_bindings(message, get_bind_keys(plsql));
 
-  const res = await client.PlSql(plsql, { ...bind, temp: ""});
+  const res = await client.PlSql(plsql, { ...bind, temp: "" });
 
   if (!res.ok) {
     throw Error(res.errorText);

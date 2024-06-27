@@ -46,7 +46,8 @@ export const parse_part_mass = (str: string | null) => {
 }
 
 export const get_bind_keys = (plsql: string) => {
-    const regex = /:c\d{2}/g;
+    // const regex = /:c\d{2}/g;
+    const regex = /:[a-zA-Z]\d{2}/g;
     const matches = plsql.match(regex);
     const unique = matches ? Array.from(new Set(matches)) : [];
     return unique.map((bind) => bind.replace(":", ""))
@@ -68,7 +69,7 @@ export const convert_to_part = (row: MSSQLRow): InMessage => {
         c02: row.Revision,
         c03: row.Units,
         c04: "",
-        c05: "", // LastModBy?
+        c05: "", // LastModBy
         c06: "",
         c07: row.Title,
         c08: row.Description,
@@ -82,14 +83,14 @@ export const convert_to_part = (row: MSSQLRow): InMessage => {
         c16: row.Vendor,
         c17: row.SerialNo,
         c18: row.LifecycleState,
-        c19: "", // Revision?
+        c19: "", // Revision
         c20: parse_boolean(row.CriticalItem),
         c21: parse_boolean(row.LongLeadItem),
         c22: row.SupplierPartNo,
         c23: row.Material,
-        c24: "", // Project?
+        c24: "", // Project
         c25: parse_part_mass(row.Mass_g),
-        c30: row.TransactionId,
+        c30: "", // TransactionId
         c31: row.ReleasedBy,
         c32: row.ReleaseDate,
     }
@@ -102,7 +103,17 @@ export const convert_to_struct = (row: MSSQLRow): InMessage => {
         c04: row.Pos,
         c06: row.ItemNumber,
         c07: row.Revision,
-        c09: row.SparePart,
+        c09: parse_spare_part(row.SparePart),
         n01: row.Quantity,
     }
+}
+
+export const filter_unique_parts = (rows: MSSQLRow[]) => {
+    const parts_map: Record<string, MSSQLRow> = {}
+
+    for (const row of rows) {
+        parts_map[`${row.ItemNumber}.${row.Revision}`] = row
+    }
+
+    return parts_map;
 }
