@@ -29,16 +29,26 @@ export const run = async () => {
 
   try {
     const { root, unique_parts, struct_chain } = await extract_transaction(mssql);
-
+    
+    console.log("Starting", root.ItemNumber)
+    
     const new_revisions = await insert_unique_parts(tx, unique_parts)
 
     await tx.Commit();
+
+    // write ERP lines as "Accepted"
+
     tx = await ifs.BeginTransaction();
 
     await insert_structure_chain(tx, struct_chain, new_revisions)
 
+    // write changelog to master part
+
     await tx.Commit();
+
     console.log("Done", root.ItemNumber)
+
+    // write ERP lines as "AcceptedBOM"
   } catch (err) {
     console.error(err);
     await tx.Rollback();
