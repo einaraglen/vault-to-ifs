@@ -18,15 +18,28 @@ DECLARE
     AND    epr.sub_part_no = sub_part_no_
     AND    epr.sub_part_rev = sub_part_rev_;
 
+  
+  FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
+      prefixed_part_no_ VARCHAR2(100);
+      prefix_           VARCHAR2(5) := 'SE';
+  BEGIN
+      IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+          prefixed_part_no_ := part_no_;
+      ELSE
+          prefixed_part_no_ := prefix_ || part_no_;
+      END IF;
+      RETURN(prefixed_part_no_);
+  END Prefix_Part_No__;
+
 BEGIN
   --objstate_   := IFSAPP.Eng_Part_Revision_API.Get_Obj_State(:c02, :c03);
   :temp       :=  objid_;
 
   IFSAPP.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
   IFSAPP.Client_SYS.Add_To_Attr('STRUCTURE_ID', 'STD', attr_);
-  IFSAPP.Client_SYS.Add_To_Attr('PART_NO', :c02, attr_);
+  IFSAPP.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
   IFSAPP.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
-  IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_NO', :c06, attr_);
+  IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_NO', Prefix_Part_No__(:c06), attr_);
   IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_REV', :c07, attr_);
   IFSAPP.Client_SYS.Add_To_Attr('POS', SUBSTR(:c04, 1, 10), attr_);
   IFSAPP.Client_SYS.Set_Item_Value('QTY', :n01, attr_);
@@ -34,7 +47,7 @@ BEGIN
   IF :c02 NOT LIKE '16%' THEN
     IFSAPP.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
   ELSE
-    OPEN check_sub_struct(:c02, :c03, :c06, :c07);
+    OPEN check_sub_struct(Prefix_Part_No__(:c02), :c03, Prefix_Part_No__(:c06), :c07);
     FETCH check_sub_struct 
       INTO exists_;
     CLOSE check_sub_struct;
@@ -46,9 +59,9 @@ BEGIN
 
   IF :c09 LIKE '1' THEN
     attr_ := NULL;
-    IFSAPP.Client_SYS.Add_To_Attr('PART_NO', :c02, attr_);
+    IFSAPP.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
     IFSAPP.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
-    IFSAPP.Client_SYS.Add_To_Attr('SPARE_PART_NO', :c06, attr_);
+    IFSAPP.Client_SYS.Add_To_Attr('SPARE_PART_NO', Prefix_Part_No__(:c06), attr_);
     IFSAPP.Client_SYS.Add_To_Attr('SPARE_PART_REV', :c07, attr_);
     IFSAPP.Client_SYS.Add_To_Attr('QTY', :n01, attr_);
     IFSAPP.Client_SYS.Add_To_Attr('INFO', 'VAULT_SERVER', attr_);
@@ -57,7 +70,7 @@ BEGIN
 
   /*
   IF objstate_ = 'Active' THEN
-    &AO.ENG_PART_REVISION_API.Set_Active(:c02, :c03);
+    &AO.ENG_PART_REVISION_API.Set_Active(Prefix_Part_No__(:c02), :c03);
   END IF;
   */
 END;

@@ -42,7 +42,10 @@ SELECT [ItemNumber]
       ,[NewParentItemRevision]
 FROM [ERP].[dbo].[BOM]
 WHERE [TransactionId] = '${transaction}'
-AND [ItemNumber] != '${root}';
+AND [ItemNumber] IS NOT NULL
+AND [ItemNumber] != '${root}'
+--AND [ItemNumber] = '2207084'
+ORDER BY [ItemNumber];
 `;
 
 export const get_transaction_parts = async (client: ConnectionPool, root: string, transaction: string): Promise<MSSQLRow[]> => {

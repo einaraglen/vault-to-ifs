@@ -42,11 +42,23 @@ DECLARE
         RETURN substr(current_revision_, 1, 1) || lpad(substr(rpad(current_revision_, 3, '0'), -2) + 1, 2, '0');
         END Get_New_Revision__;
 
+    FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
+        prefixed_part_no_ VARCHAR2(100);
+        prefix_           VARCHAR2(5) := 'SE';
+    BEGIN
+        IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+            prefixed_part_no_ := part_no_;
+        ELSE
+            prefixed_part_no_ := prefix_ || part_no_;
+        END IF;
+        RETURN(prefixed_part_no_);
+    END Prefix_Part_No__;
+
 BEGIN
     -- eng_part_master
-    part_no_ := :c01;
+    part_no_ := Prefix_Part_No__(:c01);
     
-    OPEN check_eng_part_master(:c01);
+    OPEN check_eng_part_master(Prefix_Part_No__(:c01));
 
         FETCH check_eng_part_master
             INTO cnt_;
@@ -56,9 +68,9 @@ BEGIN
     IF (cnt_ = 0) THEN
         &AO.Client_SYS.Clear_Attr(attr_);
         &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
-        &AO.Client_SYS.Add_To_Attr('PART_NO', :c01, attr_);
-        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || :c01), attr_);
-        &AO.Client_SYS.Set_Item_Value('UNIT_CODE', &AO.Part_Catalog_API.Get(:c01).unit_code, attr_);
+        &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c01), attr_);
+        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
+        &AO.Client_SYS.Set_Item_Value('UNIT_CODE', &AO.Part_Catalog_API.Get(Prefix_Part_No__(:c01)).unit_code, attr_);
         &AO.Client_SYS.Add_To_Attr('STD_NAME_ID', '0', attr_);
 
         IF (:c02 IS NOT NULL) THEN
@@ -80,7 +92,7 @@ BEGIN
         new_revision_ := :c02;
 
     ELSE
-        OPEN get_latest_revision(:c01, :c02);
+        OPEN get_latest_revision(Prefix_Part_No__(:c01), :c02);
 
             FETCH get_latest_revision
                 INTO eng_part_revision_rec_;
@@ -88,10 +100,14 @@ BEGIN
             current_part_rev_ := eng_part_revision_rec_.PART_REV;
             :temp := current_part_rev_;           
 
-            IF get_latest_revision%FOUND AND SUBSTR(:c01, 1, 2) NOT LIKE '16' THEN
+            IF get_latest_revision%FOUND AND SUBSTR(Prefix_Part_No__(:c01), 1, 2) NOT LIKE '16' THEN
                 /* Use last revision to calculate next revision */
 
                 new_rev_      := Get_New_Revision__(current_part_rev_);
+                
+                -- keep track of new rev for structure inserts!
+                :new_rev      := new_rev_;
+                
                 new_revision_ := new_rev_;
 
             ELSIF get_latest_revision%FOUND AND SUBSTR(:c01, 1, 2) LIKE '16' THEN
@@ -99,6 +115,10 @@ BEGIN
                 
                 IF current_part_rev_ != :c02 THEN
                     new_rev_      := NULL;
+                    
+                    -- keep track of new rev for structure inserts!
+                    :new_rev      := current_part_rev_;
+
                     new_revision_ := current_part_rev_;
                 ELSE
                     new_rev_      := NULL;
@@ -111,7 +131,7 @@ BEGIN
                 new_rev_      := :c02;
                 new_revision_ := new_rev_;
                 IF current_part_rev_ IS NULL THEN
-                    current_part_rev_ := &AO.Eng_Part_Revision_API.Get_Last_Rev(:c01);
+                    current_part_rev_ := &AO.Eng_Part_Revision_API.Get_Last_Rev(Prefix_Part_No__(:c01));
                 END IF;
 
             END IF;
@@ -119,12 +139,12 @@ BEGIN
         CLOSE get_latest_revision;
 
         IF new_rev_ IS NOT NULL THEN
-            &AO.Eng_Part_Revision_API.New_Revision_(:c01, new_rev_, current_part_rev_, NULL, NULL);
+            &AO.Eng_Part_Revision_API.New_Revision_(Prefix_Part_No__(:c01), new_rev_, current_part_rev_, NULL, NULL);
         END IF;
         
         /*
         IF new_rev_ IS NOT NULL THEN
-            &AO.Eng_Part_Revision_API.New_Revision_(:c01, new_rev_, current_part_rev_, NULL, NULL);
+            &AO.Eng_Part_Revision_API.New_Revision_(Prefix_Part_No__(:c01), new_rev_, current_part_rev_, NULL, NULL);
 
             IF :c18 = 'Released' THEN
                 &AO.ENG_PART_REVISION_API.Set_Active(part_no_, new_rev_);
@@ -144,6 +164,7 @@ BEGIN
             &AO.ENG_PART_REVISION_API.Set_Obsolete(part_no_, new_revision_);
         END IF;
         */
+        
     END IF;
 END;
 `;
@@ -151,7 +172,7 @@ END;
 export const create_engineering_part = async (client: Connection, message: InMessage) => {
     const bind = get_bindings(message, get_bind_keys(plsql));
 
-    const res = await client.PlSql(plsql, { ...bind, temp: "" });
+    const res = await client.PlSql(plsql, { ...bind, temp: "", new_rev: "" });
   
     if (!res.ok) {
       throw Error(res.errorText);

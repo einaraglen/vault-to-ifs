@@ -23,8 +23,20 @@ DECLARE
         WHERE  contract = contract_
         AND    part_no = part_;
 
+    FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
+        prefixed_part_no_ VARCHAR2(100);
+        prefix_           VARCHAR2(5) := 'SE';
+    BEGIN
+        IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+            prefixed_part_no_ := part_no_;
+        ELSE
+            prefixed_part_no_ := prefix_ || part_no_;
+        END IF;
+        RETURN(prefixed_part_no_);
+    END Prefix_Part_No__;
+
 BEGIN
-    OPEN check_purchase_part(:c01, contract_);
+    OPEN check_purchase_part(Prefix_Part_No__(:c01), contract_);
     
     FETCH check_purchase_part
         INTO cnt_;
@@ -33,15 +45,15 @@ BEGIN
     IF (cnt_ = 0) THEN
         &AO.Client_SYS.Clear_Attr(attr_);
         &AO.PURCHASE_PART_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
-        &AO.Client_SYS.Add_To_Attr('PART_NO', :c01, attr_);
-        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || :c01), attr_);
+        &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c01), attr_);
+        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
         &AO.Client_SYS.Add_To_Attr('INVENTORY_FLAG_DB', 'Y', attr_);
         &AO.Client_SYS.Add_To_Attr('DEFAULT_BUY_UNIT_MEAS', :c03, attr_);
         &AO.Client_SYS.Add_To_Attr('TAXABLE', 'False', attr_);
         &AO.Client_SYS.Set_Item_Value('CONTRACT', contract_, attr_);
         &AO.PURCHASE_PART_API.New__(info_, objid_, objversion_, attr_, 'DO');
     ELSE
-        OPEN pur_part_get_version(:c01);
+        OPEN pur_part_get_version(Prefix_Part_No__(:c01));
 
         FETCH pur_part_get_version
             INTO objid_, objversion_;
@@ -53,7 +65,7 @@ BEGIN
 
         &AO.Client_SYS.Clear_Attr(attr_);
         -- TODO: why do we even care about this condition?
-        /*&AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || :c01),  attr_);*/
+        /*&AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)),  attr_);*/
         &AO.PURCHASE_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
     END IF;
 END;

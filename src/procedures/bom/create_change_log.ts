@@ -4,15 +4,27 @@ import { InMessage, get_bind_keys, get_bindings } from "../../utils";
 const plsql = `
 DECLARE
 
-CURSOR Get_Prev_Rev(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2 ) IS
-    SELECT part_rev
-    FROM ifsapp.eng_part_revision
-    WHERE part_no = part_no_
-    AND rev_no < (select rev_no FROM ifsapp.eng_part_revision
-    WHERE part_no = part_no_
-    and part_rev = part_rev_ );
+    CURSOR Get_Prev_Rev(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2 ) IS
+        SELECT part_rev
+        FROM ifsapp.eng_part_revision
+        WHERE part_no = part_no_
+        AND rev_no < (select rev_no FROM ifsapp.eng_part_revision
+        WHERE part_no = part_no_
+        and part_rev = part_rev_ );
 
-prev_part_rev_ VARCHAR2(200);
+    prev_part_rev_ VARCHAR2(200);
+
+    FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
+        prefixed_part_no_ VARCHAR2(100);
+        prefix_           VARCHAR2(5) := 'SE';
+    BEGIN
+        IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+            prefixed_part_no_ := part_no_;
+        ELSE
+            prefixed_part_no_ := prefix_ || part_no_;
+        END IF;
+        RETURN(prefixed_part_no_);
+    END Prefix_Part_No__;
 
 PROCEDURE Check_Level( part_no_ IN VARCHAR2,
     part_rev_ IN VARCHAR2,
@@ -153,7 +165,7 @@ BEGIN
 END;
 
 BEGIN
-    OPEN get_prev_rev(:c02, :c03); 
+    OPEN get_prev_rev(Prefix_Part_No__(:c02), :c03); 
 
     FETCH get_prev_rev 
         INTO prev_part_rev_;
@@ -162,7 +174,7 @@ BEGIN
     
     IF prev_part_rev_ IS NOT NULL THEN
 
-        Check_Level(:c02, :c03, prev_part_rev_);
+        Check_Level(Prefix_Part_No__(:c02), :c03, prev_part_rev_);
         
     END IF;
 END;

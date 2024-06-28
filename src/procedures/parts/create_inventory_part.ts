@@ -11,6 +11,8 @@ DECLARE
     objid_      VARCHAR2(2000);
     objversion_ VARCHAR2(2000);
     weight_net_ NUMBER := 0;
+    unit_code_  VARCHAR2(50);
+
 
     CURSOR check_inventory_part(part_ IN VARCHAR2, contr_ IN VARCHAR2) IS
         SELECT COUNT(1)
@@ -30,6 +32,23 @@ DECLARE
         WHERE  contract = contract_
         AND    part_no = part_
         AND    eng_chg_level = 1;
+
+    CURSOR get_part_uom(part_ IN VARCHAR2) IS
+            SELECT unit_code
+            FROM &AO.PART_CATALOG
+            WHERE part_no = part_;
+
+    FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
+        prefixed_part_no_ VARCHAR2(100);
+        prefix_           VARCHAR2(5) := 'SE';
+    BEGIN
+        IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+            prefixed_part_no_ := part_no_;
+        ELSE
+            prefixed_part_no_ := prefix_ || part_no_;
+        END IF;
+        RETURN(prefixed_part_no_);
+    END Prefix_Part_No__;
 
     PROCEDURE Set_Weight_Net( part_no_ IN VARCHAR2, weight_net_ IN NUMBER )  IS
         attr_       VARCHAR2(2000);
@@ -58,7 +77,7 @@ DECLARE
     END Set_Weight_Net;
 
 BEGIN
-    OPEN check_inventory_part(:c01, contract_);
+    OPEN check_inventory_part(Prefix_Part_No__(:c01), contract_);
     FETCH check_inventory_part
         INTO cnt_;
     CLOSE check_inventory_part;
@@ -123,7 +142,7 @@ BEGIN
         &AO.Client_SYS.Add_To_Attr('PURCH_LEADTIME', 0, attr_);
         &AO.Client_SYS.Add_To_Attr('EXPECTED_LEADTIME', 0, attr_);
 
-        Set_Weight_Net(:c01, weight_net_);
+        Set_Weight_Net(Prefix_Part_No__(:c01), weight_net_);
         &AO.Client_SYS.Add_To_Attr('SUPPLY_CODE',
         &AO.MATERIAL_REQUIS_SUPPLY_API.Decode('IO'), attr_);
         &AO.Client_SYS.Add_To_Attr('TYPE_CODE',
@@ -144,10 +163,21 @@ BEGIN
             &AO.Client_SYS.Add_To_Attr('TECHNICAL_COORDINATOR_ID', 'MATCERT31', attr_);
         END IF;
 
+        OPEN get_part_uom(Prefix_Part_No__(:c01));
+        FETCH get_part_uom
+            INTO unit_code_;
+        CLOSE get_part_uom;
+
         &AO.Client_SYS.Add_To_Attr('ESTIMATED_MATERIAL_COST', 0, attr_);
-        &AO.Client_SYS.Add_To_Attr('PART_NO', :c01, attr_);
+        &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c01), attr_);
+
+        -- If different in database error occurs
         &AO.Client_SYS.Add_To_Attr('UNIT_MEAS', :c03, attr_);
-        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || :c01), attr_);
+
+        -- Potensial fix?
+        --&AO.Client_SYS.Add_To_Attr('UNIT_MEAS', unit_code_, attr_);
+        
+        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
         &AO.Client_SYS.Add_To_Attr('OE_ALLOC_ASSIGN_FLAG_DB', 'N', attr_);
         &AO.Client_SYS.Add_To_Attr('ONHAND_ANALYSIS_FLAG_DB', 'N', attr_);
         &AO.Client_SYS.Add_To_Attr('SHORTAGE_FLAG_DB', 'N', attr_);
@@ -172,7 +202,7 @@ BEGIN
 
         attr_ := NULL;
 
-        OPEN invpart_get_rev(:c01);
+        OPEN invpart_get_rev(Prefix_Part_No__(:c01));
 
         FETCH invpart_get_rev
             INTO objid_, objversion_;
@@ -181,7 +211,7 @@ BEGIN
         &AO.Client_SYS.Add_To_Attr('EFF_PHASE_IN_DATE', SYSDATE - 6 * 30, attr_);
         &AO.PART_REVISION_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
     ELSE
-        OPEN invpart_get_version(:c01);
+        OPEN invpart_get_version(Prefix_Part_No__(:c01));
 
         FETCH invpart_get_version
             INTO objid_, objversion_;
@@ -193,7 +223,7 @@ BEGIN
 
         &AO.Client_SYS.Clear_Attr(attr_);
 
-        Set_Weight_Net(:c01, weight_net_);
+        --Set_Weight_Net(Prefix_Part_No__(:c01), weight_net_);
 
         IF :c10 = '3.1' THEN
             &AO.Client_SYS.Add_To_Attr('TECHNICAL_COORDINATOR_ID', 'MATCERT31', attr_);
@@ -205,6 +235,7 @@ BEGIN
     END IF;
 END;
 `;
+
 
 export const create_inventory_part = async (client: Connection, message: InMessage) => {
   const bind = get_bindings(message, get_bind_keys(plsql));

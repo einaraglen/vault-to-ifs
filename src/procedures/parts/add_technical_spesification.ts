@@ -24,8 +24,20 @@ DECLARE
     objid_             VARCHAR2(32000);
     objversion_        VARCHAR2(32000);
 
+    FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
+        prefixed_part_no_ VARCHAR2(100);
+        prefix_           VARCHAR2(5) := 'SE';
+    BEGIN
+        IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+            prefixed_part_no_ := part_no_;
+        ELSE
+            prefixed_part_no_ := prefix_ || part_no_;
+        END IF;
+        RETURN(prefixed_part_no_);
+    END Prefix_Part_No__;
+
 BEGIN
-    technical_spec_no_ := &AO.TECHNICAL_OBJECT_REFERENCE_API.Get_Technical_Spec_No('PartCatalog', 'PART_NO=' || :c01 || '^');
+    technical_spec_no_ := &AO.TECHNICAL_OBJECT_REFERENCE_API.Get_Technical_Spec_No('PartCatalog', 'PART_NO=' || Prefix_Part_No__(:c01) || '^');
     
     -- QUERY FIX
     :temp := technical_spec_no_;
@@ -33,7 +45,7 @@ BEGIN
     IF technical_spec_no_ = -1 THEN
         attr_ := NULL;
         &AO.Client_SYS.Add_To_Attr('LU_NAME', 'PartCatalog', attr_);
-        &AO.Client_SYS.Add_To_Attr('KEY_REF','PART_NO=' || :c01 || '^', attr_);
+        &AO.Client_SYS.Add_To_Attr('KEY_REF','PART_NO=' || Prefix_Part_No__(:c01) || '^', attr_);
         &AO.Client_SYS.Add_To_Attr('TECHNICAL_SPEC_NO', 0, attr_);
         &AO.Client_SYS.Add_To_Attr('TECHNICAL_CLASS', 'SEPARTINFO', attr_);
         &AO.Client_SYS.Add_To_Attr('OK_YES_NO', &AO.TECHNICAL_OBJ_REF_APPROVED_API.Decode('1'), attr_);

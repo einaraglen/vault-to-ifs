@@ -13,6 +13,7 @@ import { ConnectionPool } from "mssql";
 import { MSSQLConfig, MSSQLConnection } from "../providers/mssql/connection";
 import { create_rev_structure } from "../procedures/bom/create_rev_structure";
 import { create_change_log } from "../procedures/bom/create_change_log";
+import { get_latest_transactions } from "../procedures/vault/get_latest_transactions";
 
 let mssql: ConnectionPool;
 let ifs: Connection;
@@ -20,11 +21,11 @@ let tx: Connection;
 let part: InMessage;
 let struct: InMessage;
 
-// describe("Get ERP Parts", () => {
-//   it("Master:\t\tshould not throw an error", async () => {
-//     await expect(get_master_parts(mssql)).resolves.not.toThrow();
-//   });
-// });
+describe("Get ERP Parts", () => {
+  it("Master:\t\tshould not throw an error", async () => {
+    await expect(get_latest_transactions(mssql, 1)).resolves.not.toThrow();
+  });
+});
 
 describe("Create IFS Parts", () => {
   it("Catalog:\t\tshould not throw an error", async () => {
@@ -56,19 +57,19 @@ describe("Create IFS Parts", () => {
   });
 });
 
-// describe("Create IFS Structure", () => {
-//   // it("Structure:\tshould not throw an error", async () => {
-//   //   await expect(create_rev_structure(tx, struct)).resolves.not.toThrow();
-//   // });
+describe("Create IFS Structure", () => {
+  it("Structure:\tshould not throw an error", async () => {
+    await expect(create_rev_structure(tx, struct)).resolves.not.toThrow();
+  });
   
-//   it("Changes:\t\tshould not throw an error", async () => {
-//     await expect(create_change_log(tx, struct)).resolves.not.toThrow();
-//   });
+  it("Changes:\t\tshould not throw an error", async () => {
+    await expect(create_change_log(tx, struct)).resolves.not.toThrow();
+  });
 
-//   it("Commit:\t\tshould not throw an error", async () => {
-//     await expect(tx.Commit()).resolves.not.toThrow();
-//   });
-// });
+  it("Commit:\t\tshould not throw an error", async () => {
+    await expect(tx.Commit()).resolves.not.toThrow();
+  });
+});
 
 beforeAll(async () => {
   dotenv.config();

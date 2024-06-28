@@ -36,17 +36,29 @@ export const parse_boolean = (str: string | null): "0" | "1" => {
     return Number(str != null && str.toLowerCase() == "true").toString() as any
 }
 
-export const parse_spare_part = (str: string | null) : "N" | "Y" => {
-    const is_empty = str == null || str.length == 0;
-    return is_empty ? "N" : "Y"
+export const parse_spare_part = (str: string | null) : string => {
+    const is_spare = str != null && str.length > 0;
+    return is_spare ? "Y" : "N"
 }
 
 export const parse_part_mass = (str: string | null) => {
     return str ? str.replace(/,/g, ".") : ""
 }
 
+export const fix_part_units = (qty: string | null, units: string | null) => {
+    if (qty != null && qty.endsWith("m")) {
+        return "m"
+    }
+
+    return units || "Each";
+}
+
+export const fix_part_qty = (qty: string | null) => {
+    const qty_ = qty ? qty.replace("m", "").trim() : "0"
+    return qty_.replace(/,/g, ".")
+}
+
 export const get_bind_keys = (plsql: string) => {
-    // const regex = /:c\d{2}/g;
     const regex = /:[a-zA-Z]\d{2}/g;
     const matches = plsql.match(regex);
     const unique = matches ? Array.from(new Set(matches)) : [];
@@ -67,7 +79,7 @@ export const convert_to_part = (row: MSSQLRow): InMessage => {
     return {
         c01: row.ItemNumber,
         c02: row.Revision,
-        c03: row.Units,
+        c03: fix_part_units(row.Quantity, row.Units),
         c04: "",
         c05: "", // LastModBy
         c06: "",
@@ -104,16 +116,29 @@ export const convert_to_struct = (row: MSSQLRow): InMessage => {
         c06: row.ItemNumber,
         c07: row.Revision,
         c09: parse_spare_part(row.SparePart),
-        n01: row.Quantity,
+        n01: fix_part_qty(row.Quantity),
     }
 }
 
 export const filter_unique_parts = (rows: MSSQLRow[]) => {
-    const parts_map: Record<string, MSSQLRow> = {}
+    const parts_map: Record<string, InMessage> = {}
 
     for (const row of rows) {
-        parts_map[`${row.ItemNumber}.${row.Revision}`] = row
+        parts_map[`${row.ItemNumber}.${row.Revision}`] = convert_to_part(row)
     }
 
-    return parts_map;
+    return Object.entries(parts_map).map((e) => e[1]);
+}
+
+export type StructureChain = Record<string, InMessage[]>
+
+export const build_structure_chain = (rows: MSSQLRow[]) => {
+    const chain: StructureChain = {}
+
+    for (const row of rows) {
+        const key = `${row.ParentItemNumber}.${row.ParentItemRevision}`
+        chain[key] = [convert_to_struct(row), ...(chain[key] || [])]
+    }
+
+    return chain
 }

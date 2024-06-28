@@ -1,55 +1,15 @@
-import { get_latest_transactions } from "./procedures/vault/get_latest_transactions";
-import { get_transaction_parts } from "./procedures/vault/get_transaction_parts";
+import { extract_transaction } from "./handlers/extract";
+import { insert_structure_chain, insert_unique_parts } from "./handlers/insert";
+import { IFSConfig, IFSConnection } from "./providers/ifs/connection";
 import { MSSQLConfig, MSSQLConnection } from "./providers/mssql/connection";
-import { MSSQLRow } from "./providers/mssql/types";
-import { filter_unique_parts } from "./utils";
 
-type TreeNode = {
-  part: MSSQLRow;
-  children: TreeNode[];
-}
-
-type BOMTree = TreeNode[]
-
-const insert_tree = (tree: BOMTree, parent?: TreeNode) => {
-  for (const node of tree) {
-    if (parent != null) {
-      console.log(`${parent.part.ItemNumber} ${parent.part.Revision} -> ${node.part.ItemNumber} ${node.part.Quantity} ${node.part.Units}`)
-    }
-  }
-
-  for (const node of tree) {
-    if (node.children.length != 0) {
-      insert_tree(node.children, node)
-    }
-  }
-}
-
-const build_tree = (parts: MSSQLRow[]) => {
-  const partMap: Map<string, TreeNode> = new Map();
-
-  parts.forEach(part => {
-    partMap.set(part.ItemNumber!, { part: part, children: [] });
-  });
-
-  const roots: BOMTree = [];
-
-  parts.forEach(part => {
-    const currentTreeNode = partMap.get(part.ItemNumber!);
-    if (part.ParentItemNumber) {
-      const parentTreeNode = partMap.get(part.ParentItemNumber);
-      if (parentTreeNode && currentTreeNode) {
-        parentTreeNode.children.push(currentTreeNode);
-      }
-    } else {
-      if (currentTreeNode) {
-        roots.push(currentTreeNode);
-      }
-    }
-  });
-
-  return roots;
-}
+const ifs_config: IFSConfig = {
+  server: process.env.IFS_HOST,
+  user: process.env.IFS_USERNAME,
+  password: process.env.IFS_PASSWORD,
+  version: process.env.IFS_VERSION,
+  os_user: process.env.IFS_OS_USER,
+};
 
 const mssql_config: MSSQLConfig = {
   domain: process.env.MSSQL_DOMAIN,
@@ -63,14 +23,27 @@ export const run = async () => {
   const mssql_connection = new MSSQLConnection(mssql_config);
   const mssql = await mssql_connection.instance();
 
+  const ifs_connection = new IFSConnection(ifs_config);
+  const ifs = await ifs_connection.instance();
+  let tx = await ifs.BeginTransaction();
+
   try {
-    const [root] = await get_latest_transactions(mssql, 1)
+    const { root, unique_parts, struct_chain } = await extract_transaction(mssql);
 
-    const children = await get_transaction_parts(mssql, root.ItemNumber!, root.TransactionId!)
+    const new_revisions = await insert_unique_parts(tx, unique_parts)
 
-    const test = filter_unique_parts(children)
+    await tx.Commit();
+    tx = await ifs.BeginTransaction();
 
+    await insert_structure_chain(tx, struct_chain, new_revisions)
+
+    await tx.Commit();
+    console.log("Done", root.ItemNumber)
   } catch (err) {
     console.error(err);
-  } 
+    await tx.Rollback();
+  } finally {
+    await ifs_connection.close()
+    await mssql_connection.close();
+  }
 };
