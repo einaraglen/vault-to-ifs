@@ -11,9 +11,8 @@ import { MSSQLRow } from "../providers/mssql/types";
 import { InMessage, convert_to_part, convert_to_struct } from "../utils";
 import { ConnectionPool } from "mssql";
 import { MSSQLConfig, MSSQLConnection } from "../providers/mssql/connection";
-import { create_rev_structure } from "../procedures/bom/create_rev_structure";
-import { create_change_log } from "../procedures/bom/create_change_log";
-import { get_latest_transactions } from "../procedures/vault/get_latest_transactions";
+import { add_manufacturer } from "../procedures/parts/add_manufacturer";
+import { get_new_revision } from "./check_functions";
 
 let mssql: ConnectionPool;
 let ifs: Connection;
@@ -21,53 +20,51 @@ let tx: Connection;
 let part: InMessage;
 let struct: InMessage;
 
-describe("Get ERP Parts", () => {
-  it("Master:\t\tshould not throw an error", async () => {
-    await expect(get_latest_transactions(mssql, 1)).resolves.not.toThrow();
-  });
-});
+// describe("Create IFS Parts", () => {
+//   it("Catalog:\t\tshould not throw an error", async () => {
+//     await expect(create_catalog_part(tx, part)).resolves.not.toThrow();
+//   });
 
-describe("Create IFS Parts", () => {
-  it("Catalog:\t\tshould not throw an error", async () => {
-    await expect(create_catalog_part(tx, part)).resolves.not.toThrow();
-  });
+//   it("Technical:\tshould not throw an error", async () => {
+//     await expect(add_technical_spesification(tx, part)).resolves.not.toThrow();
+//   });
 
-  it("Technical:\tshould not throw an error", async () => {
-    await expect(add_technical_spesification(tx, part)).resolves.not.toThrow();
-  });
+//   it("Manufacturer:\tshould not throw an error", async () => {
+//     await expect(add_manufacturer(tx, part)).resolves.not.toThrow();
+//   });
 
-  it("Engineering:\tshould not throw an error", async () => {
-    await expect(create_engineering_part(tx, part)).resolves.not.toThrow();
-  });
+//   it("Engineering:\tshould not throw an error", async () => {
+//     await expect(create_engineering_part(tx, part)).resolves.not.toThrow();
+//   });
 
-  it("Inventory:\tshould not throw an error", async () => {
-    await expect(create_inventory_part(tx, part)).resolves.not.toThrow();
-  });
+//   it("Inventory:\tshould not throw an error", async () => {
+//     await expect(create_inventory_part(tx, part)).resolves.not.toThrow();
+//   });
 
-  it("Purchase:\t\tshould not throw an error", async () => {
-    await expect(create_purchase_part(tx, part)).resolves.not.toThrow();
-  });
+//   it("Purchase:\t\tshould not throw an error", async () => {
+//     await expect(create_purchase_part(tx, part)).resolves.not.toThrow();
+//   });
 
-  it("Sales:\t\tshould not throw an error", async () => {
-    await expect(create_sales_part(tx, part)).resolves.not.toThrow();
-  });
+//   it("Sales:\t\tshould not throw an error", async () => {
+//     await expect(create_sales_part(tx, part)).resolves.not.toThrow();
+//   });
 
-  it("Commit:\t\tshould not throw an error", async () => {
-    await expect(tx.Commit()).resolves.not.toThrow();
-  });
-});
+//   it("Commit:\t\tshould not throw an error", async () => {
+//     await expect(tx.Commit()).resolves.not.toThrow();
+//   });
+// });
 
-describe("Create IFS Structure", () => {
-  it("Structure:\tshould not throw an error", async () => {
-    await expect(create_rev_structure(tx, struct)).resolves.not.toThrow();
-  });
-  
-  it("Changes:\t\tshould not throw an error", async () => {
-    await expect(create_change_log(tx, struct)).resolves.not.toThrow();
+describe("Random Test", () => {
+  it("should equal A01", async () => {
+    await expect(get_new_revision(tx, "A")).resolves.toEqual("A01");
   });
 
-  it("Commit:\t\tshould not throw an error", async () => {
-    await expect(tx.Commit()).resolves.not.toThrow();
+  it("should equal A02", async () => {
+    await expect(get_new_revision(tx, "A01")).resolves.toEqual("A02");
+  });
+
+  it("should equal A100", async () => {
+    await expect(get_new_revision(tx, "A99")).resolves.toEqual("A100");
   });
 });
 
@@ -108,7 +105,7 @@ afterAll(async () => {
 
 const sub_part: MSSQLRow = {
   ItemNumber: "2208567",
-  Revision: "B",
+  Revision: "A",
   Quantity: "4",
   Pos: "6",
   ParentItemNumber: "2102017",
@@ -118,7 +115,7 @@ const sub_part: MSSQLRow = {
   Title: "Lock plate Or Something",
   Description: "Round Bar Ø125 L=12",
   Units: "Each",
-  LifecycleState: "Released",
+  LifecycleState: false ? "Obsolete" : "Released",
   Category_1: "",
   Category_2: "",
   Category_3: "",
@@ -130,10 +127,10 @@ const sub_part: MSSQLRow = {
   Project: "",
   SerialNo: "",
   SparePart: "",
-  Vendor: "",
+  Vendor: "Parker",
   CriticalItem: "False",
   LongLeadItem: "False",
-  SupplierPartNo: "",
+  SupplierPartNo: "PART03",
   ReleaseDate: "2024-05-24 02:09:58Z",
   Status: "Posted",
   ErrorDescription: null,

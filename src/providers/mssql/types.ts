@@ -11,7 +11,7 @@ export type MSSQLRow = {
   Title: string | null;
   Description: string | null;
   Units: string | null;
-  LifecycleState: "Work in Progress" | "Released";
+  LifecycleState: "Work in Progress" | "Released" | "Obsolete";
   Category_1: string;
   Category_2: string;
   Category_3: string;

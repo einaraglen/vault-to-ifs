@@ -10,6 +10,8 @@ DECLARE
     attr_           VARCHAR2(2000);
     objid_          VARCHAR2(2000);
     objversion_     VARCHAR2(2000);
+    objstate_       VARCHAR2(200);
+    state_          VARCHAR2(200);
 
     current_part_rev_ VARCHAR2(20);
     part_no_          VARCHAR2(100);
@@ -28,19 +30,49 @@ DECLARE
         FROM   &AO.ENG_PART_REVISION
         WHERE  part_no = p_part_no_
         AND    substr(part_rev, 1, 1) = SUBSTR(p_part_rev_, 1, 1)
-        ORDER  BY part_rev DESC;
+        ORDER  BY substr(part_rev, 1, 1),
+              TO_NUMBER(REGEXP_SUBSTR(part_rev, '[0-9]+')) DESC NULLS LAST;
+
+    CURSOR get_revision_object(p_part_no_ IN VARCHAR2, p_part_rev_ IN VARCHAR2) IS
+        SELECT objid, objversion
+        FROM   &AO.ENG_PART_REVISION
+        WHERE  part_no = p_part_no_
+        AND    part_rev = p_part_rev_;
 
     eng_part_revision_rec_ get_eng_part_revision%ROWTYPE;
-
-    CURSOR part_master_get_version(part_ IN VARCHAR2) IS
-        SELECT objid, objversion FROM &AO.ENG_PART_MASTER WHERE part_no = part_;
 
     new_rev_ VARCHAR2(200);
 
     FUNCTION Get_New_Revision__(current_revision_ IN VARCHAR2) RETURN VARCHAR2 IS
-        BEGIN
-        RETURN substr(current_revision_, 1, 1) || lpad(substr(rpad(current_revision_, 3, '0'), -2) + 1, 2, '0');
-        END Get_New_Revision__;
+        prefix VARCHAR2(1);
+        num_part VARCHAR2(32767);
+        new_num_part VARCHAR2(32767);
+        num_value NUMBER;
+        num_length PLS_INTEGER;
+    BEGIN
+        -- Extract prefix and number part using regular expressions
+        prefix := regexp_substr(current_revision_, '^[A-Z]');
+        num_part := regexp_substr(current_revision_, '[0-9]+');
+
+        -- Check if the numeric part exists and increment it if it does
+        IF num_part IS NOT NULL THEN
+            num_length := LENGTH(num_part);  -- Store the length of the numeric part
+            num_value := to_number(num_part) + 1;
+
+            -- Pad the incremented number to the original length if necessary
+            IF LENGTH(to_char(num_value)) < num_length THEN
+                new_num_part := lpad(to_char(num_value), num_length, '0');
+            ELSE
+                new_num_part := to_char(num_value);
+            END IF;
+        ELSE
+            -- If there is no numeric part, start with '01'
+            new_num_part := '01';
+        END IF;
+
+        -- Return the concatenated result
+        RETURN prefix || new_num_part;
+    END Get_New_Revision__;
 
     FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
         prefixed_part_no_ VARCHAR2(100);
@@ -55,8 +87,6 @@ DECLARE
     END Prefix_Part_No__;
 
 BEGIN
-    -- eng_part_master
-    part_no_ := Prefix_Part_No__(:c01);
     
     OPEN check_eng_part_master(Prefix_Part_No__(:c01));
 
@@ -86,11 +116,7 @@ BEGIN
 
         &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'DO');
 
-        -- Fix?
-        --&AO.ENG_PART_REVISION_API.Set_Active(part_no_, :c02);
-
         new_revision_ := :c02;
-
     ELSE
         OPEN get_latest_revision(Prefix_Part_No__(:c01), :c02);
 
@@ -98,16 +124,12 @@ BEGIN
                 INTO eng_part_revision_rec_;
 
             current_part_rev_ := eng_part_revision_rec_.PART_REV;
-            :temp := current_part_rev_;           
 
             IF get_latest_revision%FOUND AND SUBSTR(Prefix_Part_No__(:c01), 1, 2) NOT LIKE '16' THEN
                 /* Use last revision to calculate next revision */
+                state_ := current_part_rev_;
 
                 new_rev_      := Get_New_Revision__(current_part_rev_);
-                
-                -- keep track of new rev for structure inserts!
-                :new_rev      := new_rev_;
-                
                 new_revision_ := new_rev_;
 
             ELSIF get_latest_revision%FOUND AND SUBSTR(:c01, 1, 2) LIKE '16' THEN
@@ -115,10 +137,6 @@ BEGIN
                 
                 IF current_part_rev_ != :c02 THEN
                     new_rev_      := NULL;
-                    
-                    -- keep track of new rev for structure inserts!
-                    :new_rev      := current_part_rev_;
-
                     new_revision_ := current_part_rev_;
                 ELSE
                     new_rev_      := NULL;
@@ -126,7 +144,7 @@ BEGIN
                 END IF;
 
             ELSE
-
+                state_ := 'not_found';
                 /* This is the first revision for this letter */
                 new_rev_      := :c02;
                 new_revision_ := new_rev_;
@@ -141,39 +159,37 @@ BEGIN
         IF new_rev_ IS NOT NULL THEN
             &AO.Eng_Part_Revision_API.New_Revision_(Prefix_Part_No__(:c01), new_rev_, current_part_rev_, NULL, NULL);
         END IF;
-        
-        /*
-        IF new_rev_ IS NOT NULL THEN
-            &AO.Eng_Part_Revision_API.New_Revision_(Prefix_Part_No__(:c01), new_rev_, current_part_rev_, NULL, NULL);
+    END IF;
 
-            IF :c18 = 'Released' THEN
-                &AO.ENG_PART_REVISION_API.Set_Active(part_no_, new_rev_);
-                &AO.ENG_PART_REVISION_API.Set_Active(part_no_, new_revision_);
+    objstate_   := &AO.Eng_Part_Revision_API.Get_Obj_State(Prefix_Part_No__(:c01), new_revision_);
+
+    IF objstate_ = 'Preliminary' AND SUBSTR(:c01, 1, 2) LIKE '16' THEN
+        OPEN get_revision_object(Prefix_Part_No__(:c01), new_revision_);
+
+            FETCH get_revision_object
+                INTO objid_, objversion_;
+
+            IF get_revision_object%FOUND THEN
+                IF :c18 = 'Released' THEN
+                    &AO.ENG_PART_REVISION_API.Set_Active__(info_, objid_, objversion_, attr_, 'DO');
+                ELSIF :c18 = 'Obsolete' THEN
+                    &AO.ENG_PART_REVISION_API.Set_To_Obsolete__(info_, objid_, objversion_, attr_, 'DO');
+                END IF;
             END IF;
 
-        ELSIF :c18 = 'Obsolete' THEN
-            &AO.ENG_PART_REVISION_API.Set_Obsolete(part_no_, new_rev_);
-            &AO.ENG_PART_REVISION_API.Set_Obsolete(part_no_, new_revision_);
-        END IF;
-
-        IF :c18 = 'Released' THEN
-            &AO.ENG_PART_REVISION_API.Set_Active(part_no_, new_revision_);
-            &AO.ENG_PART_REVISION_API.Set_Active(part_no_, new_rev_);
-        ELSIF :c18 = 'Obsolete' THEN
-            &AO.ENG_PART_REVISION_API.Set_Obsolete(part_no_, new_rev_);
-            &AO.ENG_PART_REVISION_API.Set_Obsolete(part_no_, new_revision_);
-        END IF;
-        */
-        
+        CLOSE get_revision_object;
     END IF;
+
+    :state              := state_;
+    :part_rev           := new_revision_;
 END;
 `;
 
 export const create_engineering_part = async (client: Connection, message: InMessage) => {
     const bind = get_bindings(message, get_bind_keys(plsql));
 
-    const res = await client.PlSql(plsql, { ...bind, temp: "", new_rev: "" });
-  
+    const res = await client.PlSql(plsql, { ...bind, part_rev: "", state: "" });
+
     if (!res.ok) {
       throw Error(res.errorText);
     }

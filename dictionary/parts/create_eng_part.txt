@@ -33,10 +33,7 @@ PROCEDURE Create_Eng_Part(new_revision_ IN OUT VARCHAR2, rec_ IFSAPP.in_message_
    
       FUNCTION Get_New_Revision__(current_revision_ IN VARCHAR2) RETURN VARCHAR2 IS
       BEGIN
-         RETURN substr(current_revision_, 1, 1) || lpad(substr(rpad(current_revision_, 3, '0'),
-                                                               -2) + 1,
-                                                        2,
-                                                        '0');
+         RETURN substr(current_revision_, 1, 1) || lpad(substr(rpad(current_revision_, 3, '0'), -2) + 1, 2, '0');
       END Get_New_Revision__;
    
    BEGIN

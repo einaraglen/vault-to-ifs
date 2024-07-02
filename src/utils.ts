@@ -45,6 +45,20 @@ export const parse_part_mass = (str: string | null) => {
     return str ? str.replace(/,/g, ".") : ""
 }
 
+export const parse_supplier_part = (s_no: string | null, i_desc: string | null) => {
+    if (!s_no && i_desc) {
+        return i_desc
+    }
+
+    if (!s_no || i_desc) {
+        return "";
+    }
+
+    const equal_removed = s_no.replace(/=/g, "-");
+
+    return equal_removed.replace(/%/g, "p");
+}
+
 export const fix_part_units = (qty: string | null, units: string | null) => {
     if (qty != null && qty.endsWith("m")) {
         return "m"
@@ -98,7 +112,7 @@ export const convert_to_part = (row: MSSQLRow): InMessage => {
         c19: "", // Revision
         c20: parse_boolean(row.CriticalItem),
         c21: parse_boolean(row.LongLeadItem),
-        c22: row.SupplierPartNo,
+        c22: parse_supplier_part(row.SupplierPartNo, row.InternalDescription),
         c23: row.Material,
         c24: "", // Project
         c25: parse_part_mass(row.Mass_g),
@@ -127,18 +141,30 @@ export const filter_unique_parts = (rows: MSSQLRow[]) => {
         parts_map[`${row.ItemNumber}.${row.Revision}`] = convert_to_part(row)
     }
 
-    return Object.entries(parts_map).map((e) => e[1]);
+    const list = Object.entries(parts_map).map((e) => e[1]);
+    return { map: parts_map, list }
 }
 
 export type StructureChain = Record<string, InMessage[]>
 
-export const build_structure_chain = (rows: MSSQLRow[]) => {
+export const build_structure_chain = (rows: MSSQLRow[], map: Record<string, InMessage>) => {
     const chain: StructureChain = {}
 
     for (const row of rows) {
-        const key = `${row.ParentItemNumber}.${row.ParentItemRevision}`
+        const parent_key = `${row.ParentItemNumber}.${row.ParentItemRevision}`
+        const parent = map[parent_key]
+
+        if (!parent) {
+            throw Error(`Cannot find parent entry for: ${parent_key}`)
+        }
+    
+        const key = `${parent.c01}.${parent.c02}.${parent.c18}`
         chain[key] = [convert_to_struct(row), ...(chain[key] || [])]
     }
 
     return chain
+}
+
+export const sleep = (timeout: number): Promise<void> => {
+    return new Promise((r) => setTimeout(r, timeout));
 }

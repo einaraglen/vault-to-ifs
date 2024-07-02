@@ -7,17 +7,72 @@ DECLARE
   attr_               VARCHAR2(2000);
   objid_              VARCHAR2(2000);
   objversion_         VARCHAR2(2000);
-  --objstate_           VARCHAR2(200);
   exists_             NUMBER;
+
+  prev_part_rev_      VARCHAR2(200);
+  found_              BOOLEAN := FALSE;
+  change_             VARCHAR2(200);
 
   CURSOR check_sub_struct(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2, sub_part_no_ IN VARCHAR2, sub_part_rev_ IN VARCHAR2) IS
     SELECT COUNT(*)
-    FROM   ifsapp.ENG_PART_STRUCTURE epr
+    FROM   &AO.ENG_PART_STRUCTURE epr
     WHERE  epr.part_no = part_no_
     AND    epr.part_rev = part_rev_
     AND    epr.sub_part_no = sub_part_no_
     AND    epr.sub_part_rev = sub_part_rev_;
 
+  CURSOR get_prev_rev(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2 ) IS
+    SELECT part_rev
+    FROM &AO.eng_part_revision
+    WHERE part_no = part_no_
+    AND rev_no < (select rev_no FROM &AO.eng_part_revision
+    WHERE part_no = part_no_
+    and part_rev = part_rev_ );
+
+  CURSOR get_struct_object(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2, sub_part_no_ IN VARCHAR2, sub_part_rev_ IN VARCHAR2) IS
+    SELECT objid, objversion
+    FROM   &AO.ENG_PART_STRUCTURE epr
+    WHERE  epr.part_no = part_no_
+    AND    epr.part_rev = part_rev_
+    AND    epr.sub_part_no = sub_part_no_
+    AND    epr.sub_part_rev = sub_part_rev_;
+
+  -- ADDED
+  CURSOR get_prev_added(  part_no_ IN VARCHAR2,
+    prev_part_rev_ IN VARCHAR2,
+    sub_part_no_ IN VARCHAR2,
+    sub_part_rev_ IN VARCHAR2 )  IS
+    SELECT * 
+    FROM &AO.ENG_PART_STRUCTURE a
+    WHERE part_no = part_no_
+    AND part_rev = prev_part_rev_
+    AND sub_part_no = sub_part_no_;
+
+  -- REVISION_CHANGED
+  CURSOR get_prev_rev_chg(  part_no_ IN VARCHAR2,
+    prev_part_rev_ IN VARCHAR2,
+    sub_part_no_ IN VARCHAR2,
+    sub_part_rev_ IN VARCHAR2 )  IS
+    SELECT * 
+    FROM &AO.ENG_PART_STRUCTURE a
+    WHERE part_no = part_no_
+    AND SUBSTR(part_rev,1,1) = SUBSTR(prev_part_rev_,1,1)
+    AND sub_part_no = sub_part_no_
+    AND SUBSTR(sub_part_rev,1,1) != SUBSTR(sub_part_rev_,1,1);
+
+  -- QUANTITY_CHANGED
+  CURSOR get_prev_qty(  part_no_ IN VARCHAR2,
+    prev_part_rev_ IN VARCHAR2,
+    sub_part_no_ IN VARCHAR2,
+    sub_part_rev_ IN VARCHAR2,
+    sub_qty_ IN NUMBER )  IS
+    SELECT * 
+    FROM &AO.ENG_PART_STRUCTURE a
+    WHERE part_no = part_no_
+    AND part_rev = prev_part_rev_
+    AND sub_part_no = sub_part_no_
+    AND sub_part_rev = sub_part_rev_
+    AND qty != sub_qty_;
   
   FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
       prefixed_part_no_ VARCHAR2(100);
@@ -32,20 +87,17 @@ DECLARE
   END Prefix_Part_No__;
 
 BEGIN
-  --objstate_   := IFSAPP.Eng_Part_Revision_API.Get_Obj_State(:c02, :c03);
-  :temp       :=  objid_;
-
-  IFSAPP.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
-  IFSAPP.Client_SYS.Add_To_Attr('STRUCTURE_ID', 'STD', attr_);
-  IFSAPP.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
-  IFSAPP.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
-  IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_NO', Prefix_Part_No__(:c06), attr_);
-  IFSAPP.Client_SYS.Add_To_Attr('SUB_PART_REV', :c07, attr_);
-  IFSAPP.Client_SYS.Add_To_Attr('POS', SUBSTR(:c04, 1, 10), attr_);
-  IFSAPP.Client_SYS.Set_Item_Value('QTY', :n01, attr_);
+  &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
+  &AO.Client_SYS.Add_To_Attr('STRUCTURE_ID', 'STD', attr_);
+  &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
+  &AO.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
+  &AO.Client_SYS.Add_To_Attr('SUB_PART_NO', Prefix_Part_No__(:c06), attr_);
+  &AO.Client_SYS.Add_To_Attr('SUB_PART_REV', :c07, attr_);
+  &AO.Client_SYS.Add_To_Attr('POS', SUBSTR(:c04, 1, 10), attr_);
+  &AO.Client_SYS.Set_Item_Value('QTY', :n01, attr_);
 
   IF :c02 NOT LIKE '16%' THEN
-    IFSAPP.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
+    &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
   ELSE
     OPEN check_sub_struct(Prefix_Part_No__(:c02), :c03, Prefix_Part_No__(:c06), :c07);
     FETCH check_sub_struct 
@@ -53,26 +105,71 @@ BEGIN
     CLOSE check_sub_struct;
 
     IF exists_ = 0 THEN
-      IFSAPP.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
+      &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
     END IF;
   END IF;
 
   IF :c09 LIKE '1' THEN
     attr_ := NULL;
-    IFSAPP.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
-    IFSAPP.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
-    IFSAPP.Client_SYS.Add_To_Attr('SPARE_PART_NO', Prefix_Part_No__(:c06), attr_);
-    IFSAPP.Client_SYS.Add_To_Attr('SPARE_PART_REV', :c07, attr_);
-    IFSAPP.Client_SYS.Add_To_Attr('QTY', :n01, attr_);
-    IFSAPP.Client_SYS.Add_To_Attr('INFO', 'VAULT_SERVER', attr_);
-    IFSAPP.Eng_Part_Spare_API.New__(info_, objid_, objversion_, attr_, 'DO');
+    &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
+    &AO.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
+    &AO.Client_SYS.Add_To_Attr('SPARE_PART_NO', Prefix_Part_No__(:c06), attr_);
+    &AO.Client_SYS.Add_To_Attr('SPARE_PART_REV', :c07, attr_);
+    &AO.Client_SYS.Add_To_Attr('QTY', :n01, attr_);
+    &AO.Client_SYS.Add_To_Attr('INFO', 'VAULT_SERVER', attr_);
+    &AO.Eng_Part_Spare_API.New__(info_, objid_, objversion_, attr_, 'DO');
   END IF;
 
-  /*
-  IF objstate_ = 'Active' THEN
-    &AO.ENG_PART_REVISION_API.Set_Active(Prefix_Part_No__(:c02), :c03);
-  END IF;
-  */
+  OPEN get_struct_object(Prefix_Part_No__(:c02), :c03, Prefix_Part_No__(:c06), :c07);
+    FETCH get_struct_object
+      INTO objid_, objversion_;
+  CLOSE get_struct_object;
+
+  OPEN get_prev_rev(Prefix_Part_No__(:c02), :c03); 
+
+    FETCH get_prev_rev 
+        INTO prev_part_rev_;
+
+    IF get_prev_rev%NOTFOUND THEN
+      RETURN;
+    END IF;
+
+    FOR a_ IN get_prev_added(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07 ) LOOP
+      found_ := TRUE;
+    END LOOP;
+
+    IF NOT (found_) THEN
+
+      attr_ := NULL;
+      &AO.Client_SYS.Add_To_Attr('STR_COMMENT','ADDED',attr_);
+      &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
+      change_ := 'ADDED';
+    ELSE
+
+      FOR a_ IN get_prev_rev_chg(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07 ) LOOP
+        found_ := TRUE;
+        attr_ := NULL;
+        &AO.Client_SYS.Add_To_Attr('STR_COMMENT','REVISION_CHANGED',attr_);
+        &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
+        change_ := 'REVISION_CHANGED';
+      END LOOP;
+
+      IF NOT ( found_ ) THEN
+
+        FOR a_ IN get_prev_qty(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07, :n01) LOOP
+          found_ := TRUE;
+          attr_ := NULL;
+          &AO.Client_SYS.Add_To_Attr('STR_COMMENT','QTY_CHANGED',attr_);
+          &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
+          change_ := 'QTY_CHANGED';
+        END LOOP;
+
+      END IF;
+    END IF;
+    
+    CLOSE get_prev_rev;
+
+    :temp := change_;
 END;
 `;
 
