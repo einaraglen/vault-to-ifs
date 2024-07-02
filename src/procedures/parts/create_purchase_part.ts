@@ -64,8 +64,7 @@ BEGIN
         :temp := objversion_;
 
         &AO.Client_SYS.Clear_Attr(attr_);
-        -- TODO: why do we even care about this condition?
-        /*&AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)),  attr_);*/
+        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)),  attr_);
         &AO.PURCHASE_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
     END IF;
 END;

@@ -65,11 +65,6 @@ BEGIN
         
         &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
 
-        -- FIX FOR UoM MISS-MATCH?
-        --IF objstate_ != 'Active' AND objstate_ != 'Released' THEN
-        --    &AO.Client_SYS.Add_To_Attr('UNIT_CODE', :c03, attr_);
-        --END IF;
-
         &AO.PART_CATALOG_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
     END IF;
 END;

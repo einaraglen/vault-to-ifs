@@ -11,7 +11,8 @@ DECLARE
     objid_          VARCHAR2(2000);
     objversion_     VARCHAR2(2000);
     objstate_       VARCHAR2(200);
-    state_          VARCHAR2(200);
+
+    created_        VARCHAR2(200) := 'FALSE';
 
     current_part_rev_ VARCHAR2(20);
     part_no_          VARCHAR2(100);
@@ -117,6 +118,7 @@ BEGIN
         &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'DO');
 
         new_revision_ := :c02;
+        created_      := 'TRUE';
     ELSE
         OPEN get_latest_revision(Prefix_Part_No__(:c01), :c02);
 
@@ -127,7 +129,6 @@ BEGIN
 
             IF get_latest_revision%FOUND AND SUBSTR(Prefix_Part_No__(:c01), 1, 2) NOT LIKE '16' THEN
                 /* Use last revision to calculate next revision */
-                state_ := current_part_rev_;
 
                 new_rev_      := Get_New_Revision__(current_part_rev_);
                 new_revision_ := new_rev_;
@@ -144,7 +145,6 @@ BEGIN
                 END IF;
 
             ELSE
-                state_ := 'not_found';
                 /* This is the first revision for this letter */
                 new_rev_      := :c02;
                 new_revision_ := new_rev_;
@@ -158,6 +158,7 @@ BEGIN
 
         IF new_rev_ IS NOT NULL THEN
             &AO.Eng_Part_Revision_API.New_Revision_(Prefix_Part_No__(:c01), new_rev_, current_part_rev_, NULL, NULL);
+            created_      := 'TRUE';
         END IF;
     END IF;
 
@@ -180,7 +181,7 @@ BEGIN
         CLOSE get_revision_object;
     END IF;
 
-    :state              := state_;
+    :created            := created_;
     :part_rev           := new_revision_;
 END;
 `;
@@ -188,7 +189,7 @@ END;
 export const create_engineering_part = async (client: Connection, message: InMessage) => {
     const bind = get_bindings(message, get_bind_keys(plsql));
 
-    const res = await client.PlSql(plsql, { ...bind, part_rev: "", state: "" });
+    const res = await client.PlSql(plsql, { ...bind, part_rev: "", created: "" });
 
     if (!res.ok) {
       throw Error(res.errorText);

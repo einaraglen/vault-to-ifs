@@ -1,3 +1,4 @@
+import { cleanup_unused_revisions } from "./handlers/cleanup";
 import { extract_transaction } from "./handlers/extract";
 import { insert_structure_chain, insert_unique_parts, set_structure_state } from "./handlers/insert";
 import { IFSConfig, IFSConnection } from "./providers/ifs/connection";
@@ -26,18 +27,21 @@ export const run = async () => {
   const ifs_connection = new IFSConnection(ifs_config);
   const ifs = await ifs_connection.instance();
   let tx = await ifs.BeginTransaction();
+  let revisions: Record<string, string> = {};
 
-  const test_transaction = "b44773ff-38ea-4712-a715-6994e17c11cc";
+  const test_transaction = "8dff7873-7ffb-43f3-9f58-15ac0d18a1ab";
 
   try {
     const { root, unique_parts, struct_chain } = await extract_transaction(mssql, test_transaction);
 
     console.log("Starting", root.c06);
 
-    const new_revisions = await insert_unique_parts(tx, unique_parts);
+    const { new_revisions, created_revisions } = await insert_unique_parts(tx, unique_parts);
 
     // await tx.Rollback();
     await tx.Commit();
+
+    revisions = { ...created_revisions };
 
     // write ERP lines as "Accepted"
 
@@ -55,6 +59,7 @@ export const run = async () => {
   } catch (err) {
     console.error(err);
     await tx.Rollback();
+    await cleanup_unused_revisions(tx, revisions)
   } finally {
     await ifs_connection.close();
     await mssql_connection.close();

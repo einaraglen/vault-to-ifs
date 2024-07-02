@@ -46,18 +46,13 @@ END
 
 
 export const get_new_revision = async (client: Connection, rev: string) => {
-
     const res = await client.PlSql(plsql, { arg: rev, state: "" });
-
-    
   
     if (!res.ok) {
       throw Error(res.errorText);
     }
 
     const { state } = res.bindings as any
-
-    console.log({ state })
   
     return state;
 }

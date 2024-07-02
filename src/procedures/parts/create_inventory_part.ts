@@ -223,7 +223,7 @@ BEGIN
 
         &AO.Client_SYS.Clear_Attr(attr_);
 
-        --Set_Weight_Net(Prefix_Part_No__(:c01), weight_net_);
+        Set_Weight_Net(Prefix_Part_No__(:c01), weight_net_);
 
         IF :c10 = '3.1' THEN
             &AO.Client_SYS.Add_To_Attr('TECHNICAL_COORDINATOR_ID', 'MATCERT31', attr_);

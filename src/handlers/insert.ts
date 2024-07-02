@@ -12,6 +12,7 @@ import { InMessage, StructureChain, sleep } from "../utils";
 
 export const insert_unique_parts = async (tx: Connection, parts: InMessage[]) => {
   const new_revisions: Record<string, string> = {};
+  const created_revisions: Record<string, string> = {};
 
   for (const part of parts) {
     process.stdout.write(`\Inserting ${part.c01} ${part.c02}`);
@@ -20,11 +21,15 @@ export const insert_unique_parts = async (tx: Connection, parts: InMessage[]) =>
     await add_manufacturer(tx, part);
 
     const res = await create_engineering_part(tx, part);
-    const { part_rev, state } = res.bindings as any;
+    const { part_rev, created } = res.bindings as any;
 
     if (part_rev && part.c02 && part_rev != part.c02) {
-      process.stdout.write(` ${state} -> ${part_rev}`);
+      process.stdout.write(` ${part_rev} ${created}`);
       new_revisions[part.c01!] = part_rev;
+
+      if (created == "TRUE") {
+        created_revisions[part.c01!] = part_rev;
+      }
     }
 
     await create_inventory_part(tx, part);
@@ -36,7 +41,7 @@ export const insert_unique_parts = async (tx: Connection, parts: InMessage[]) =>
     await sleep(300);
   }
 
-  return new_revisions;
+  return { new_revisions, created_revisions };
 };
 
 export const insert_structure_chain = async (tx: Connection, chain: StructureChain, revisions: Record<string, string>) => {

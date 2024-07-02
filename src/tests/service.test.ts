@@ -20,39 +20,39 @@ let tx: Connection;
 let part: InMessage;
 let struct: InMessage;
 
-// describe("Create IFS Parts", () => {
-//   it("Catalog:\t\tshould not throw an error", async () => {
-//     await expect(create_catalog_part(tx, part)).resolves.not.toThrow();
-//   });
+describe("Create IFS Parts", () => {
+  it("Catalog:\t\tshould not throw an error", async () => {
+    await expect(create_catalog_part(tx, part)).resolves.not.toThrow();
+  });
 
-//   it("Technical:\tshould not throw an error", async () => {
-//     await expect(add_technical_spesification(tx, part)).resolves.not.toThrow();
-//   });
+  it("Technical:\tshould not throw an error", async () => {
+    await expect(add_technical_spesification(tx, part)).resolves.not.toThrow();
+  });
 
-//   it("Manufacturer:\tshould not throw an error", async () => {
-//     await expect(add_manufacturer(tx, part)).resolves.not.toThrow();
-//   });
+  it("Manufacturer:\tshould not throw an error", async () => {
+    await expect(add_manufacturer(tx, part)).resolves.not.toThrow();
+  });
 
-//   it("Engineering:\tshould not throw an error", async () => {
-//     await expect(create_engineering_part(tx, part)).resolves.not.toThrow();
-//   });
+  it("Engineering:\tshould not throw an error", async () => {
+    await expect(create_engineering_part(tx, part)).resolves.not.toThrow();
+  });
 
-//   it("Inventory:\tshould not throw an error", async () => {
-//     await expect(create_inventory_part(tx, part)).resolves.not.toThrow();
-//   });
+  it("Inventory:\tshould not throw an error", async () => {
+    await expect(create_inventory_part(tx, part)).resolves.not.toThrow();
+  });
 
-//   it("Purchase:\t\tshould not throw an error", async () => {
-//     await expect(create_purchase_part(tx, part)).resolves.not.toThrow();
-//   });
+  it("Purchase:\t\tshould not throw an error", async () => {
+    await expect(create_purchase_part(tx, part)).resolves.not.toThrow();
+  });
 
-//   it("Sales:\t\tshould not throw an error", async () => {
-//     await expect(create_sales_part(tx, part)).resolves.not.toThrow();
-//   });
+  it("Sales:\t\tshould not throw an error", async () => {
+    await expect(create_sales_part(tx, part)).resolves.not.toThrow();
+  });
 
-//   it("Commit:\t\tshould not throw an error", async () => {
-//     await expect(tx.Commit()).resolves.not.toThrow();
-//   });
-// });
+  it("Commit:\t\tshould not throw an error", async () => {
+    await expect(tx.Commit()).resolves.not.toThrow();
+  });
+});
 
 describe("Random Test", () => {
   it("should equal A01", async () => {
