@@ -57,7 +57,7 @@ export const remove_revision = async (client: Connection, row: MSSQLRow) => {
     bind = get_bindings(message, get_bind_keys(plsql));
     res = await client.PlSql(plsql, { ...bind, temp: "" });
   } catch (err) {
-    throw new IFSError((err as Error).message, "Create Purchase Part", row);
+    throw new IFSError((err as Error).message, "Remove Revision", row);
   }
 
   if (!res.ok) {
