@@ -1,5 +1,5 @@
 import { ConnectionPool } from "mssql";
-import { MSSQLRow } from "../../providers/mssql/types";
+import { MSSQLRow } from "@providers/mssql/types";
 
 const sql = (root: string, transaction: string) => `
 SELECT * FROM [ERP].[dbo].[BOM]

@@ -1,52 +1,49 @@
-import dotenv from "dotenv";
+import { add_manufacturer } from "@procedures/parts/add_manufacturer";
+import { add_technical_spesification } from "@procedures/parts/add_technical_spesification";
+import { create_catalog_part } from "@procedures/parts/create_catalog_part";
+import { create_engineering_part } from "@procedures/parts/create_engineering_part";
+import { create_inventory_part } from "@procedures/parts/create_inventory_part";
+import { create_purchase_part } from "@procedures/parts/create_purchase_part";
+import { create_sales_part } from "@procedures/parts/create_sales_part";
+import { IFSConfig, IFSConnection } from "@providers/ifs/connection";
+import { Connection } from "@providers/ifs/internal/Connection";
+import { MSSQLConfig, MSSQLConnection } from "@providers/mssql/connection";
+import { MSSQLRow } from "@providers/mssql/types";
 import { ConnectionPool } from "mssql";
-import { Connection } from "../src/providers/ifs/internal/Connection";
-import { InMessage, convert_to_part, convert_to_struct } from "../src/utils";
-import { create_catalog_part } from "../src/procedures/parts/create_catalog_part";
-import { add_technical_spesification } from "../src/procedures/parts/add_technical_spesification";
-import { add_manufacturer } from "../src/procedures/parts/add_manufacturer";
-import { create_engineering_part } from "../src/procedures/parts/create_engineering_part";
-import { create_inventory_part } from "../src/procedures/parts/create_inventory_part";
-import { create_purchase_part } from "../src/procedures/parts/create_purchase_part";
-import { create_sales_part } from "../src/procedures/parts/create_sales_part";
 import { get_new_revision } from "./check_functions";
-import { MSSQLConfig, MSSQLConnection } from "../src/providers/mssql/connection";
-import { IFSConfig, IFSConnection } from "../src/providers/ifs/connection";
-import { MSSQLRow } from "../src/providers/mssql/types";
+import dotenv from "dotenv";
 
 let mssql: ConnectionPool;
 let ifs: Connection;
 let tx: Connection;
-let part: InMessage;
-let struct: InMessage;
 
 describe("Create IFS Parts", () => {
   it("Catalog:\t\tshould not throw an error", async () => {
-    await expect(create_catalog_part(tx, part)).resolves.not.toThrow();
+    await expect(create_catalog_part(tx, sub_part)).resolves.not.toThrow();
   });
 
   it("Technical:\tshould not throw an error", async () => {
-    await expect(add_technical_spesification(tx, part)).resolves.not.toThrow();
+    await expect(add_technical_spesification(tx, sub_part)).resolves.not.toThrow();
   });
 
   it("Manufacturer:\tshould not throw an error", async () => {
-    await expect(add_manufacturer(tx, part)).resolves.not.toThrow();
+    await expect(add_manufacturer(tx, sub_part)).resolves.not.toThrow();
   });
 
   it("Engineering:\tshould not throw an error", async () => {
-    await expect(create_engineering_part(tx, part)).resolves.not.toThrow();
+    await expect(create_engineering_part(tx, sub_part)).resolves.not.toThrow();
   });
 
   it("Inventory:\tshould not throw an error", async () => {
-    await expect(create_inventory_part(tx, part)).resolves.not.toThrow();
+    await expect(create_inventory_part(tx, sub_part)).resolves.not.toThrow();
   });
 
   it("Purchase:\t\tshould not throw an error", async () => {
-    await expect(create_purchase_part(tx, part)).resolves.not.toThrow();
+    await expect(create_purchase_part(tx, sub_part)).resolves.not.toThrow();
   });
 
   it("Sales:\t\tshould not throw an error", async () => {
-    await expect(create_sales_part(tx, part)).resolves.not.toThrow();
+    await expect(create_sales_part(tx, sub_part)).resolves.not.toThrow();
   });
 
   it("Commit:\t\tshould not throw an error", async () => {
@@ -93,9 +90,6 @@ beforeAll(async () => {
 
   const mssql_connection = new MSSQLConnection(mssql_config);
   mssql = await mssql_connection.instance();
-
-  part = convert_to_part(sub_part);
-  struct = convert_to_struct(sub_part)
 });
 
 afterAll(async () => {

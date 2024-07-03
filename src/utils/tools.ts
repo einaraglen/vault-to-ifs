@@ -1,4 +1,4 @@
-import { MSSQLRow } from "./providers/mssql/types";
+import { MSSQLRow } from "@providers/mssql/types"
 
 export type InMessage = {
     c01?: string | null,
@@ -137,19 +137,19 @@ export const convert_to_struct = (row: MSSQLRow): InMessage => {
 }
 
 export const filter_unique_parts = (rows: MSSQLRow[]) => {
-    const parts_map: Record<string, InMessage> = {}
+    const parts_map: Record<string, MSSQLRow> = {}
 
     for (const row of rows) {
-        parts_map[`${row.ItemNumber}.${row.Revision}`] = convert_to_part(row)
+        parts_map[`${row.ItemNumber}.${row.Revision}`] = row
     }
 
     const list = Object.entries(parts_map).map((e) => e[1]);
     return { map: parts_map, list }
 }
 
-export type StructureChain = Record<string, InMessage[]>
+export type StructureChain = Record<string, MSSQLRow[]>
 
-export const build_structure_chain = (rows: MSSQLRow[], map: Record<string, InMessage>) => {
+export const build_structure_chain = (rows: MSSQLRow[], map: Record<string, MSSQLRow>) => {
     const chain: StructureChain = {}
 
     for (const row of rows) {
@@ -161,8 +161,8 @@ export const build_structure_chain = (rows: MSSQLRow[], map: Record<string, InMe
                 throw Error(`Cannot find parent entry for: ${parent_key}`)
             }
         
-            const key = `${parent.c01}.${parent.c02}.${parent.c18}`
-            chain[key] = [convert_to_struct(row), ...(chain[key] || [])]
+            const key = `${parent.ItemNumber}.${parent.Revision}.${parent.LifecycleState}`
+            chain[key] = [row, ...(chain[key] || [])]
         }
    
         if (row.ItemNumber && !row.ItemNumber.startsWith("16")) {
