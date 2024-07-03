@@ -1,4 +1,5 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
+import { IFSError } from "../../types/error";
 import { InMessage, get_bind_keys, get_bindings } from "../../utils";
 
 const plsql = `
@@ -102,7 +103,7 @@ export const add_technical_spesification = async (client: Connection, message: I
   const res = await client.PlSql(plsql, { ...bind, temp: "" });
 
   if (!res.ok) {
-    throw Error(res.errorText);
+    throw new IFSError(res.errorText, message);
   }
 
   return res;

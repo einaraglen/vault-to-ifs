@@ -26,42 +26,48 @@ export const run = async () => {
 
   const ifs_connection = new IFSConnection(ifs_config);
   const ifs = await ifs_connection.instance();
+
   let tx = await ifs.BeginTransaction();
   let revisions: Record<string, string> = {};
 
-  const test_transaction = "8dff7873-7ffb-43f3-9f58-15ac0d18a1ab";
+  const test_transaction = "80bcf532-9a68-474f-a8ee-3e7f10653555";
 
   try {
     const { root, unique_parts, struct_chain } = await extract_transaction(mssql, test_transaction);
 
-    console.log("Starting", root.c06);
+    console.log("Starting", root.c01);
 
     const { new_revisions, created_revisions } = await insert_unique_parts(tx, unique_parts);
 
-    // await tx.Rollback();
-    await tx.Commit();
+    const parts_commit = await tx.Commit();
+
+    if (!parts_commit.ok) {
+      throw new Error(parts_commit.errorText);
+    }
 
     revisions = { ...created_revisions };
-
-    // write ERP lines as "Accepted"
-
-    tx = await ifs.BeginTransaction();
 
     await insert_structure_chain(tx, struct_chain, new_revisions);
 
     await set_structure_state(tx, struct_chain, new_revisions);
 
-    await tx.Commit();
+    const struct_commit = await tx.Commit();
 
-    console.log("Done", root.c06);
+    if (!struct_commit.ok) {
+      throw new Error(struct_commit.errorText);
+    }
+
+    console.log("Done", root.c01);
 
     // write ERP lines as "AcceptedBOM"
+
   } catch (err) {
-    console.error(err);
+    console.error("\n\n", err, "\n\n");
     await tx.Rollback();
-    await cleanup_unused_revisions(tx, revisions)
-  } finally {
-    await ifs_connection.close();
-    await mssql_connection.close();
+    await cleanup_unused_revisions(ifs, revisions);
   }
+
+  await ifs_connection.close();
+  await mssql_connection.close();
+  console.log("Program End");
 };

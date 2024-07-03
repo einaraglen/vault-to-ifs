@@ -1,18 +1,18 @@
-import { IFSConfig, IFSConnection } from "../providers/ifs/connection";
 import dotenv from "dotenv";
-import { Connection } from "../providers/ifs/internal/Connection";
-import { create_catalog_part } from "../procedures/parts/create_catalog_part";
-import { add_technical_spesification } from "../procedures/parts/add_technical_spesification";
-import { create_engineering_part } from "../procedures/parts/create_engineering_part";
-import { create_inventory_part } from "../procedures/parts/create_inventory_part";
-import { create_purchase_part } from "../procedures/parts/create_purchase_part";
-import { create_sales_part } from "../procedures/parts/create_sales_part";
-import { MSSQLRow } from "../providers/mssql/types";
-import { InMessage, convert_to_part, convert_to_struct } from "../utils";
 import { ConnectionPool } from "mssql";
-import { MSSQLConfig, MSSQLConnection } from "../providers/mssql/connection";
-import { add_manufacturer } from "../procedures/parts/add_manufacturer";
+import { Connection } from "../src/providers/ifs/internal/Connection";
+import { InMessage, convert_to_part, convert_to_struct } from "../src/utils";
+import { create_catalog_part } from "../src/procedures/parts/create_catalog_part";
+import { add_technical_spesification } from "../src/procedures/parts/add_technical_spesification";
+import { add_manufacturer } from "../src/procedures/parts/add_manufacturer";
+import { create_engineering_part } from "../src/procedures/parts/create_engineering_part";
+import { create_inventory_part } from "../src/procedures/parts/create_inventory_part";
+import { create_purchase_part } from "../src/procedures/parts/create_purchase_part";
+import { create_sales_part } from "../src/procedures/parts/create_sales_part";
 import { get_new_revision } from "./check_functions";
+import { MSSQLConfig, MSSQLConnection } from "../src/providers/mssql/connection";
+import { IFSConfig, IFSConnection } from "../src/providers/ifs/connection";
+import { MSSQLRow } from "../src/providers/mssql/types";
 
 let mssql: ConnectionPool;
 let ifs: Connection;
@@ -104,7 +104,7 @@ afterAll(async () => {
 });
 
 const sub_part: MSSQLRow = {
-  ItemNumber: "2208567",
+  ItemNumber: "16107797",
   Revision: "A",
   Quantity: "4",
   Pos: "6",

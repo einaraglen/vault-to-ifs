@@ -1,4 +1,5 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
+import { IFSError } from "../../types/error";
 import { InMessage, get_bind_keys, get_bindings } from "../../utils";
 
 const plsql = `
@@ -31,16 +32,14 @@ BEGIN
     objstate_   := &AO.Eng_Part_Revision_API.Get_Obj_State(Prefix_Part_No__(:c01), :c02);
     :temp       := objstate_;
 
-    IF objstate_ = 'Preliminary' THEN
+    IF objstate_ = 'Preliminary' AND :c18 = 'Released' THEN
         OPEN get_revision_object(Prefix_Part_No__(:c01), :c02);
 
             FETCH get_revision_object
                 INTO objid_, objversion_;
 
             IF get_revision_object%FOUND THEN
-                IF :c18 = 'Released' THEN
-                    &AO.ENG_PART_REVISION_API.Set_Active__(info_, objid_, objversion_, attr_, 'DO');
-                END IF;
+                &AO.ENG_PART_REVISION_API.Set_Active__(info_, objid_, objversion_, attr_, 'DO');
             END IF;
 
         CLOSE get_revision_object;
@@ -54,7 +53,7 @@ export const change_structure_state = async (client: Connection, message: InMess
   const res = await client.PlSql(plsql, { ...bind, temp: "" });
 
   if (!res.ok) {
-    throw Error(res.errorText);
+    throw new IFSError(res.errorText, message);
   }
 
   return res;

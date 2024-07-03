@@ -1,4 +1,5 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
+import { IFSError } from "../../types/error";
 import { InMessage, get_bind_keys, get_bindings } from "../../utils";
 
 const plsql = `
@@ -179,7 +180,7 @@ export const create_rev_structure = async (client: Connection, message: InMessag
   const res = await client.PlSql(plsql, { ...bind, temp: "" });
 
   if (!res.ok) {
-    throw Error(res.errorText);
+    throw new IFSError(res.errorText, message);
   }
 
   return res;

@@ -1,4 +1,5 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
+import { IFSError } from "../../types/error";
 import { InMessage, get_bind_keys, get_bindings } from "../../utils";
 
 const plsql = `
@@ -164,6 +165,8 @@ BEGIN
 
     objstate_   := &AO.Eng_Part_Revision_API.Get_Obj_State(Prefix_Part_No__(:c01), new_revision_);
 
+    -- New 16 parts need to get state update, these will not contain children!
+    
     IF objstate_ = 'Preliminary' AND SUBSTR(:c01, 1, 2) LIKE '16' THEN
         OPEN get_revision_object(Prefix_Part_No__(:c01), new_revision_);
 
@@ -191,8 +194,10 @@ export const create_engineering_part = async (client: Connection, message: InMes
 
     const res = await client.PlSql(plsql, { ...bind, part_rev: "", created: "" });
 
+    throw new IFSError(res.errorText, message);
+
     if (!res.ok) {
-      throw Error(res.errorText);
+        throw new IFSError(res.errorText, message);
     }
   
     return res;

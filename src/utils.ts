@@ -32,6 +32,8 @@ export type InMessage = {
     n01?: string | null,
 }
 
+export type Cursor = { part: null | string, struct: null | string }
+
 export const parse_boolean = (str: string | null): "0" | "1" => {
     return Number(str != null && str.toLowerCase() == "true").toString() as any
 }
@@ -151,15 +153,22 @@ export const build_structure_chain = (rows: MSSQLRow[], map: Record<string, InMe
     const chain: StructureChain = {}
 
     for (const row of rows) {
-        const parent_key = `${row.ParentItemNumber}.${row.ParentItemRevision}`
-        const parent = map[parent_key]
-
-        if (!parent) {
-            throw Error(`Cannot find parent entry for: ${parent_key}`)
-        }
+        if (row.ParentItemNumber && row.ParentItemRevision) {
+            const parent_key = `${row.ParentItemNumber}.${row.ParentItemRevision}`
+            const parent = map[parent_key]
     
-        const key = `${parent.c01}.${parent.c02}.${parent.c18}`
-        chain[key] = [convert_to_struct(row), ...(chain[key] || [])]
+            if (!parent) {
+                throw Error(`Cannot find parent entry for: ${parent_key}`)
+            }
+        
+            const key = `${parent.c01}.${parent.c02}.${parent.c18}`
+            chain[key] = [convert_to_struct(row), ...(chain[key] || [])]
+        }
+   
+        if (row.ItemNumber && !row.ItemNumber.startsWith("16")) {
+            const item_key = `${row.ItemNumber}.${row.Revision}.${row.LifecycleState}`
+            chain[item_key] = [...(chain[item_key] || [])]
+        }
     }
 
     return chain

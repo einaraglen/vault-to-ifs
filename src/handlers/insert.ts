@@ -8,7 +8,7 @@ import { create_inventory_part } from "../procedures/parts/create_inventory_part
 import { create_purchase_part } from "../procedures/parts/create_purchase_part";
 import { create_sales_part } from "../procedures/parts/create_sales_part";
 import { Connection } from "../providers/ifs/internal/Connection";
-import { InMessage, StructureChain, sleep } from "../utils";
+import { Cursor, InMessage, StructureChain, sleep } from "../utils";
 
 export const insert_unique_parts = async (tx: Connection, parts: InMessage[]) => {
   const new_revisions: Record<string, string> = {};
@@ -16,15 +16,25 @@ export const insert_unique_parts = async (tx: Connection, parts: InMessage[]) =>
 
   for (const part of parts) {
     process.stdout.write(`\Inserting ${part.c01} ${part.c02}`);
-    await create_catalog_part(tx, part);
+
+    const cat = await create_catalog_part(tx, part);
+    const { unit } = cat.bindings as any;
+
+    if (unit && part.c03 && unit != part.c03) {
+      part.c03 = unit;
+    }
+
+    process.stdout.write(` ${part.c03}`);
+
     await add_technical_spesification(tx, part);
     await add_manufacturer(tx, part);
 
-    const res = await create_engineering_part(tx, part);
-    const { part_rev, created } = res.bindings as any;
+    const eng = await create_engineering_part(tx, part);
+    const { part_rev, created } = eng.bindings as any;
 
     if (part_rev && part.c02 && part_rev != part.c02) {
-      process.stdout.write(` ${part_rev} ${created}`);
+      process.stdout.write(` ${part_rev}`);
+
       new_revisions[part.c01!] = part_rev;
 
       if (created == "TRUE") {
@@ -46,6 +56,11 @@ export const insert_unique_parts = async (tx: Connection, parts: InMessage[]) =>
 
 export const insert_structure_chain = async (tx: Connection, chain: StructureChain, revisions: Record<string, string>) => {
   for (const [parent, children] of Object.entries(chain)) {
+
+    if (children.length == 0) {
+      continue;
+    }
+
     const [parent_no, parent_rev, state] = parent.split(".");
 
     const parent_new_rev = revisions[parent_no];
@@ -72,10 +87,14 @@ export const insert_structure_chain = async (tx: Connection, chain: StructureCha
 };
 
 export const set_structure_state = async (tx: Connection, chain: StructureChain, revisions: Record<string, string>) => {
-  for (const [parent] of Object.entries(chain)) {
-    const [parent_no, parent_rev, state] = parent.split(".");
+  for (const [struct] of Object.entries(chain)) {
+    const [struct_no, struct_rev, state] = struct.split(".");
 
-    const parent_new_rev = revisions[parent_no];
-    await change_structure_state(tx, { c01: parent_no, c02: parent_new_rev || parent_rev, c18: state });
+    const struct_new_rev = revisions[struct_no];
+    
+    console.log(`Setting State`, struct_no, struct_new_rev || struct_rev, state);
+
+    await change_structure_state(tx, { c01: struct_no, c02: struct_new_rev || struct_rev, c18: state });
+    await sleep(300);
   }
 };

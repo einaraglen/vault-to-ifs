@@ -1,4 +1,5 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
+import { IFSError } from "../../types/error";
 import { InMessage, get_bind_keys, get_bindings } from "../../utils";
 
 const plsql = `
@@ -32,11 +33,6 @@ DECLARE
         WHERE  contract = contract_
         AND    part_no = part_
         AND    eng_chg_level = 1;
-
-    CURSOR get_part_uom(part_ IN VARCHAR2) IS
-            SELECT unit_code
-            FROM &AO.PART_CATALOG
-            WHERE part_no = part_;
 
     FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
         prefixed_part_no_ VARCHAR2(100);
@@ -163,20 +159,12 @@ BEGIN
             &AO.Client_SYS.Add_To_Attr('TECHNICAL_COORDINATOR_ID', 'MATCERT31', attr_);
         END IF;
 
-        OPEN get_part_uom(Prefix_Part_No__(:c01));
-        FETCH get_part_uom
-            INTO unit_code_;
-        CLOSE get_part_uom;
-
         &AO.Client_SYS.Add_To_Attr('ESTIMATED_MATERIAL_COST', 0, attr_);
         &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c01), attr_);
 
         -- If different in database error occurs
         &AO.Client_SYS.Add_To_Attr('UNIT_MEAS', :c03, attr_);
 
-        -- Potensial fix?
-        --&AO.Client_SYS.Add_To_Attr('UNIT_MEAS', unit_code_, attr_);
-        
         &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
         &AO.Client_SYS.Add_To_Attr('OE_ALLOC_ASSIGN_FLAG_DB', 'N', attr_);
         &AO.Client_SYS.Add_To_Attr('ONHAND_ANALYSIS_FLAG_DB', 'N', attr_);
@@ -243,7 +231,7 @@ export const create_inventory_part = async (client: Connection, message: InMessa
   const res = await client.PlSql(plsql, { ...bind, temp: "" });
 
   if (!res.ok) {
-    throw Error(res.errorText);
+    throw new IFSError(res.errorText, message);
   }
 
   return res;
