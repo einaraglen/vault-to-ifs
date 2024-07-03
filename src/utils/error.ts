@@ -3,7 +3,6 @@ export class IFSError extends Error {
   public func: any = null;
   constructor(message: string, func: string, row: any) {
     super(message);
-
     this.name = "IFSError";
     this.row = row;
     this.func = func;

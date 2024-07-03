@@ -1,4 +1,7 @@
+import { Connection } from "@providers/ifs/internal/Connection"
+import { PlSqlMultiResponse, PlSqlOneResponse } from "@providers/ifs/internal/PlSqlCommandTypes"
 import { MSSQLRow } from "@providers/mssql/types"
+import { IFSError } from "./error"
 
 export type InMessage = {
     c01?: string | null,

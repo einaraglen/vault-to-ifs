@@ -3,7 +3,7 @@ import { extract_transaction } from "@procedures/handlers/extract";
 import { insert_unique_parts, insert_structure_chain, set_structure_state } from "@procedures/handlers/insert";
 import { IFSConfig, IFSConnection } from "@providers/ifs/connection";
 import { MSSQLConfig, MSSQLConnection } from "@providers/mssql/connection";
-import { CommitError } from "@utils/error";
+import { CommitError, IFSError } from "@utils/error";
 
 const ifs_config: IFSConfig = {
   server: process.env.IFS_HOST,
@@ -63,7 +63,10 @@ export const run = async () => {
     // write ERP lines as "AcceptedBOM"
 
   } catch (err) {
-    console.error("\n\n", err, "\n\n");
+    console.error("\n\n");
+
+    console.log(err)
+
     await tx.Rollback();
     await cleanup_unused_revisions(ifs, revisions);
   }

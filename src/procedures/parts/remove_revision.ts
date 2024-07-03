@@ -1,4 +1,5 @@
 import { Connection } from "@providers/ifs/internal/Connection";
+import { PlSqlMultiResponse, PlSqlOneResponse } from "@providers/ifs/internal/PlSqlCommandTypes";
 import { MSSQLRow } from "@providers/mssql/types";
 import { IFSError } from "@utils/error";
 import { convert_to_part, get_bindings, get_bind_keys } from "@utils/tools";
@@ -47,10 +48,17 @@ END;
 `;
 
 export const remove_revision = async (client: Connection, row: MSSQLRow) => {
-  const message = convert_to_part(row)
-  const bind = get_bindings(message, get_bind_keys(plsql));
+  const message = convert_to_part(row);
 
-  const res = await client.PlSql(plsql, { ...bind, temp: "" });
+  let bind: any = null;
+  let res: PlSqlOneResponse | PlSqlMultiResponse | null = null;
+
+  try {
+    bind = get_bindings(message, get_bind_keys(plsql));
+    res = await client.PlSql(plsql, { ...bind, temp: "" });
+  } catch (err) {
+    throw new IFSError((err as Error).message, "Create Purchase Part", row);
+  }
 
   if (!res.ok) {
     throw new IFSError(res.errorText, "Remove Revision", row);
