@@ -3,7 +3,7 @@ import { extract_transaction } from "@procedures/handlers/extract";
 import { insert_unique_parts, insert_structure_chain, set_structure_state } from "@procedures/handlers/insert";
 import { IFSConfig, IFSConnection } from "@providers/ifs/connection";
 import { MSSQLConfig, MSSQLConnection } from "@providers/mssql/connection";
-import { CommitError } from "@utils/error";
+import { CommitError, IFSError, MSSQLError } from "@utils/error";
 
 const ifs_config: IFSConfig = {
   server: process.env.IFS_HOST,
@@ -32,7 +32,9 @@ export const run = async () => {
   let tx = await ifs.BeginTransaction();
   let revisions: Record<string, string> = {};
 
-  const test_transaction = "80bcf532-9a68-474f-a8ee-3e7f10653555";
+  // known bad export: "369e2024-9459-4b3d-904b-cb83c468b8d3"
+
+  const test_transaction = "369e2024-9459-4b3d-904b-cb83c468b8d3"//"12946823-811d-46fb-a7ef-7cde948e7fe6";
 
   try {
     const { root, unique_parts, struct_chain } = await extract_transaction(mssql, test_transaction);
@@ -64,9 +66,19 @@ export const run = async () => {
     //await set_transaction_status(mssql, "AcceptedBOM", test_transaction)
 
   } catch (err) {
-    console.log(err)
-
     await tx.Rollback();
+
+    if (err instanceof IFSError) {
+      console.log(`${err.name}: ${err.func}:`, err.message)
+      console.log(JSON.stringify(err.row))
+    } else if (err instanceof MSSQLError) {
+      console.log(`${err.name}: ${err.func}:`, err.message)
+    } else if (err instanceof CommitError) {
+      console.log(`${err.name}: ${err.stage}:`, err.message)
+    } else {
+      console.log("MAJOR FAILURE", err)
+    }
+
     await cleanup_unused_revisions(ifs, revisions);
     //await set_transaction_status(mssql, "Error", test_transaction)
   }

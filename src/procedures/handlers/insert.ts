@@ -17,7 +17,7 @@ export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => 
 
   for (const part of parts) {
     try {
-      process.stdout.write(`\Inserting ${part.ItemNumber}`);
+      process.stdout.write(`Insert ${part.ItemNumber}`);
 
       const cat = await create_catalog_part(tx, part);
       const { unit } = cat.bindings as any;
@@ -98,7 +98,7 @@ export const set_structure_state = async (tx: Connection, chain: StructureChain,
 
     const new_rev = revisions[no];
     
-    console.log(`Setting State`, no, new_rev || rev, state);
+    console.log(`Status`, no, new_rev || rev, state);
 
     await change_structure_state(tx, { ItemNumber: no, Revision: new_rev || rev, LifecycleState: state } as any);
 
