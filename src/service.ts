@@ -3,7 +3,7 @@ import { extract_transaction } from "@procedures/handlers/extract";
 import { insert_unique_parts, insert_structure_chain, set_structure_state } from "@procedures/handlers/insert";
 import { IFSConfig, IFSConnection } from "@providers/ifs/connection";
 import { MSSQLConfig, MSSQLConnection } from "@providers/mssql/connection";
-import { CommitError, IFSError } from "@utils/error";
+import { CommitError } from "@utils/error";
 
 const ifs_config: IFSConfig = {
   server: process.env.IFS_HOST,
@@ -31,6 +31,7 @@ export const run = async () => {
   let tx = await ifs.BeginTransaction();
   let revisions: Record<string, string> = {};
 
+  // const test_transaction = "80bcf532-9a68-474f-a8ee-3e7f10653555";
   const test_transaction = "80bcf532-9a68-474f-a8ee-3e7f10653555";
 
   try {
@@ -60,7 +61,7 @@ export const run = async () => {
 
     console.log("Done", root.ItemNumber);
 
-    // write ERP lines as "AcceptedBOM"
+    //await set_transaction_status(mssql, "AcceptedBOM", test_transaction)
 
   } catch (err) {
     console.error("\n\n");
@@ -69,6 +70,7 @@ export const run = async () => {
 
     await tx.Rollback();
     await cleanup_unused_revisions(ifs, revisions);
+    //await set_transaction_status(mssql, "Error", test_transaction)
   }
 
   await ifs_connection.close();

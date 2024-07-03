@@ -25,3 +25,11 @@ export class MSSQLError extends Error {
         this.func = func;
     }
 }
+
+export class TimeoutError extends Error {
+  public time: number | null = null;
+    constructor(message: string, time: number) {
+        super(message);
+        this.time = time;
+    }
+}
