@@ -10,6 +10,7 @@ import { create_sales_part } from "@procedures/parts/create_sales_part";
 import { MSSQLRow } from "@providers/mssql/types";
 import { sleep, StructureChain } from "@utils/tools";
 import { Connection } from "@providers/ifs/internal/Connection";
+import chalk from "chalk";
 
 export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => {
   const new_revisions: Record<string, string> = {};
@@ -33,7 +34,7 @@ export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => 
       const { part_rev, created } = eng.bindings as any;
   
       if (part_rev && part.Revision && part_rev != part.Revision) {
-        process.stdout.write(` ${part_rev}`);
+        process.stdout.write(chalk.greenBright(` ${part_rev}`));
   
         new_revisions[part.ItemNumber!] = part_rev;
   
@@ -41,7 +42,7 @@ export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => 
           created_revisions[part.ItemNumber!] = part_rev;
         }
       } else {
-        process.stdout.write(` ${part.Revision}`);
+        process.stdout.write(chalk.blueBright(` ${part.Revision}`));
       }
   
       await create_inventory_part(tx, part);

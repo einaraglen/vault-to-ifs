@@ -4,6 +4,7 @@ import { insert_unique_parts, insert_structure_chain, set_structure_state } from
 import { IFSConfig, IFSConnection } from "@providers/ifs/connection";
 import { MSSQLConfig, MSSQLConnection } from "@providers/mssql/connection";
 import { CommitError, IFSError, MSSQLError } from "@utils/error";
+import chalk from "chalk";
 
 const ifs_config: IFSConfig = {
   server: process.env.IFS_HOST,
@@ -22,7 +23,7 @@ const mssql_config: MSSQLConfig = {
 };
 
 export const run = async () => {
-  console.log("## START ##");
+  console.log("##", chalk.blueBright("START"), "##");
   const mssql_connection = new MSSQLConnection(mssql_config);
   const mssql = await mssql_connection.instance();
 
@@ -38,8 +39,6 @@ export const run = async () => {
 
   try {
     const { root, unique_parts, struct_chain } = await extract_transaction(mssql, test_transaction);
-
-    console.log("Starting", root.ItemNumber);
 
     const { new_revisions, created_revisions } = await insert_unique_parts(tx, unique_parts);
 
@@ -61,7 +60,7 @@ export const run = async () => {
       throw new CommitError(struct_commit.errorText, "Structure");
     }
 
-    console.log("Done", root.ItemNumber);
+    console.log("Completed", chalk.greenBright(root.ItemNumber))
 
     //await set_transaction_status(mssql, "AcceptedBOM", test_transaction)
 
@@ -69,12 +68,12 @@ export const run = async () => {
     await tx.Rollback();
 
     if (err instanceof IFSError) {
-      console.log(`${err.name}: ${err.func}:`, err.message)
+      console.log(chalk.redBright(`${err.name}:`), chalk.yellowBright(`${err.func}:`), err.message)
       console.log(JSON.stringify(err.row))
     } else if (err instanceof MSSQLError) {
-      console.log(`${err.name}: ${err.func}:`, err.message)
+      console.log(chalk.redBright(`${err.name}:`), chalk.yellowBright(`${err.func}:`), err.message)
     } else if (err instanceof CommitError) {
-      console.log(`${err.name}: ${err.stage}:`, err.message)
+      console.log(chalk.redBright(`${err.name}:`), chalk.yellowBright(`${err.stage}:`), err.message)
     } else {
       console.log("MAJOR FAILURE", err)
     }
@@ -85,5 +84,5 @@ export const run = async () => {
 
   await ifs_connection.close();
   await mssql_connection.close();
-  console.log("## END ##");
+  console.log("##", chalk.blueBright("END"), "##");
 };
