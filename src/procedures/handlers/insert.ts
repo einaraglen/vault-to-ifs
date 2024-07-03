@@ -16,40 +16,45 @@ export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => 
   const created_revisions: Record<string, string> = {};
 
   for (const part of parts) {
-    process.stdout.write(`\Inserting ${part.ItemNumber} ${part.Revision}`);
+    try {
+      process.stdout.write(`\Inserting ${part.ItemNumber}`);
 
-    const cat = await create_catalog_part(tx, part);
-    const { unit } = cat.bindings as any;
-
-    if (unit && part.Units && unit != part.Units) {
-      part.Units = unit;
-    }
-
-    process.stdout.write(` ${part.Units}`);
-
-    await add_technical_spesification(tx, part);
-    await add_manufacturer(tx, part);
-
-    const eng = await create_engineering_part(tx, part);
-    const { part_rev, created } = eng.bindings as any;
-
-    if (part_rev && part.Revision && part_rev != part.Revision) {
-      process.stdout.write(` ${part_rev}`);
-
-      new_revisions[part.ItemNumber!] = part_rev;
-
-      if (created == "TRUE") {
-        created_revisions[part.ItemNumber!] = part_rev;
+      const cat = await create_catalog_part(tx, part);
+      const { unit } = cat.bindings as any;
+  
+      if (unit && part.Units && unit != part.Units) {
+        part.Units = unit;
       }
+  
+      await add_technical_spesification(tx, part);
+      await add_manufacturer(tx, part);
+  
+      const eng = await create_engineering_part(tx, part);
+      const { part_rev, created } = eng.bindings as any;
+  
+      if (part_rev && part.Revision && part_rev != part.Revision) {
+        process.stdout.write(` ${part_rev}`);
+  
+        new_revisions[part.ItemNumber!] = part_rev;
+  
+        if (created == "TRUE") {
+          created_revisions[part.ItemNumber!] = part_rev;
+        }
+      } else {
+        process.stdout.write(` ${part.Revision}`);
+      }
+  
+      await create_inventory_part(tx, part);
+      await create_purchase_part(tx, part);
+      await create_sales_part(tx, part);
+  
+      process.stdout.write(`\n`); // end line print when success
+  
+      await sleep(100);
+    } catch (err) {
+      process.stdout.write(`\n`); // end line print when error
+      throw err
     }
-
-    await create_inventory_part(tx, part);
-    await create_purchase_part(tx, part);
-    await create_sales_part(tx, part);
-
-    process.stdout.write(`\n`);
-
-    await sleep(300);
   }
 
   return { new_revisions, created_revisions };
@@ -62,11 +67,11 @@ export const insert_structure_chain = async (tx: Connection, chain: StructureCha
       continue;
     }
 
-    const [parent_no, parent_rev, state] = parent.split(".");
+    const [parent_no, parent_rev] = parent.split(".");
 
     const parent_new_rev = revisions[parent_no];
 
-    console.log("Inserting Structure for", parent_no, parent_new_rev || parent_rev, state);
+    console.log("Part", parent_no, parent_new_rev || parent_rev);
 
     for (const child of children) {
       const child_new_rev = revisions[child.ItemNumber!];
@@ -79,10 +84,10 @@ export const insert_structure_chain = async (tx: Connection, chain: StructureCha
         child.ParentItemRevision = parent_new_rev;
       }
 
-      console.log(`\tChild`, child.ItemNumber, child.Revision);
+      console.log(`\tSub`, child.ItemNumber, child.Revision);
       await create_rev_structure(tx, child);
 
-      await sleep(300);
+      await sleep(100);
     }
   }
 };
@@ -91,12 +96,12 @@ export const set_structure_state = async (tx: Connection, chain: StructureChain,
   for (const [struct] of Object.entries(chain)) {
     const [no, rev, state] = struct.split(".");
 
-    const new_rev = revisions[rev];
+    const new_rev = revisions[no];
     
     console.log(`Setting State`, no, new_rev || rev, state);
 
     await change_structure_state(tx, { ItemNumber: no, Revision: new_rev || rev, LifecycleState: state } as any);
 
-    await sleep(300);
+    await sleep(100);
   }
 };

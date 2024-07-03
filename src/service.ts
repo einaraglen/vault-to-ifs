@@ -22,6 +22,7 @@ const mssql_config: MSSQLConfig = {
 };
 
 export const run = async () => {
+  console.log("## START ##");
   const mssql_connection = new MSSQLConnection(mssql_config);
   const mssql = await mssql_connection.instance();
 
@@ -31,7 +32,6 @@ export const run = async () => {
   let tx = await ifs.BeginTransaction();
   let revisions: Record<string, string> = {};
 
-  // const test_transaction = "80bcf532-9a68-474f-a8ee-3e7f10653555";
   const test_transaction = "80bcf532-9a68-474f-a8ee-3e7f10653555";
 
   try {
@@ -64,8 +64,6 @@ export const run = async () => {
     //await set_transaction_status(mssql, "AcceptedBOM", test_transaction)
 
   } catch (err) {
-    console.error("\n\n");
-
     console.log(err)
 
     await tx.Rollback();
@@ -75,5 +73,5 @@ export const run = async () => {
 
   await ifs_connection.close();
   await mssql_connection.close();
-  console.log("Program End");
+  console.log("## END ##");
 };
