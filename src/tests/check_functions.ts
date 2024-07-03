@@ -1,9 +1,4 @@
-
-/**
- * Need to make a Revision Generator Function that does not overflow!
- */
-
-import { Connection } from "../src/providers/ifs/internal/Connection";
+import { Connection } from "@providers/ifs/internal/Connection";
 
 const plsql = `
 DECLARE

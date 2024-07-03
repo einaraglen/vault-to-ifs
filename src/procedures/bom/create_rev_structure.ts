@@ -1,6 +1,8 @@
+import { MSSQLRow } from "@providers/mssql/types";
 import { Connection } from "../../providers/ifs/internal/Connection";
-import { IFSError } from "../../types/error";
-import { InMessage, get_bind_keys, get_bindings } from "../../utils";
+import { IFSError } from "@utils/error";
+import { convert_to_struct, get_bindings, get_bind_keys } from "@utils/tools";
+import { PlSqlMultiResponse, PlSqlOneResponse } from "@providers/ifs/internal/PlSqlCommandTypes";
 
 const plsql = `
 DECLARE
@@ -174,13 +176,21 @@ BEGIN
 END;
 `;
 
-export const create_rev_structure = async (client: Connection, message: InMessage) => {
-  const bind = get_bindings(message, get_bind_keys(plsql));
+export const create_rev_structure = async (client: Connection, row: MSSQLRow) => {
+  const message = convert_to_struct(row)
+  
+  let bind: any = null;
+  let res: PlSqlOneResponse | PlSqlMultiResponse | null = null;
 
-  const res = await client.PlSql(plsql, { ...bind, temp: "" });
+  try {
+    bind = get_bindings(message, get_bind_keys(plsql));
+    res = await client.PlSql(plsql, { ...bind, temp: "" });
+  } catch (err) {
+    throw new IFSError((err as Error).message, "Create Revision Structure", row)
+  }
 
   if (!res.ok) {
-    throw new IFSError(res.errorText, message);
+    throw new IFSError(res.errorText, "Create Revision Structure", row);
   }
 
   return res;

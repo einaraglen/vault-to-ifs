@@ -1,8 +1,9 @@
-import { cleanup_unused_revisions } from "./handlers/cleanup";
-import { extract_transaction } from "./handlers/extract";
-import { insert_structure_chain, insert_unique_parts, set_structure_state } from "./handlers/insert";
-import { IFSConfig, IFSConnection } from "./providers/ifs/connection";
-import { MSSQLConfig, MSSQLConnection } from "./providers/mssql/connection";
+import { cleanup_unused_revisions } from "@procedures/handlers/cleanup";
+import { extract_transaction } from "@procedures/handlers/extract";
+import { insert_unique_parts, insert_structure_chain, set_structure_state } from "@procedures/handlers/insert";
+import { IFSConfig, IFSConnection } from "@providers/ifs/connection";
+import { MSSQLConfig, MSSQLConnection } from "@providers/mssql/connection";
+import { CommitError } from "@utils/error";
 
 const ifs_config: IFSConfig = {
   server: process.env.IFS_HOST,
@@ -30,19 +31,20 @@ export const run = async () => {
   let tx = await ifs.BeginTransaction();
   let revisions: Record<string, string> = {};
 
+  // const test_transaction = "80bcf532-9a68-474f-a8ee-3e7f10653555";
   const test_transaction = "80bcf532-9a68-474f-a8ee-3e7f10653555";
 
   try {
     const { root, unique_parts, struct_chain } = await extract_transaction(mssql, test_transaction);
 
-    console.log("Starting", root.c01);
+    console.log("Starting", root.ItemNumber);
 
     const { new_revisions, created_revisions } = await insert_unique_parts(tx, unique_parts);
 
     const parts_commit = await tx.Commit();
 
     if (!parts_commit.ok) {
-      throw new Error(parts_commit.errorText);
+      throw new CommitError(parts_commit.errorText, "Parts");
     }
 
     revisions = { ...created_revisions };
@@ -54,17 +56,21 @@ export const run = async () => {
     const struct_commit = await tx.Commit();
 
     if (!struct_commit.ok) {
-      throw new Error(struct_commit.errorText);
+      throw new CommitError(struct_commit.errorText, "Structure");
     }
 
-    console.log("Done", root.c01);
+    console.log("Done", root.ItemNumber);
 
-    // write ERP lines as "AcceptedBOM"
+    //await set_transaction_status(mssql, "AcceptedBOM", test_transaction)
 
   } catch (err) {
-    console.error("\n\n", err, "\n\n");
+    console.error("\n\n");
+
+    console.log(err)
+
     await tx.Rollback();
     await cleanup_unused_revisions(ifs, revisions);
+    //await set_transaction_status(mssql, "Error", test_transaction)
   }
 
   await ifs_connection.close();

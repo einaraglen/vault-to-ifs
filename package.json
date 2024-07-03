@@ -1,9 +1,9 @@
 {
   "name": "vault-to-ifs",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "index.js",
   "scripts": {
-    "build": "npx tsc",
+    "build": "npx tsc --project tsconfig.prod.json",
     "start": "node --experimental-specifier-resolution=node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "test": "jest"
@@ -25,6 +25,7 @@
     "dotenv": "^16.4.5",
     "msnodesqlv8": "^4.2.1",
     "mssql": "^11.0.0",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
   }
 }

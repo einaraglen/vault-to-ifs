@@ -1,6 +1,8 @@
-import { Connection } from "../../providers/ifs/internal/Connection";
-import { IFSError } from "../../types/error";
-import { InMessage, get_bind_keys, get_bindings } from "../../utils";
+import { Connection } from "@providers/ifs/internal/Connection";
+import { PlSqlMultiResponse, PlSqlOneResponse } from "@providers/ifs/internal/PlSqlCommandTypes";
+import { MSSQLRow } from "@providers/mssql/types";
+import { IFSError } from "@utils/error";
+import { convert_to_part, get_bindings, get_bind_keys } from "@utils/tools";
 
 const plsql = `
 DECLARE
@@ -189,16 +191,22 @@ BEGIN
 END;
 `;
 
-export const create_engineering_part = async (client: Connection, message: InMessage) => {
-    const bind = get_bindings(message, get_bind_keys(plsql));
+export const create_engineering_part = async (client: Connection, row: MSSQLRow) => {
+  const message = convert_to_part(row);
 
-    const res = await client.PlSql(plsql, { ...bind, part_rev: "", created: "" });
+  let bind: any = null;
+  let res: PlSqlOneResponse | PlSqlMultiResponse | null = null;
 
-    throw new IFSError(res.errorText, message);
+  try {
+    bind = get_bindings(message, get_bind_keys(plsql));
+    res = await client.PlSql(plsql, { ...bind, part_rev: "", created: "" });
+  } catch (err) {
+    throw new IFSError((err as Error).message, "Create Engineering Part", row);
+  }
 
-    if (!res.ok) {
-        throw new IFSError(res.errorText, message);
-    }
-  
-    return res;
-  };
+  if (!res.ok) {
+    throw new IFSError(res.errorText, "Create Engineering Part", row);
+  }
+
+  return res;
+};

@@ -1,6 +1,8 @@
-import { Connection } from "../../providers/ifs/internal/Connection";
-import { IFSError } from "../../types/error";
-import { InMessage, get_bind_keys, get_bindings } from "../../utils";
+import { Connection } from "@providers/ifs/internal/Connection";
+import { PlSqlMultiResponse, PlSqlOneResponse } from "@providers/ifs/internal/PlSqlCommandTypes";
+import { MSSQLRow } from "@providers/mssql/types";
+import { IFSError } from "@utils/error";
+import { get_bindings, get_bind_keys, convert_to_part } from "@utils/tools";
 
 const plsql = `
 DECLARE
@@ -47,13 +49,21 @@ BEGIN
 END;
 `;
 
-export const change_structure_state = async (client: Connection, message: InMessage) => {
-  const bind = get_bindings(message, get_bind_keys(plsql));
+export const change_structure_state = async (client: Connection, row: MSSQLRow) => {
+  const message = convert_to_part(row);
+  
+  let bind: any = null;
+  let res: PlSqlOneResponse | PlSqlMultiResponse | null = null;
 
-  const res = await client.PlSql(plsql, { ...bind, temp: "" });
+  try {
+    bind = get_bindings(message, get_bind_keys(plsql));
+    res = await client.PlSql(plsql, { ...bind, temp: "" });
+  } catch (err) {
+    throw new IFSError((err as Error).message, "Change Structure State", row)
+  }
 
   if (!res.ok) {
-    throw new IFSError(res.errorText, message);
+    throw new IFSError(res.errorText, "Change Structure State", row);
   }
 
   return res;
