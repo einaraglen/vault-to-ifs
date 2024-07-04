@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
+    "jsx": "react",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -14,5 +15,5 @@
       "@utils/*": ["src/utils/*"]
     },
   },
-  "include": ["src"],
+  "include": ["src", "emails/Error.tsx"],
 }

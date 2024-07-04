@@ -10,11 +10,11 @@ export class IFSError extends Error {
 }
 
 export class CommitError extends Error {
-  public stage: string | null = null;
-  constructor(message: string, stage: string) {
+  public func: string | null = null;
+  constructor(message: string, func: string) {
     super(message);
     this.name = "CommitError";
-    this.stage = stage;
+    this.func = func;
   }
 }
 
@@ -22,6 +22,7 @@ export class MSSQLError extends Error {
     public func: any = null;
     constructor(message: string, func: string) {
         super(message);
+        this.name = "MSSQLError";
         this.func = func;
     }
 }
@@ -30,6 +31,7 @@ export class TimeoutError extends Error {
   public time: number | null = null;
     constructor(message: string, time: number) {
         super(message);
+        this.name = "TimeoutError";
         this.time = time;
     }
 }

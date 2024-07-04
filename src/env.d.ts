@@ -11,6 +11,10 @@ declare namespace NodeJS {
     MSSQL_USERNAME: string;
     MSSQL_PASSWORD: string;
     MSSQL_DATABASE: string;
+
+    SMTP_HOST: string
+    SMTP_USER: string
+    SMTP_PASSWORD: string
   }
 
   interface IConnection {}
