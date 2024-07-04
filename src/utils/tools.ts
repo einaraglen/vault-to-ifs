@@ -2,6 +2,7 @@ import { Connection } from "@providers/ifs/internal/Connection";
 import { PlSqlMultiResponse, PlSqlOneResponse } from "@providers/ifs/internal/PlSqlCommandTypes";
 import { MSSQLRow } from "@providers/mssql/types";
 import { IFSError, MSSQLError, TimeoutError } from "./error";
+import { Providers } from "./providers";
 
 export type InMessage = {
   c01?: string | null;

@@ -1,4 +1,6 @@
-import nodemailer from "nodemailer";
+import { render } from "@react-email/components";
+import ErrorEmail from "emails/Error";
+import nodemailer, { Transporter } from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 const config: SMTPTransport.Options = {
@@ -14,6 +16,30 @@ const config: SMTPTransport.Options = {
   },
 };
 
-export const get_nodemailer = () => {
-  return nodemailer.createTransport(config);
-};
+export class MailerConnection {
+  private client: Transporter<SMTPTransport.SentMessageInfo>;
+  constructor() {
+    this.client = nodemailer.createTransport(config);
+  }
+
+  public instance() {
+    return this;
+  }
+
+  public send_error_notification(error: any, transaction: string) {
+    this.client.sendMail(this.error_message(render(ErrorEmail({ error, transaction }))));
+  }
+
+  public close() {
+    this.client.close();
+  }
+
+  private error_message(html: string) {
+    return {
+      from: "vault.import@seaonicsas.onmicrosoft.com",
+      to: "einar.aglen@seaonics.com",
+      subject: "Failed Import",
+      html: html,
+    };
+  }
+}

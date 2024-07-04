@@ -246,8 +246,6 @@ export class Connection implements ConnectionInterface {
         const newConnection = this.Clone();
         newConnection._autoCommit = false;
         return newConnection;
-        // plSql.response = { ok: true, errorText: "", partialResult: false, bindings: {}, result: [], request: plSql as PlSqlOneCommand, connection: newConnection };
-        // return plSql.response;
     }
 
     private async _CommitRollback(procName: string): Promise<PlSqlOneResponse> {
