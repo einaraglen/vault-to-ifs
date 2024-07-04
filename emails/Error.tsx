@@ -46,14 +46,14 @@ const test_json = {
 };
 
 const test_transaction = "369e2024-9459-4b3d-904b-cb83c468b8d3";
-const test_ifs_error = new IFSError("The part number must be entered in upper-case.", "Create Catalog Part", test_json)
-const test_mssql_error = new MSSQLError("Could not find root component", "Get Root Component")
-const test_commit_error = new CommitError("Failed to Commit", "Parts")
-const test_error = new Error("Something is very wrong here!")
+const test_ifs_error = new IFSError("The part number must be entered in upper-case.", "Create Catalog Part", test_json);
+const test_mssql_error = new MSSQLError("Could not find root component", "Get Root Component");
+const test_commit_error = new CommitError("Failed to Commit", "Parts");
+const test_error = new Error("Something is very wrong here!");
 
 interface ErrorMailProps {
-  error: IFSError | MSSQLError | CommitError | Error
-  transaction: string
+  error: IFSError | MSSQLError | CommitError | Error;
+  transaction: string;
 }
 
 export const ErrorEmail = ({ error = test_ifs_error, transaction = test_transaction }: ErrorMailProps) => {
@@ -66,37 +66,40 @@ export const ErrorEmail = ({ error = test_ifs_error, transaction = test_transact
             <Heading as="h2">Import Failed</Heading>
             <Hr />
             <Section className="mb-5 mt-3">
-            <Row>
-              <Column className="w-[150px]">Error</Column>
-              <Column>
-                {error.name}
-              </Column>
-            </Row>
-            {(error as any).func != null && <Row>
-              <Column className="w-[150px]">Function</Column>
-              <Column>
-                {(error as any).func}
-              </Column>
-            </Row>}
-            <Row>
-              <Column className="w-[150px]">Message</Column>
-              <Column>
-                {error.message}
-              </Column>
-            </Row>
-            <Row>
-              <Column className="w-[150px]">
-              Transaction</Column>
-              <Column>
-                {transaction}
-              </Column>
-            </Row>
+              <Row>
+                <Column className="w-[150px]">Error</Column>
+                <Column>{error.name}</Column>
+              </Row>
+              {(error as any).func != null && (
+                <Row>
+                  <Column className="w-[150px]">Function</Column>
+                  <Column>{(error as any).func}</Column>
+                </Row>
+              )}
+              <Row>
+                <Column className="w-[150px]">Message</Column>
+                <Column>{error.message}</Column>
+              </Row>
+              <Row>
+                <Column className="w-[150px]">Transaction</Column>
+                <Column>{transaction}</Column>
+              </Row>
             </Section>
             <Hr />
-            {(error as any).row != null && <Text>Following <strong>Line</strong> Failed</Text>}
-            {(error as any).row != null && <Section className="max-w-[700px]">
-            <CodeBlock code={JSON.stringify((error as IFSError).row, null, 4)} theme={theme} language="javascript" />
-            </Section>}
+
+            {(error as any).row != null && (
+              <Text>
+                Following <strong>Line</strong> Failed
+              </Text>
+            )}
+            {(error as any).row != null && (
+              <Section>
+                <CodeBlock code={JSON.stringify((error as IFSError).row, null, 4)} theme={theme} language="javascript" />
+              </Section>
+            )}
+            <Section>
+              <CodeBlock code={error.stack as any} theme={theme} language="log" />
+            </Section>
             <Text>If this mail does not seem necessary for you, contact the mail administrator to be removed from the list.</Text>
           </Section>
         </Body>

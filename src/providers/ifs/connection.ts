@@ -8,11 +8,19 @@ export type IFSConfig = {
   os_user: string;
 };
 
+const config: IFSConfig = {
+  server: process.env.IFS_HOST,
+  user: process.env.IFS_USERNAME,
+  password: process.env.IFS_PASSWORD,
+  version: process.env.IFS_VERSION,
+  os_user: process.env.IFS_OS_USER,
+};
+
 export class IFSConnection {
   private options: IFSConfig | null = null;
   private client: Connection | null = null;
 
-  constructor(config: IFSConfig) {
+  constructor() {
     this.options = config;
   }
 

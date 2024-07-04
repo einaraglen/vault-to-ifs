@@ -44,7 +44,7 @@ export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => 
       } else {
         process.stdout.write(chalk.blueBright(` ${part.Revision}`));
       }
-  
+
       await create_inventory_part(tx, part);
       await create_purchase_part(tx, part);
       await create_sales_part(tx, part);

@@ -5,9 +5,9 @@ import { create_engineering_part } from "@procedures/parts/create_engineering_pa
 import { create_inventory_part } from "@procedures/parts/create_inventory_part";
 import { create_purchase_part } from "@procedures/parts/create_purchase_part";
 import { create_sales_part } from "@procedures/parts/create_sales_part";
-import { IFSConfig, IFSConnection } from "@providers/ifs/connection";
+import { IFSConnection } from "@providers/ifs/connection";
 import { Connection } from "@providers/ifs/internal/Connection";
-import { MSSQLConfig, MSSQLConnection } from "@providers/mssql/connection";
+import { MSSQLConnection } from "@providers/mssql/connection";
 import { MSSQLRow } from "@providers/mssql/types";
 import { ConnectionPool } from "mssql";
 import { get_new_revision } from "./check_functions";
@@ -68,27 +68,11 @@ describe("Random Test", () => {
 beforeAll(async () => {
   dotenv.config();
 
-  const mssql_config: MSSQLConfig = {
-    domain: process.env.MSSQL_DOMAIN,
-    user: process.env.MSSQL_USERNAME,
-    password: process.env.MSSQL_PASSWORD,
-    server: process.env.MSSQL_HOST,
-    database: process.env.MSSQL_DATABASE,
-  };
-
-  const ifs_config: IFSConfig = {
-    server: process.env.IFS_HOST,
-    user: process.env.IFS_USERNAME,
-    password: process.env.IFS_PASSWORD,
-    version: process.env.IFS_VERSION,
-    os_user: process.env.IFS_OS_USER,
-  };
-
-  const ifs_connection = new IFSConnection(ifs_config);
+  const ifs_connection = new IFSConnection();
   ifs = await ifs_connection.instance();
   tx = await ifs.BeginTransaction();
 
-  const mssql_connection = new MSSQLConnection(mssql_config);
+  const mssql_connection = new MSSQLConnection();
   mssql = await mssql_connection.instance();
 });
 

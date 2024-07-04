@@ -1,29 +1,13 @@
 import { cleanup_unused_revisions } from "@procedures/handlers/cleanup";
 import { extract_transaction } from "@procedures/handlers/extract";
 import { insert_unique_parts, insert_structure_chain, set_structure_state } from "@procedures/handlers/insert";
-import { IFSConfig, IFSConnection } from "@providers/ifs/connection";
-import { MSSQLConfig, MSSQLConnection } from "@providers/mssql/connection";
+import { IFSConnection } from "@providers/ifs/connection";
+import { MSSQLConnection } from "@providers/mssql/connection";
 import { get_nodemailer } from "@providers/smtp/client";
 import { render } from "@react-email/components";
 import { CommitError, IFSError, MSSQLError } from "@utils/error";
 import chalk from "chalk";
 import ErrorEmail from "emails/Error";
-
-const ifs_config: IFSConfig = {
-  server: process.env.IFS_HOST,
-  user: process.env.IFS_USERNAME,
-  password: process.env.IFS_PASSWORD,
-  version: process.env.IFS_VERSION,
-  os_user: process.env.IFS_OS_USER,
-};
-
-const mssql_config: MSSQLConfig = {
-  domain: process.env.MSSQL_DOMAIN,
-  user: process.env.MSSQL_USERNAME,
-  password: process.env.MSSQL_PASSWORD,
-  server: process.env.MSSQL_HOST,
-  database: process.env.MSSQL_DATABASE,
-};
 
 const message = (html: string) => ({
   from: "vault.import@seaonicsas.onmicrosoft.com",
@@ -34,19 +18,19 @@ const message = (html: string) => ({
 
 export const run = async () => {
   console.log("##", chalk.blueBright("START"), "##");
-  const mssql_connection = new MSSQLConnection(mssql_config);
+  const mssql_connection = new MSSQLConnection();
   const mssql = await mssql_connection.instance();
 
-  const ifs_connection = new IFSConnection(ifs_config);
+  const ifs_connection = new IFSConnection();
   const ifs = await ifs_connection.instance();
   const mailer = get_nodemailer();
 
-  let tx = await ifs.BeginTransaction();
+  const tx = await ifs.BeginTransaction();
   let revisions: Record<string, string> = {};
 
   // known bad export: "369e2024-9459-4b3d-904b-cb83c468b8d3"
 
-  const test_transaction = "369e2024-9459-4b3d-904b-cb83c468b8d3"; //"12946823-811d-46fb-a7ef-7cde948e7fe6";
+  const test_transaction = "12946823-811d-46fb-a7ef-7cde948e7fe6";
 
   try {
     const { root, unique_parts, struct_chain } = await extract_transaction(mssql, test_transaction);
@@ -89,13 +73,13 @@ export const run = async () => {
     }
 
     await cleanup_unused_revisions(ifs, revisions);
-    //await set_transaction_status(mssql, "Error", test_transaction)
+    //await set_transaction_status(mssql, "Error", test_transaction).catch((err) => console.error(err))
     await mailer.sendMail(message(render(ErrorEmail({ error: err as any, transaction: test_transaction }))));
   }
 
   await ifs_connection.close();
   await mssql_connection.close();
   mailer.close()
-  
+
   console.log("##", chalk.blueBright("END"), "##");
 };

@@ -8,11 +8,19 @@ export type MSSQLConfig = {
   database: string;
 };
 
+const config: MSSQLConfig = {
+  domain: process.env.MSSQL_DOMAIN,
+  user: process.env.MSSQL_USERNAME,
+  password: process.env.MSSQL_PASSWORD,
+  server: process.env.MSSQL_HOST,
+  database: process.env.MSSQL_DATABASE,
+};
+
 export class MSSQLConnection {
   private options: sql.config | null = null;
   private client: sql.ConnectionPool | null = null;
 
-  constructor(config: MSSQLConfig) {
+  constructor() {
     this.options = {
         server: config.server,
         options: {
