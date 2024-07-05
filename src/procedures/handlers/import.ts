@@ -24,6 +24,7 @@ export class Import {
   }
 
   public async start() {
+    console.log(chalk.greenBright("Importing"), chalk.blueBright(this.transaction))
     try {
       const { unique_parts, struct_chain } = await extract_transaction(Providers.MSSQL, this.transaction);
 
@@ -35,15 +36,16 @@ export class Import {
 
       await insert_structure_chain(this.tx, struct_chain, new_revisions);
 
-    //   await set_structure_state(this.tx, struct_chain, new_revisions);
+      await set_structure_state(this.tx, struct_chain, new_revisions);
 
       await this.try_commit(Stage.Structs);
 
       await this.set_accepted();
+      console.log(chalk.greenBright("Completed"), chalk.blueBright(this.transaction))
     } catch (err) {
       await this.try_rollback();
       await this.remove_revisions();
-    //   await this.set_error();
+      await this.set_error();
       await this.send_notification(err)
 
       this.print_error_message(err);

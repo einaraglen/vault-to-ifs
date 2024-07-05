@@ -42,8 +42,7 @@ export class Polling {
 
     while (!this.queue.is_empty()) {
       const transaction = this.queue.dequeue_transaction();
-      console.log(chalk.greenBright("Importing"), chalk.blueBright(transaction))
-      // await new Import(transaction).start();
+      await new Import(transaction).start();
     }
 
     this.lock = false;

@@ -16,5 +16,3 @@ export const run = async () => {
     const polling = new Polling();
     polling.start();
 };
-
-process.on("exit", () => Providers.close())
