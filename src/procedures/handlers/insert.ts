@@ -18,7 +18,7 @@ export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => 
 
   for (const part of parts) {
     try {
-      process.stdout.write(`Insert ${part.ItemNumber}`);
+      // process.stdout.write(`Insert ${part.ItemNumber}`);
 
       const cat = await create_catalog_part(tx, part);
       const { unit } = cat.bindings as any;
@@ -34,7 +34,7 @@ export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => 
       const { part_rev, created } = eng.bindings as any;
   
       if (part_rev && part.Revision && part_rev != part.Revision) {
-        process.stdout.write(chalk.greenBright(` ${part_rev}`));
+        // process.stdout.write(chalk.greenBright(` ${part_rev}`));
   
         new_revisions[part.ItemNumber!] = part_rev;
   
@@ -42,18 +42,18 @@ export const insert_unique_parts = async (tx: Connection, parts: MSSQLRow[]) => 
           created_revisions[part.ItemNumber!] = part_rev;
         }
       } else {
-        process.stdout.write(chalk.blueBright(` ${part.Revision}`));
+        // process.stdout.write(chalk.blueBright(` ${part.Revision}`));
       }
 
       await create_inventory_part(tx, part);
       await create_purchase_part(tx, part);
       await create_sales_part(tx, part);
   
-      process.stdout.write(`\n`); // end line print when success
+      // process.stdout.write(`\n`); // end line print when success
   
       await sleep(100);
     } catch (err) {
-      process.stdout.write(`\n`); // end line print when error
+      // process.stdout.write(`\n`); // end line print when error
       throw err
     }
   }
@@ -72,7 +72,7 @@ export const insert_structure_chain = async (tx: Connection, chain: StructureCha
 
     const parent_new_rev = revisions[parent_no];
 
-    console.log("Part", parent_no, parent_new_rev || parent_rev);
+    // console.log("Part", parent_no, parent_new_rev || parent_rev);
 
     for (const child of children) {
       const child_new_rev = revisions[child.ItemNumber!];
@@ -85,7 +85,7 @@ export const insert_structure_chain = async (tx: Connection, chain: StructureCha
         child.ParentItemRevision = parent_new_rev;
       }
 
-      console.log(`\tSub`, child.ItemNumber, child.Revision);
+      // console.log(`\tSub`, child.ItemNumber, child.Revision);
       await create_rev_structure(tx, child);
 
       await sleep(100);
@@ -99,7 +99,7 @@ export const set_structure_state = async (tx: Connection, chain: StructureChain,
 
     const new_rev = revisions[no];
     
-    console.log(`Status`, no, new_rev || rev, state);
+    // console.log(`Status`, no, new_rev || rev, state);
 
     await change_structure_state(tx, { ItemNumber: no, Revision: new_rev || rev, LifecycleState: state } as any);
 

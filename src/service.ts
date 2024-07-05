@@ -1,24 +1,20 @@
 import { IFSConnection } from "@providers/ifs/connection";
 import { MSSQLConnection } from "@providers/mssql/connection";
 import { MailerConnection } from "@providers/smtp/client";
-import { Pooling } from "@utils/pooling";
+import { Server } from "@server/server";
 import { Providers } from "@utils/providers";
-import { StateMachine } from "@utils/state_machine";
+import { Pooling } from "@utils/pooling";
 
 export const run = async () => {
-  let state: StateMachine;
-  let pooling: Pooling;
+    await Providers.register(new IFSConnection())
+    await Providers.register(new MSSQLConnection());
+    await Providers.register(new MailerConnection())
 
-  try {
-    state = new StateMachine();
-    pooling = new Pooling(state);
-  
-    Providers.register(new IFSConnection())
-    Providers.register(new MSSQLConnection())
-    Providers.register(new MailerConnection())
-  
+    const server = new Server();
+    server.start();
+
+    const pooling = new Pooling();
     pooling.start();
-  } catch (err) {
-    await Providers.close();
-  }
 };
+
+process.on("exit", () => Providers.close())

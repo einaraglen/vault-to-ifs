@@ -15,6 +15,8 @@ declare namespace NodeJS {
     SMTP_HOST: string
     SMTP_USER: string
     SMTP_PASSWORD: string
+    
+    PORT: string
   }
 
   interface IConnection {}

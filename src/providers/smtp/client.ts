@@ -27,7 +27,7 @@ export class MailerConnection {
   }
 
   public send_error_notification(error: any, transaction: string) {
-    this.client.sendMail(this.error_message(render(ErrorEmail({ error, transaction }))));
+    return this.client.sendMail(this.error_message(render(ErrorEmail({ error, transaction }))));
   }
 
   public close() {

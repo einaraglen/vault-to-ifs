@@ -14,7 +14,7 @@ export const set_transaction_status = async (client: ConnectionPool, status: "Ac
   try {
     res = await client.query(sql(status, transaction));
   } catch (err) {
-    throw new MSSQLError((err as Error).message, "Get Root Part");
+    throw new MSSQLError((err as Error).message, "Set Transaction Status");
   }
 
   return res.recordset;

@@ -242,7 +242,7 @@ export class Connection implements ConnectionInterface {
         }
     }
 
-    public async BeginTransaction(): Promise<Connection> {
+    public BeginTransaction(): Connection {
         const newConnection = this.Clone();
         newConnection._autoCommit = false;
         return newConnection;

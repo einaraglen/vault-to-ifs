@@ -12,7 +12,8 @@
     "paths": {
       "@providers/*": ["src/providers/*"],
       "@procedures/*": ["src/procedures/*"],
-      "@utils/*": ["src/utils/*"]
+      "@utils/*": ["src/utils/*"],
+      "@server/*": ["src/server/*"]
     },
   },
   "include": ["src", "emails/Error.tsx"],

@@ -6,7 +6,7 @@ export const cleanup_unused_revisions = async (connection: Connection, revisions
   const tx = await connection.BeginTransaction();
   try {
     for (const [part_no, part_rev] of Object.entries(revisions)) {
-      console.log("Removing Rev", part_no, part_rev);
+      // console.log("Removing Rev", part_no, part_rev);
       await remove_revision(tx, { ItemNumber: part_no, Revision: part_rev } as any);
       await sleep(300);
     }

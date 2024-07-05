@@ -1,33 +1,59 @@
-import cron from "node-cron";
-import { StateMachine } from "./state_machine";
 import { get_latest_transactions } from "@procedures/vault/get_latest_transactions";
+import cron from "node-cron";
 import { Providers } from "./providers";
-import { ConnectionPool } from "mssql";
+import { Queue } from "./queue";
+import { Import } from "@procedures/handlers/import";
+import chalk from "chalk";
+
+const TRANSACTION_LIMIT = 10;
+const EVERY_5_SECONDS = "*/5 * * * * *";
 
 export class Pooling {
-  private state: StateMachine;
-  private connection: ConnectionPool | null = null;
+  private lock: boolean;
+  private queue: Queue;
 
-  constructor(state_: StateMachine) {
-    this.state = state_;
+  constructor() {
+    this.lock = false;
+    this.queue = new Queue();
   }
 
-  public async start() {
-    this.connection = await Providers.get_mssql();
-    cron.schedule("*/5 * * * * *", this.get_latest);
+  public start() {
+    cron.schedule(EVERY_5_SECONDS, () => {
+      this.fetch_transactions();
+    });
   }
 
-  public async get_latest() {
-    try {
-      if (this.state.is_busy()) {
-        return;
-      }
+  private async fetch_transactions() {
+    if (this.lock) {
+      return;
+    }
 
-      const res = await get_latest_transactions(this.connection!, 10);
-      console.log("Found", res.length, "Transactions")
-      res.forEach((row) => this.state.enqueue_transaction(row.TransactionId!))
-    } catch (err) {
-      console.error(err);
+    this.lock = true;
+    await this.get_transactions();
+    this.lock = false;
+
+    if (!this.queue.is_empty()) {
+      this.run_jobs();
+    }
+  }
+
+  private async run_jobs() {
+    this.lock = true;
+
+    while (!this.queue.is_empty()) {
+      const transaction = this.queue.dequeue_transaction();
+      console.log( chalk.greenBright("Running Transaction"), chalk.blueBright(transaction))
+      await new Import(transaction).start();
+    }
+
+    this.lock = false;
+  }
+
+  private async get_transactions() {
+    const transactions = await get_latest_transactions(Providers.MSSQL(), TRANSACTION_LIMIT).catch(() => null);
+
+    if (transactions != null) {
+      this.queue.enqueue_transactions(transactions);
     }
   }
 }

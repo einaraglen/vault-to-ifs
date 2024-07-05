@@ -8,19 +8,22 @@ const sql = (limit: number) => `
     WHERE [ParentItemNumber] IS NULL
         AND [ItemNumber] IS NOT NULL
         AND [ReleaseDate] != ''
-        AND [ChildCount] != '0'
+        --AND [ChildCount] != '0'
         AND [Status] = 'Posted'
+        AND [TransactionId] IS NOT NULL
     ORDER BY [ReleaseDate] ASC;
 `;
 
-export const get_latest_transactions = async (client: ConnectionPool, limit: number): Promise<MSSQLRow[]> => {
+export const get_latest_transactions = async (client: ConnectionPool, limit: number): Promise<string[]> => {
   let res: IResult<any>;
+
+  await new Promise((r) => setTimeout(r, 6000))
 
   try {
     res = await client.query(sql(limit));
   } catch (err) {
-    throw new MSSQLError((err as Error).message, "Get Root Part");
+    throw new MSSQLError((err as Error).message, "Get Latest Transactions");
   }
 
-  return res.recordset;
+  return (res.recordset as MSSQLRow[]).map((row) => row.TransactionId!);
 };

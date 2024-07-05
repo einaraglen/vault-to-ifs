@@ -1,17 +1,19 @@
 import { IFSConnection } from "@providers/ifs/connection";
+import { Connection } from "@providers/ifs/internal/Connection";
 import { MSSQLConnection } from "@providers/mssql/connection";
 import { MailerConnection } from "@providers/smtp/client";
+import { ConnectionPool } from "mssql";
 
 export class Providers {
-  private static ifs: IFSConnection;
-  private static mssql: MSSQLConnection;
+  private static ifs: Connection;
+  private static mssql: ConnectionPool;
   private static mailer: MailerConnection;
 
-  public static register(connection: IFSConnection | MSSQLConnection | MailerConnection) {
+  public static async register(connection: IFSConnection | MSSQLConnection | MailerConnection) {
     if (connection instanceof IFSConnection) {
-      this.ifs = connection;
+      this.ifs = await connection.instance();
     } else if (connection instanceof MSSQLConnection) {
-      this.mssql = connection;
+      this.mssql = await connection.instance();
     } else if (connection instanceof MailerConnection) {
       this.mailer = connection;
     } else {
@@ -19,34 +21,34 @@ export class Providers {
     }
   };
 
-  public static get_ifs() {
+  public static IFS() {
     if (this.ifs == null) {
         throw new Error("Cannot get IFSConnection since provider is null")
     }
-    return this.ifs.instance();
+    return this.ifs;
   };
 
-  public static get_mssql() {
+  public static MSSQL() {
     if (this.mssql == null) {
         throw new Error("Cannot get MSSQLConnection since provider is null")
     }
-    return this.mssql.instance();
+    return this.mssql;
   };
 
-  public static get_mailer() {
+  public static Mailer() {
     if (this.mailer == null) {
         throw new Error("Cannot get MailerConnection since provider is null")
     }
     return this.mailer.instance();
   };
 
-  public static async close() {
+  public static close() {
     if (this.ifs != null) {
-        await this.ifs.close();
+        this.ifs.EndSession();
     }
 
     if (this.mssql != null) {
-        await this.mssql.close();
+        this.mssql.close();
     }
 
     if (this.mailer != null) {
