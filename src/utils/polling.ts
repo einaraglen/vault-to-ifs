@@ -8,7 +8,7 @@ import chalk from "chalk";
 const TRANSACTION_LIMIT = 10;
 const EVERY_5_SECONDS = "*/5 * * * * *";
 
-export class Pooling {
+export class Polling {
   private lock: boolean;
   private queue: Queue;
 
@@ -42,15 +42,15 @@ export class Pooling {
 
     while (!this.queue.is_empty()) {
       const transaction = this.queue.dequeue_transaction();
-      console.log( chalk.greenBright("Running Transaction"), chalk.blueBright(transaction))
-      await new Import(transaction).start();
+      console.log(chalk.greenBright("Importing"), chalk.blueBright(transaction))
+      // await new Import(transaction).start();
     }
 
     this.lock = false;
   }
 
   private async get_transactions() {
-    const transactions = await get_latest_transactions(Providers.MSSQL(), TRANSACTION_LIMIT).catch(() => null);
+    const transactions = await get_latest_transactions(Providers.MSSQL, TRANSACTION_LIMIT).catch(() => null);
 
     if (transactions != null) {
       this.queue.enqueue_transactions(transactions);

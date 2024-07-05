@@ -3,7 +3,7 @@ import { MSSQLConnection } from "@providers/mssql/connection";
 import { MailerConnection } from "@providers/smtp/client";
 import { Server } from "@server/server";
 import { Providers } from "@utils/providers";
-import { Pooling } from "@utils/pooling";
+import { Polling } from "@utils/polling";
 
 export const run = async () => {
     await Providers.register(new IFSConnection())
@@ -13,8 +13,8 @@ export const run = async () => {
     const server = new Server();
     server.start();
 
-    const pooling = new Pooling();
-    pooling.start();
+    const polling = new Polling();
+    polling.start();
 };
 
 process.on("exit", () => Providers.close())

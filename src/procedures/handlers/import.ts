@@ -18,14 +18,14 @@ export class Import {
   private revisions: Record<string, string>;
 
   constructor(transaction_: string) {
-    this.tx = Providers.IFS().BeginTransaction();
+    this.tx = Providers.IFS.BeginTransaction();
     this.transaction = transaction_;
     this.revisions = {};
   }
 
   public async start() {
     try {
-      const { unique_parts, struct_chain } = await extract_transaction(Providers.MSSQL(), this.transaction);
+      const { unique_parts, struct_chain } = await extract_transaction(Providers.MSSQL, this.transaction);
 
       const { new_revisions, created_revisions } = await insert_unique_parts(this.tx, unique_parts);
 
@@ -65,7 +65,7 @@ export class Import {
   }
 
   private remove_revisions() {
-    return cleanup_unused_revisions(Providers.IFS(), this.revisions);
+    return cleanup_unused_revisions(Providers.IFS, this.revisions);
   }
 
   private async try_rollback() {
@@ -96,12 +96,12 @@ export class Import {
   }
 
   private async set_accepted() {
-    await set_transaction_status(Providers.MSSQL(), "AcceptedBOM", this.transaction)
+    await set_transaction_status(Providers.MSSQL, "AcceptedBOM", this.transaction)
   }
 
   private async set_error() {
     try {
-        await set_transaction_status(Providers.MSSQL(), "Error", this.transaction)
+        await set_transaction_status(Providers.MSSQL, "Error", this.transaction)
     } catch (err) {
         console.error("Failed to set Transaction Error", err)
     }
@@ -109,7 +109,7 @@ export class Import {
 
   private async send_notification(err: any) {
     try {
-        await Providers.Mailer().send_error_notification(err, this.transaction)
+        await Providers.Mailer.send_error_notification(err, this.transaction)
     } catch(err) {
         console.error("Failed to send Error Notification", err)
     }

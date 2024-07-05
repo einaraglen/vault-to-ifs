@@ -21,21 +21,21 @@ export class Providers {
     }
   };
 
-  public static IFS() {
+  public static get IFS() {
     if (this.ifs == null) {
         throw new Error("Cannot get IFSConnection since provider is null")
     }
     return this.ifs;
   };
 
-  public static MSSQL() {
+  public static get MSSQL() {
     if (this.mssql == null) {
         throw new Error("Cannot get MSSQLConnection since provider is null")
     }
     return this.mssql;
   };
 
-  public static Mailer() {
+  public static get Mailer() {
     if (this.mailer == null) {
         throw new Error("Cannot get MailerConnection since provider is null")
     }
