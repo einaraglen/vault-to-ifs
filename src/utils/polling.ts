@@ -3,7 +3,6 @@ import cron from "node-cron";
 import { Providers } from "./providers";
 import { Queue } from "./queue";
 import { Import } from "@procedures/handlers/import";
-import chalk from "chalk";
 
 const TRANSACTION_LIMIT = 10;
 const EVERY_5_SECONDS = "*/5 * * * * *";
@@ -28,9 +27,7 @@ export class Polling {
       return;
     }
 
-    this.lock = true;
     await this.get_transactions();
-    this.lock = false;
 
     if (!this.queue.is_empty()) {
       this.run_jobs();
@@ -42,7 +39,8 @@ export class Polling {
 
     while (!this.queue.is_empty()) {
       const transaction = this.queue.dequeue_transaction();
-      await new Import(transaction).start();
+      const job = new Import(transaction) 
+      await job.start();
     }
 
     this.lock = false;

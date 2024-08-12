@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { add_manufacturer } from "@procedures/parts/add_manufacturer";
 import { add_technical_spesification } from "@procedures/parts/add_technical_spesification";
 import { create_catalog_part } from "@procedures/parts/create_catalog_part";
@@ -11,7 +14,6 @@ import { MSSQLConnection } from "@providers/mssql/connection";
 import { MSSQLRow } from "@providers/mssql/types";
 import { ConnectionPool } from "mssql";
 import { get_new_revision } from "./check_functions";
-import dotenv from "dotenv";
 
 let mssql: ConnectionPool;
 let ifs: Connection;
@@ -63,11 +65,13 @@ describe("Random Test", () => {
   it("should equal A100", async () => {
     await expect(get_new_revision(tx, "A99")).resolves.toEqual("A100");
   });
+
+  it("should equal A01", async () => {
+    await expect(get_new_revision(tx, "AB")).resolves.toEqual("A01");
+  });
 });
 
 beforeAll(async () => {
-  dotenv.config();
-
   const ifs_connection = new IFSConnection();
   ifs = await ifs_connection.instance();
   tx = await ifs.BeginTransaction();

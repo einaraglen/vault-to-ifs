@@ -9,7 +9,7 @@ export class Providers {
   private static mssql: ConnectionPool;
   private static mailer: MailerConnection;
 
-  public static async register(connection: IFSConnection | MSSQLConnection | MailerConnection) {
+  public static async register(connection: IFSConnection | MSSQLConnection | MailerConnection): Promise<void> {
     if (connection instanceof IFSConnection) {
       this.ifs = await connection.instance();
     } else if (connection instanceof MSSQLConnection) {
