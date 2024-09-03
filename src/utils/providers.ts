@@ -1,19 +1,14 @@
-import { IFSConnection } from "@providers/ifs/connection";
-import { Connection } from "@providers/ifs/internal/Connection";
-import { MSSQLConnection } from "@providers/mssql/connection";
-import { MailerConnection } from "@providers/smtp/client";
-import { ConnectionPool } from "mssql";
+import { MailerConnection } from "../providers/smtp/client";
+import { IFSConnection } from "../providers/ifs/connection";
+import { Connection } from "../providers/ifs/internal/Connection";
 
 export class Providers {
   private static ifs: Connection;
-  private static mssql: ConnectionPool;
   private static mailer: MailerConnection;
 
-  public static async register(connection: IFSConnection | MSSQLConnection | MailerConnection): Promise<void> {
+  public static async register(connection: IFSConnection | MailerConnection): Promise<void> {
     if (connection instanceof IFSConnection) {
       this.ifs = await connection.instance();
-    } else if (connection instanceof MSSQLConnection) {
-      this.mssql = await connection.instance();
     } else if (connection instanceof MailerConnection) {
       this.mailer = connection;
     } else {
@@ -28,13 +23,6 @@ export class Providers {
     return this.ifs;
   };
 
-  public static get MSSQL() {
-    if (this.mssql == null) {
-        throw new Error("Cannot get MSSQLConnection since provider is null")
-    }
-    return this.mssql;
-  };
-
   public static get Mailer() {
     if (this.mailer == null) {
         throw new Error("Cannot get MailerConnection since provider is null")
@@ -45,10 +33,6 @@ export class Providers {
   public static close() {
     if (this.ifs != null) {
         this.ifs.EndSession();
-    }
-
-    if (this.mssql != null) {
-        this.mssql.close();
     }
 
     if (this.mailer != null) {

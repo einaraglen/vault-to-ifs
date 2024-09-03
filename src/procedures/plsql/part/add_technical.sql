@@ -1,9 +1,3 @@
-import { Connection } from "../../providers/ifs/internal/Connection";
-import { PlSqlMultiResponse, PlSqlOneResponse } from "../../providers/ifs/internal/PlSqlCommandTypes";
-import { IFSError } from "../../utils/error";
-import { convert_to_part, ExportPart, get_bind_keys, get_bindings } from "../../utils/tools";
-
-const plsql = `
 DECLARE
 
     CURSOR get_tech_spec_attr(technical_spec_no_ IN NUMBER) IS
@@ -96,24 +90,3 @@ BEGIN
         END IF;
     END LOOP;
 END;
-`;
-
-export const add_technical_spesification = async (client: Connection, row: ExportPart) => {
-  const message = convert_to_part(row);
-  
-  let bind: any = null;
-  let res: PlSqlOneResponse | PlSqlMultiResponse | null = null;
-
-  try {
-    bind = get_bindings(message, get_bind_keys(plsql));
-    res = await client.PlSql(plsql, { ...bind, temp: "" });
-  } catch (err) {
-    throw new IFSError((err as Error).message, "Add Technical Spesification", row)
-  }
-
-  if (!res.ok) {
-    throw new IFSError(res.errorText, "Add Technical Spesification", row);
-  }
-
-  return res;
-};

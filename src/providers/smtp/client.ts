@@ -1,7 +1,7 @@
 import { render } from "@react-email/components";
-import ErrorEmail from "emails/Error";
 import nodemailer, { Transporter } from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
+import ErrorEmail from "../../../emails/Error";
 
 const config: SMTPTransport.Options = {
   host: process.env.SMTP_HOST,

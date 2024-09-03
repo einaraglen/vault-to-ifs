@@ -1,4 +1,4 @@
-import { Connection } from "@providers/ifs/internal/Connection";
+import { Connection } from "../providers/ifs/internal/Connection";
 
 const plsql = `
 DECLARE
@@ -43,7 +43,7 @@ END
 
 export const get_new_revision = async (client: Connection, rev: string) => {
     const res = await client.PlSql(plsql, { arg: rev, state: "" });
-  
+
     if (!res.ok) {
       throw Error(res.errorText);
     }

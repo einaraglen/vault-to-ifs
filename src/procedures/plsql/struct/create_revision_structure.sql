@@ -1,9 +1,3 @@
-import { Connection } from "../../providers/ifs/internal/Connection";
-import { PlSqlMultiResponse, PlSqlOneResponse } from "../../providers/ifs/internal/PlSqlCommandTypes";
-import { IFSError } from "../../utils/error";
-import { convert_to_struct, ExportPart, get_bind_keys, get_bindings } from "../../utils/tools";
-
-const plsql = `
 DECLARE
   info_               VARCHAR2(2000);
   attr_               VARCHAR2(2000);
@@ -173,24 +167,3 @@ BEGIN
 
     :temp := change_;
 END;
-`;
-
-export const create_rev_structure = async (client: Connection, row: ExportPart) => {
-  const message = convert_to_struct(row)
-  
-  let bind: any = null;
-  let res: PlSqlOneResponse | PlSqlMultiResponse | null = null;
-
-  try {
-    bind = get_bindings(message, get_bind_keys(plsql));
-    res = await client.PlSql(plsql, { ...bind, temp: "" });
-  } catch (err) {
-    throw new IFSError((err as Error).message, "Create Revision Structure", row)
-  }
-
-  if (!res.ok) {
-    throw new IFSError(res.errorText, "Create Revision Structure", row);
-  }
-
-  return res;
-};

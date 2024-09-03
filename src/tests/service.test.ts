@@ -1,51 +1,46 @@
 import dotenv from "dotenv";
+import { Connection } from "../providers/ifs/internal/Connection";
+import { create_catalog_part } from "../procedures/parts/create_catalog_part";
+import { add_technical_spesification } from "../procedures/parts/add_technical_spesification";
+import { add_manufacturer } from "../procedures/parts/add_manufacturer";
+import { create_engineering_part } from "../procedures/parts/create_engineering_part";
+import { create_inventory_part } from "../procedures/parts/create_inventory_part";
+import { create_purchase_part } from "../procedures/parts/create_purchase_part";
+import { create_sales_part } from "../procedures/parts/create_sales_part";
+import { get_new_revision } from "./check_functions";
+import { IFSConnection } from "../providers/ifs/connection";
 dotenv.config();
 
-import { add_manufacturer } from "@procedures/parts/add_manufacturer";
-import { add_technical_spesification } from "@procedures/parts/add_technical_spesification";
-import { create_catalog_part } from "@procedures/parts/create_catalog_part";
-import { create_engineering_part } from "@procedures/parts/create_engineering_part";
-import { create_inventory_part } from "@procedures/parts/create_inventory_part";
-import { create_purchase_part } from "@procedures/parts/create_purchase_part";
-import { create_sales_part } from "@procedures/parts/create_sales_part";
-import { IFSConnection } from "@providers/ifs/connection";
-import { Connection } from "@providers/ifs/internal/Connection";
-import { MSSQLConnection } from "@providers/mssql/connection";
-import { MSSQLRow } from "@providers/mssql/types";
-import { ConnectionPool } from "mssql";
-import { get_new_revision } from "./check_functions";
-
-let mssql: ConnectionPool;
 let ifs: Connection;
 let tx: Connection;
 
 describe("Create IFS Parts", () => {
   it("Catalog:\t\tshould not throw an error", async () => {
-    await expect(create_catalog_part(tx, sub_part)).resolves.not.toThrow();
+    await expect(create_catalog_part(tx, part)).resolves.not.toThrow();
   });
 
   it("Technical:\tshould not throw an error", async () => {
-    await expect(add_technical_spesification(tx, sub_part)).resolves.not.toThrow();
+    await expect(add_technical_spesification(tx, part)).resolves.not.toThrow();
   });
 
   it("Manufacturer:\tshould not throw an error", async () => {
-    await expect(add_manufacturer(tx, sub_part)).resolves.not.toThrow();
+    await expect(add_manufacturer(tx, part)).resolves.not.toThrow();
   });
 
   it("Engineering:\tshould not throw an error", async () => {
-    await expect(create_engineering_part(tx, sub_part)).resolves.not.toThrow();
+    await expect(create_engineering_part(tx, part)).resolves.not.toThrow();
   });
 
   it("Inventory:\tshould not throw an error", async () => {
-    await expect(create_inventory_part(tx, sub_part)).resolves.not.toThrow();
+    await expect(create_inventory_part(tx, part)).resolves.not.toThrow();
   });
 
   it("Purchase:\t\tshould not throw an error", async () => {
-    await expect(create_purchase_part(tx, sub_part)).resolves.not.toThrow();
+    await expect(create_purchase_part(tx, part)).resolves.not.toThrow();
   });
 
   it("Sales:\t\tshould not throw an error", async () => {
-    await expect(create_sales_part(tx, sub_part)).resolves.not.toThrow();
+    await expect(create_sales_part(tx, part)).resolves.not.toThrow();
   });
 
   it("Commit:\t\tshould not throw an error", async () => {
@@ -75,51 +70,35 @@ beforeAll(async () => {
   const ifs_connection = new IFSConnection();
   ifs = await ifs_connection.instance();
   tx = await ifs.BeginTransaction();
-
-  const mssql_connection = new MSSQLConnection();
-  mssql = await mssql_connection.instance();
 });
 
 afterAll(async () => {
   await ifs.EndSession();
-  await mssql.close();
 });
 
-const sub_part: MSSQLRow = {
-  ItemNumber: "16107797",
-  Revision: "A",
-  Quantity: "4",
-  Pos: "6",
-  ParentItemNumber: "2102017",
-  ParentItemRevision: "B",
-  ChildCount: "0",
-  Category: "Engineering",
-  Title: "Lock plate Or Something",
-  Description: "Round Bar Ø125 L=12",
-  Units: "Each",
-  LifecycleState: false ? "Obsolete" : "Released",
-  Category_1: "",
-  Category_2: "",
-  Category_3: "",
-  Category_4: "",
-  InternalDescription: "",
-  Mass_g: "",
-  Material: "D36",
-  MaterialCertifikate: "3.1",
-  Project: "",
-  SerialNo: "",
-  SparePart: "",
-  Vendor: "Parker",
-  CriticalItem: "False",
-  LongLeadItem: "False",
-  SupplierPartNo: "PART03",
-  ReleaseDate: "2024-05-24 02:09:58Z",
-  Status: "Posted",
-  ErrorDescription: null,
-  ReleasedBy: "Dan Lazar",
-  LastUpdatedBy: "Techjob",
-  "State(Historical)": "Released",
-  InventorQuantity: "4",
-  NewRevision: null,
-  NewParentItemRevision: null,
+const part: any = {
+  partNumber: '2199686',
+  revision: 'A',
+  title: 'UHD Cursor S1',
+  units: 'Each',
+  author: 'techjob',
+  state: 'Released',
+  description: '',
+  category: 'Dimentional Sketch',
+  mass: '1551061.7631371282',
+  material: '',
+  materialCertificate: '',
+  serialNumber: '',
+  childCount: '1',
+  supplier: '',
+  supplierPartNumber: '',
+  supplierDescription: '',
+  isSpare: '',
+  isCritical: 'False',
+  isLongLead: 'False',
+  quantity: '',
+  position: '',
+  parentPartNumber: '',
+  parentRevision: '',
+  released: "2024-07-03 10:49:24Z"
 };

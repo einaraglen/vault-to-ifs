@@ -1,9 +1,3 @@
-import { Connection } from "../../providers/ifs/internal/Connection";
-import { PlSqlMultiResponse, PlSqlOneResponse } from "../../providers/ifs/internal/PlSqlCommandTypes";
-import { IFSError } from "../../utils/error";
-import { convert_to_part, ExportPart, get_bind_keys, get_bindings } from "../../utils/tools";
-
-const plsql = `
 DECLARE
     info_                      VARCHAR2(2000);
     attr_                      VARCHAR2(2000);
@@ -22,7 +16,7 @@ DECLARE
         SELECT COUNT(1) FROM &AO.PART_MANU_PART_NO WHERE part_no = part_ AND man_no_ = manufacturer_no AND man_part_no_ = manu_part_no;
 
     CURSOR get_manufacturer(vendor_ IN VARCHAR2) IS
-        SELECT manufacturer_id, name FROM &AO.MANUFACTURER_INFO WHERE (name LIKE '%' || vendor_ || '%');
+        SELECT manufacturer_id, name FROM &AO.MANUFACTURER_INFO WHERE (LOWER(name) LIKE '%' || LOWER(vendor_) || '%');
 
     FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
         prefixed_part_no_ VARCHAR2(100);
@@ -85,24 +79,3 @@ BEGIN
     -- QUERY FIX
     :temp := manufacturer_id_;
 END;
-`;
-
-export const add_manufacturer = async (client: Connection, row: ExportPart) => {
-  const message = convert_to_part(row);
-  
-  let bind: any = null;
-  let res: PlSqlOneResponse | PlSqlMultiResponse | null = null;
-
-  try {
-    bind = get_bindings(message, get_bind_keys(plsql));
-    res = await client.PlSql(plsql, { ...bind, temp: "" });
-  } catch (err) {
-    throw new IFSError((err as Error).message, "Add Manufacturer", row)
-  }
-
-  if (!res.ok) {
-    throw new IFSError(res.errorText, "Add Manufacturer", row);
-  }
-
-  return res;
-};

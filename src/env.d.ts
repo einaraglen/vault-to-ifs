@@ -6,17 +6,12 @@ declare namespace NodeJS {
     IFS_OS_USER: string;
     IFS_VERSION: string;
 
-    MSSQL_HOST: string;
-    MSSQL_DOMAIN: string;
-    MSSQL_USERNAME: string;
-    MSSQL_PASSWORD: string;
-    MSSQL_DATABASE: string;
-
     SMTP_HOST: string
     SMTP_USER: string
     SMTP_PASSWORD: string
     
-    PORT: string
+    VAULT_EXCHANGE_PATH: string
+    XML_TRANSFORM_PATH: string
   }
 
   interface IConnection {}

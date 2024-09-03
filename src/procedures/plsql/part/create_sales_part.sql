@@ -1,9 +1,3 @@
-import { Connection } from "../../providers/ifs/internal/Connection";
-import { PlSqlMultiResponse, PlSqlOneResponse } from "../../providers/ifs/internal/PlSqlCommandTypes";
-import { IFSError } from "../../utils/error";
-import { convert_to_part, ExportPart, get_bind_keys, get_bindings } from "../../utils/tools";
-
-const plsql = `
 DECLARE
     contract_   VARCHAR2(20) := 'SE';
     cnt_        NUMBER := 0;
@@ -94,24 +88,3 @@ BEGIN
         &AO.SALES_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
     END IF;
 END;
-`;
-
-export const create_sales_part = async (client: Connection, row: ExportPart) => {
-  const message = convert_to_part(row);
-
-  let bind: any = null;
-  let res: PlSqlOneResponse | PlSqlMultiResponse | null = null;
-
-  try {
-    bind = get_bindings(message, get_bind_keys(plsql));
-    res = await client.PlSql(plsql, { ...bind, temp: "" });
-  } catch (err) {
-    throw new IFSError((err as Error).message, "Create Sales Part", row);
-  }
-
-  if (!res.ok) {
-    throw new IFSError(res.errorText, "Create Sales Part", row);
-  }
-
-  return res;
-};

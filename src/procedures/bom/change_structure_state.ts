@@ -1,8 +1,7 @@
-import { Connection } from "@providers/ifs/internal/Connection";
-import { PlSqlMultiResponse, PlSqlOneResponse } from "@providers/ifs/internal/PlSqlCommandTypes";
-import { MSSQLRow } from "@providers/mssql/types";
-import { IFSError } from "@utils/error";
-import { get_bindings, get_bind_keys, convert_to_part } from "@utils/tools";
+import { Connection } from "../../providers/ifs/internal/Connection";
+import { PlSqlMultiResponse, PlSqlOneResponse } from "../../providers/ifs/internal/PlSqlCommandTypes";
+import { IFSError } from "../../utils/error";
+import { convert_to_part, ExportPart, get_bind_keys, get_bindings } from "../../utils/tools";
 
 const plsql = `
 DECLARE
@@ -49,7 +48,7 @@ BEGIN
 END;
 `;
 
-export const change_structure_state = async (client: Connection, row: MSSQLRow) => {
+export const change_structure_state = async (client: Connection, row: ExportPart) => {
   const message = convert_to_part(row);
   
   let bind: any = null;

@@ -1,4 +1,3 @@
-import { MSSQLRow } from "@providers/mssql/types";
 import { MSSQLError } from "./error";
 
 export type InMessage = {
@@ -92,82 +91,82 @@ export const get_bindings = (message: InMessage, keys: string[]) => {
   return tmp;
 };
 
-export const convert_to_part = (row: MSSQLRow): InMessage => {
+export const convert_to_part = (row: ExportPart): InMessage => {
   return {
-    c01: row.ItemNumber,
-    c02: row.Revision,
-    c03: fix_part_units(row.Quantity, row.Units),
+    c01: row.partNumber,
+    c02: row.revision,
+    c03: fix_part_units(row.quantity, row.units),
     c04: "",
     c05: "", // LastModBy
     c06: "",
-    c07: row.Title,
-    c08: row.Description,
-    c09: row.InternalDescription,
-    c10: row.MaterialCertifikate,
-    c11: row.Category_1,
-    c12: row.Category_2,
-    c13: row.Category_3,
-    c14: row.Category_4,
-    c15: parse_spare_part(row.SparePart),
-    c16: row.Vendor,
-    c17: row.SerialNo,
-    c18: row.LifecycleState,
+    c07: row.title,
+    c08: row.description,
+    c09: row.supplierDescription,
+    c10: row.materialCertificate,
+    c11: "not-in-use",
+    c12: "not-in-use",
+    c13: "not-in-use",
+    c14: "not-in-use",
+    c15: parse_spare_part(row.isSpare),
+    c16: row.supplier,
+    c17: row.serialNumber,
+    c18: row.state,
     c19: "", // Revision
-    c20: parse_boolean(row.CriticalItem),
-    c21: parse_boolean(row.LongLeadItem),
-    c22: parse_supplier_part(row.SupplierPartNo, row.InternalDescription),
-    c23: row.Material,
+    c20: parse_boolean(row.isCritical),
+    c21: parse_boolean(row.isLongLead),
+    c22: parse_supplier_part(row.supplierPartNumber, row.supplierDescription),
+    c23: row.material,
     c24: "", // Project
-    c25: parse_part_mass(row.Mass_g),
+    c25: parse_part_mass(row.mass),
     c30: "", // TransactionId
-    c31: row.ReleasedBy,
-    c32: row.ReleaseDate,
+    c31: "ReleasedBy",
+    c32: row.released,
   };
 };
 
-export const convert_to_struct = (row: MSSQLRow): InMessage => {
+export const convert_to_struct = (row: ExportPart): InMessage => {
   return {
-    c02: row.ParentItemNumber,
-    c03: row.ParentItemRevision,
-    c04: row.Pos,
-    c06: row.ItemNumber,
-    c07: row.Revision,
-    c09: parse_spare_part(row.SparePart),
-    n01: fix_part_qty(row.Quantity),
+    c02: row.parentPartNumber,
+    c03: row.parentRevision,
+    c04: row.position,
+    c06: row.partNumber,
+    c07: row.revision,
+    c09: parse_spare_part(row.isSpare),
+    n01: fix_part_qty(row.quantity),
   };
 };
 
-export const filter_unique_parts = (rows: MSSQLRow[]) => {
-  const parts_map: Record<string, MSSQLRow> = {};
+export const filter_unique_parts = (rows: ExportPart[]) => {
+  const parts_map: Record<string, ExportPart> = {};
 
   for (const row of rows) {
-    parts_map[`${row.ItemNumber}.${row.Revision}`] = row;
+    parts_map[`${row.partNumber}.${row.revision}`] = row;
   }
 
   const list = Object.entries(parts_map).map((e) => e[1]);
   return { map: parts_map, list };
 };
 
-export type StructureChain = Record<string, MSSQLRow[]>;
+export type StructureChain = Record<string, ExportPart[]>;
 
-export const build_structure_chain = (rows: MSSQLRow[], map: Record<string, MSSQLRow>) => {
+export const build_structure_chain = (rows: ExportPart[], map: Record<string, ExportPart>) => {
   const chain: StructureChain = {};
 
   for (const row of rows) {
-    if (row.ParentItemNumber && row.ParentItemRevision) {
-      const parent_key = `${row.ParentItemNumber}.${row.ParentItemRevision}`;
+    if (row.parentPartNumber && row.parentRevision) {
+      const parent_key = `${row.parentPartNumber}.${row.parentRevision}`;
       const parent = map[parent_key];
 
       if (!parent) {
         throw new MSSQLError(`Cannot find parent entry for: ${parent_key}`, "Build Structure Chain");
       }
 
-      const key = `${parent.ItemNumber}.${parent.Revision}.${parent.LifecycleState}`;
+      const key = `${parent.partNumber}.${parent.revision}.${parent.state}`;
       chain[key] = [row, ...(chain[key] || [])];
     }
 
-    if (row.ItemNumber && !row.ItemNumber.startsWith("16")) {
-      const item_key = `${row.ItemNumber}.${row.Revision}.${row.LifecycleState}`;
+    if (row.partNumber && !row.partNumber.startsWith("16")) {
+      const item_key = `${row.partNumber}.${row.revision}.${row.state}`;
       chain[item_key] = [...(chain[item_key] || [])];
     }
   }
@@ -178,3 +177,30 @@ export const build_structure_chain = (rows: MSSQLRow[], map: Record<string, MSSQ
 export const sleep = (timeout: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 };
+
+export type ExportPart = {
+  partNumber: string,
+    revision: string,
+    title: string,
+    units: string,
+    author: string,
+    state: string,
+    description: string | null,
+    category: string | null,
+    mass: string | null,
+    material: string | null,
+    materialCertificate: string | null,
+    serialNumber: string | null,
+    childCount: string | null,
+    supplier: string | null,
+    supplierPartNumber: string | null,
+    supplierDescription: string | null,
+    isSpare: string | null,
+    isCritical: string | null,
+    isLongLead: string | null,
+    quantity: string | null,
+    position: string | null,
+    parentPartNumber: string | null,
+    parentRevision: string | null,
+    released: string
+}

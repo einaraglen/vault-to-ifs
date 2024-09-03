@@ -52,7 +52,7 @@ export class IFSConnection {
     }
   }
 
-  public async close() {
+  public close() {
     if (this.client == null) {
       throw Error("Cannot close IFS when client is null");
     }

@@ -1,7 +1,7 @@
 import { Html, Body, Heading, Tailwind, Section, Column, Row, Preview, Hr, Text } from "@react-email/components";
 import { CodeBlock, vscDarkPlus as theme } from "@react-email/code-block";
 import * as React from "react";
-import { CommitError, IFSError, MSSQLError } from "@utils/error";
+import { CommitError, IFSError, MSSQLError } from "../src/utils/error";
 
 const test_json = {
   rowID: "577E113F-FC23-4062-8112-8BCE83880724",
