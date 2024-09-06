@@ -65,9 +65,17 @@ export class Service {
     return { user: null, id: uuidv4() };
   }
 
+  private shutdown() {
+    this.watcher.close()
+    process.exit(0)
+  }
+
   public async run() {
     await Providers.register(new IFSConnection());
     await Providers.register(new MailerConnection());
+
+    process.on("SIGTERM", () => this.shutdown())
+    process.on("SIGINT", () => this.shutdown())
 
     this.watcher.start();
   }

@@ -10,6 +10,7 @@ export class Watcher {
   private readonly FILE_EXT = ".xml";
   private _on?: ChangeCallback;
   private directory: string;
+  private listener: fs.FSWatcher | null = null
 
   constructor() {
     this.directory = process.env.VAULT_EXCHANGE_PATH;
@@ -37,7 +38,7 @@ export class Watcher {
 
     await this.flushBacklog(backlog);
 
-    fs.watch(this.directory, (type, name) => {
+    this.listener = fs.watch(this.directory, (type, name) => {
       if (type != this.FILE_EVENT || name == null) {
         return;
       }
@@ -122,6 +123,9 @@ export class Watcher {
     });
 
     return arr;
+  }
+  public close() {
+    this.listener?.close()
   }
 
   public clean(transaction: string, filePath: string, complete: boolean) {
