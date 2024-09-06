@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import fs from "fs";
-import { v4 as uuidv4 } from "uuid"
+import { ExportPart } from "../../utils/tools";
 
 type FileProperties = { VaultFilePath: string; LinkedFolders: string };
 
@@ -21,11 +21,11 @@ type Component = {
 export class Parser {
   private reader: XMLParser;
   private filePath: string;
-  private rows: any[] = []
-  private connections: Record<string, string>
+  private rows: ExportPart[] = [];
+  private connections: Record<string, string>;
 
   constructor(filePath: string) {
-    this.connections = JSON.parse(fs.readFileSync(process.env.XML_TRANSFORM_PATH, "utf-8"))
+    this.connections = JSON.parse(fs.readFileSync(process.env.XML_TRANSFORM_PATH, "utf-8"));
     this.filePath = filePath;
     this.reader = new XMLParser({ ignoreAttributes: false });
   }
@@ -36,13 +36,32 @@ export class Parser {
 
     this.traverse(obj.Export.AssemblyComponent, null, null);
 
-    return { transaction: uuidv4(), parts: this.rows }
+    return this.rows;
+  }
+
+  public getUser() {
+    const root = this.rows[0];
+    let name = root.author.toLowerCase();
+
+    const replacement = { æ: "ae", ø: "o", å: "aa" };
+
+    for (const [no, en] of Object.entries(replacement)) {
+      name = name.split(no).join(en);
+    }
+
+    const user = name.split(" ").join(".");
+    return `${user}@seaonics.com`;
   }
 
   private traverse(obj: Component, parent: Component | null, props: Properties | null) {
-    const data = this.assignProps(obj, parent, props);
+    let data = this.assignProps(obj, parent, props);
 
-    this.rows.push(data)
+    // All drawing should be in standard UoM
+    if (!data.partNumber.startsWith("16")) {
+      data.units = "PCS";
+    }
+
+    this.rows.push(data);
 
     if (obj.Structures == null) {
       return;
@@ -61,27 +80,22 @@ export class Parser {
     }
   }
 
-  private transform(part: any, parent: any | null) {
-        const obj: any = {}
-        
-        for (const [key, value] of Object.entries(this.connections)) {
-          let data = null
+  private transform(part: any, parent: any | null): ExportPart {
+    const obj: any = {};
 
-          if (value.startsWith("_") && parent) {
-            data = (parent as any)[value.replace("_", "")]
-          } else {
-            data = (part as any)[value]
-          }
+    for (const [key, value] of Object.entries(this.connections)) {
+      let data = null;
 
-          if (key == "units" && (part as any)[value] == null) {
-            obj[key] = "Each"
-          } else {
-            obj[key] = data != null ? String(data) : ""
-          }
+      if (value.startsWith("_") && parent) {
+        data = (parent as any)[value.replace("_", "")];
+      } else {
+        data = (part as any)[value];
+      }
 
-        }
+      obj[key] = data != null ? String(data) : "";
+    }
 
-        return obj;
+    return obj;
   }
 
   private assignObject(props: Properties) {
@@ -102,6 +116,6 @@ export class Parser {
 
     const _parent = this.assignObject(parent.Properties);
     const meta = this.assignObject(props);
-    return this.transform( { ...part, ...meta }, _parent);
+    return this.transform({ ...part, ...meta }, _parent);
   }
 }

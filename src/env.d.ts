@@ -11,6 +11,7 @@ declare namespace NodeJS {
     SMTP_PASSWORD: string
     
     VAULT_EXCHANGE_PATH: string
+    VAULT_COMPLETE_PATH: string
     XML_TRANSFORM_PATH: string
   }
 

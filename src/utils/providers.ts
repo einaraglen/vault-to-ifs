@@ -9,8 +9,10 @@ export class Providers {
   public static async register(connection: IFSConnection | MailerConnection): Promise<void> {
     if (connection instanceof IFSConnection) {
       this.ifs = await connection.instance();
+      console.log("[Connected] IFS PLSQL")
     } else if (connection instanceof MailerConnection) {
       this.mailer = connection;
+      console.log("[Connected] Node Mailer")
     } else {
       throw new Error("Cannot register unsupported provider");
     }

@@ -2,4 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import("./service").then((service) => service.run());
+import("./service").then(({ Service }) => {
+    const service = new Service();
+    service.run();
+});

@@ -1,7 +1,9 @@
 import fs from "fs";
-import { join, dirname, sep, extname } from "path";
+import { join, dirname, sep, extname, parse } from "path";
 
-type ChangeCallback = (event: string) => void | Promise<void>;
+export type ChangeEvent = { name: string, path: string }
+
+type ChangeCallback = (event: ChangeEvent) => void | Promise<void>;
 
 export class Watcher {
   private readonly FILE_EVENT = "rename";
@@ -19,7 +21,8 @@ export class Watcher {
 
   private emit(filePath: string) {
     if (this._on && extname(filePath) == this.FILE_EXT) {
-      this._on(filePath);
+    const name = parse(filePath).name
+      this._on({ name, path: filePath });
     }
   }
 
@@ -27,6 +30,8 @@ export class Watcher {
     if (!this.isAccessable(this.directory)) {
       throw new Error("Failed to start watch, does this directory exist?: " + this.directory);
     }
+
+    console.log("Watching for files...")
 
     const backlog = this.loadBacklog(this.directory);
 
@@ -49,8 +54,6 @@ export class Watcher {
 
       this.emit(path);
     });
-
-    console.log("Watching for files...")
   }
 
   private isAccessable(path: string) {
@@ -121,11 +124,19 @@ export class Watcher {
     return arr;
   }
 
-  public static clean(filePath: string) {
+  public clean(transaction: string, filePath: string, complete: boolean) {
     try {
       const root = join(process.env.VAULT_EXCHANGE_PATH);
+      const destination = join(process.env.VAULT_COMPLETE_PATH)
       const parent = dirname(filePath);
+      const fileExtension = extname(filePath)
+      const fileName = parse(filePath).name
 
+      const completeName = `${complete ? "DONE" : "FAIL"}-${transaction}${fileExtension}`
+      const destinationFolder = join(destination, fileName)
+
+      fs.mkdirSync(destinationFolder, { recursive: true });
+      fs.copyFileSync(filePath, join(destinationFolder, completeName))
       fs.unlinkSync(filePath);
 
       if (!root.includes(parent.split(sep).reverse()[0])) {
@@ -136,7 +147,7 @@ export class Watcher {
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error("File Cleanup Failure", err);
     }
   }
 }

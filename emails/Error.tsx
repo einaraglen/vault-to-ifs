@@ -53,10 +53,11 @@ const test_error = new Error("Something is very wrong here!");
 
 interface ErrorMailProps {
   error: IFSError | MSSQLError | CommitError | Error;
+  file: string
   transaction: string;
 }
 
-export const ErrorEmail = ({ error = test_ifs_error, transaction = test_transaction }: ErrorMailProps) => {
+export const ErrorEmail = ({ error = test_ifs_error, file = "2199687.xml",  transaction = test_transaction }: ErrorMailProps) => {
   return (
     <Html>
       <Preview>Transaction: {transaction}</Preview>
@@ -84,12 +85,16 @@ export const ErrorEmail = ({ error = test_ifs_error, transaction = test_transact
                 <Column className="w-[150px]">Transaction</Column>
                 <Column>{transaction}</Column>
               </Row>
+              <Row>
+                <Column className="w-[150px]">Export</Column>
+                <Column>{file}</Column>
+              </Row>
             </Section>
             <Hr />
 
             {(error as any).row != null && (
               <Text>
-                Following <strong>Line</strong> Failed
+                The following <strong>data</strong> failed.
               </Text>
             )}
             {(error as any).row != null && (

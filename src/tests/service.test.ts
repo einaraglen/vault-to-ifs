@@ -1,4 +1,6 @@
 import dotenv from "dotenv";
+dotenv.config();
+
 import { Connection } from "../providers/ifs/internal/Connection";
 import { create_catalog_part } from "../procedures/parts/create_catalog_part";
 import { add_technical_spesification } from "../procedures/parts/add_technical_spesification";
@@ -7,9 +9,8 @@ import { create_engineering_part } from "../procedures/parts/create_engineering_
 import { create_inventory_part } from "../procedures/parts/create_inventory_part";
 import { create_purchase_part } from "../procedures/parts/create_purchase_part";
 import { create_sales_part } from "../procedures/parts/create_sales_part";
-import { get_new_revision } from "./check_functions";
 import { IFSConnection } from "../providers/ifs/connection";
-dotenv.config();
+import { get_new_revision } from "./check_functions";
 
 let ifs: Connection;
 let tx: Connection;
@@ -73,32 +74,33 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await tx.Commit();
   await ifs.EndSession();
 });
 
 const part: any = {
-  partNumber: '2199686',
-  revision: 'A',
-  title: 'UHD Cursor S1',
-  units: 'Each',
-  author: 'techjob',
-  state: 'Released',
-  description: '',
-  category: 'Dimentional Sketch',
-  mass: '1551061.7631371282',
-  material: '',
-  materialCertificate: '',
-  serialNumber: '',
-  childCount: '1',
-  supplier: '',
-  supplierPartNumber: '',
-  supplierDescription: '',
-  isSpare: '',
-  isCritical: 'False',
-  isLongLead: 'False',
-  quantity: '',
-  position: '',
-  parentPartNumber: '',
-  parentRevision: '',
-  released: "2024-07-03 10:49:24Z"
+  partNumber: "2199691",
+  revision: "A",
+  title: "Test Part",
+  units: "PCS",
+  author: "einar.aglen",
+  state: "Released",
+  description: "Test Part Description",
+  category: "Test Part",
+  mass: "100",
+  material: "",
+  materialCertificate: "",
+  serialNumber: "",
+  childCount: "0",
+  supplier: "Parker",
+  supplierPartNumber: "some-supplier-number",
+  supplierDescription: "",
+  isSpare: "False",
+  isCritical: "False",
+  isLongLead: "False",
+  quantity: "",
+  position: "",
+  parentPartNumber: "",
+  parentRevision: "",
+  released: "2024-07-03 10:49:24Z",
 };
