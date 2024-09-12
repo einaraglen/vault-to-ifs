@@ -34,27 +34,31 @@ export class Parser {
     const xml = fs.readFileSync(this.filePath, "utf-8");
     const obj = this.reader.parse(xml);
 
-    this.traverse(obj.Export.AssemblyComponent, null, null);
+    if ("AssemblyComponent" in obj.Export) {
+      this.traverse(obj.Export.AssemblyComponent, null, null);
+    } else {
+      this.read(obj.Export)
+    }
 
     return this.rows;
   }
 
-  public getUser() {
-    const root = this.rows[0];
-    let name = root.author.toLowerCase();
+  private read(data: Record<string, Component>) {
+    const keys = Object.keys(data)
 
-    const replacement = { æ: "ae", ø: "o", å: "aa" };
-
-    for (const [no, en] of Object.entries(replacement)) {
-      name = name.split(no).join(en);
+    if (keys.length == 0 || keys.length > 1) {
+      throw Error("Single part export contains more than (1) part")
     }
 
-    const user = name.split(" ").join(".");
-    return `${user}@seaonics.com`;
+    const obj = data[keys[0]]
+
+    const part = this.assignObject(obj.Properties);
+
+    this.rows.push(this.transformPart(part));
   }
 
   private traverse(obj: Component, parent: Component | null, props: Properties | null) {
-    let data = this.assignProps(obj, parent, props);
+    let data = this.assignAssemblyProps(obj, parent, props);
 
     // All drawing should be in standard UoM
     if (!data.partNumber.startsWith("16")) {
@@ -80,7 +84,27 @@ export class Parser {
     }
   }
 
-  private transform(part: any, parent: any | null): ExportPart {
+  private transformPart(part: any) {
+    const obj: any = {};
+
+    for (const [key, value] of Object.entries(this.connections)) {
+      let data = null;
+
+      if (!value.startsWith("_")) {
+        data = (part as any)[value];
+      }
+
+      obj[key] = data != null ? String(data) : "";
+    }
+
+    throw Error("Part cannot be transformed")
+
+    obj.units = "Pcs" // default for single parts
+
+    return obj;
+  }
+
+  private transformAssembly(part: any, parent: any | null): ExportPart {
     const obj: any = {};
 
     for (const [key, value] of Object.entries(this.connections)) {
@@ -107,15 +131,15 @@ export class Parser {
     }, {});
   }
 
-  private assignProps(obj: Component, parent: Component | null, props: Properties | null) {
+  private assignAssemblyProps(obj: Component, parent: Component | null, props: Properties | null) {
     const part = this.assignObject(obj.Properties);
 
     if (parent == null || props == null) {
-      return this.transform(part, null);
+      return this.transformAssembly(part, null);
     }
 
     const _parent = this.assignObject(parent.Properties);
     const meta = this.assignObject(props);
-    return this.transform({ ...part, ...meta }, _parent);
+    return this.transformAssembly({ ...part, ...meta }, _parent);
   }
 }

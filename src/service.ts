@@ -6,7 +6,7 @@ import { Providers } from "./utils/providers";
 import { ChangeEvent, Watcher } from "./utils/watcher";
 import { v4 as uuidv4 } from "uuid";
 
-export type Transaction = { user: string | null; id: string }
+export type Transaction = { id: string }
 
 enum Status {
   Starting = "Starting",
@@ -19,10 +19,10 @@ export class Service {
 
   constructor() {
     this.watcher = new Watcher();
-    this.watcher.on = (event) => this.listen(event);
+    this.watcher.on = (event) => this.onFile(event);
   }
 
-  private async listen(event: ChangeEvent) {
+  private async onFile(event: ChangeEvent) {
     let transaction = this.getTransaction();
 
     try {
@@ -37,8 +37,6 @@ export class Service {
 
     const parser = new Parser(event.path);
     const parts = parser.parse();
-
-    transaction.user = parser.getUser();
 
     const job = new Insert(transaction.id, parts);
     await job.start();
@@ -62,7 +60,7 @@ export class Service {
   }
 
   private getTransaction() {
-    return { user: null, id: uuidv4() };
+    return { id: uuidv4() };
   }
 
   private shutdown() {

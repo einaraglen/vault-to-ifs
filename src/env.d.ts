@@ -8,6 +8,7 @@ declare namespace NodeJS {
 
     SMTP_HOST: string
     SMTP_USER: string
+    SMTP_GROUP: string
     SMTP_PASSWORD: string
     
     VAULT_EXCHANGE_PATH: string
