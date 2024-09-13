@@ -58,14 +58,16 @@ BEGIN
         &AO.Client_SYS.Add_To_Attr('STD_NAME_ID', '0', attr_);
         &AO.PART_CATALOG_API.New__(info_, objid_, objversion_, attr_, 'DO');
     ELSE
-        IF SUBSTR(Prefix_Part_No__(:c01), 1, 3) LIKE '161' THEN
+        IF SUBSTR(Prefix_Part_No__(:c01), 1, 2) LIKE '16' 
+        AND SUBSTR(Prefix_Part_No__(:c01), 1, 3) NOT LIKE '166' THEN
+
             OPEN partca_get_version(Prefix_Part_No__(:c01));
             
             FETCH partca_get_version
                 INTO objid_, objversion_;
             CLOSE partca_get_version;
 
-            objstate_   := IFSAPP.Eng_Part_Revision_API.Get_Obj_State(:c02, :c03);
+            --objstate_   := IFSAPP.Eng_Part_Revision_API.Get_Obj_State(:c02, :c03);
             
             -- QUERY FIX
             :temp := objid_;

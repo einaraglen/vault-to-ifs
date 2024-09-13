@@ -79,13 +79,13 @@ afterAll(async () => {
 });
 
 const part: any = {
-  partNumber: "2199691",
+  partNumber: "1122334455",
   revision: "A",
-  title: "Test Part",
-  units: "PCS",
+  title: "Test Inventory Fix",
+  units: "Pcs",
   author: "einar.aglen",
   state: "Released",
-  description: "Test Part Description",
+  description: "Test",
   category: "Test Part",
   mass: "100",
   material: "",

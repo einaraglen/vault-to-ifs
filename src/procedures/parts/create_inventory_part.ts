@@ -172,9 +172,9 @@ BEGIN
         &AO.Client_SYS.Add_To_Attr('SHORTAGE_FLAG_DB', 'N', attr_);
         &AO.Client_SYS.Add_To_Attr('FORECAST_CONSUMPTION_FLAG_DB', 'NOFORECAST', attr_);
         &AO.Client_SYS.Add_To_Attr('STOCK_MANAGEMENT_DB', 'SYSTEM MANAGED INVENTORY', attr_);
-        &AO.Client_SYS.Add_To_Attr('INVENTORY_VALUATION_METHOD_DB', 'ST', attr_);
-        &AO.Client_SYS.Add_To_Attr('NEGATIVE_ON_HAND_DB', 'NEG ONHAND OK', attr_);
-        &AO.Client_SYS.Add_To_Attr('INVOICE_CONSIDERATION_DB', 'IGNORE INVOICE PRICE', attr_);
+        &AO.Client_SYS.Add_To_Attr('INVENTORY_VALUATION_METHOD', 'Weighted Average', attr_);                 -- FIX
+        &AO.Client_SYS.Add_To_Attr('NEGATIVE_ON_HAND_DB', 'NEG ONHAND NOT OK', attr_);                       -- FIX
+        &AO.Client_SYS.Add_To_Attr('INVOICE_CONSIDERATION', 'Transaction Based', attr_);                     -- FIX
         &AO.Client_SYS.Add_To_Attr('INVENTORY_PART_COST_LEVEL_DB', 'COST PER PART', attr_);
         &AO.Client_SYS.Add_To_Attr('EXT_SERVICE_COST_METHOD_DB', 'EXCLUDE SERVICE COST', attr_);
         &AO.Client_SYS.Add_To_Attr('AUTOMATIC_CAPABILITY_CHECK_DB', 'NO AUTOMATIC CAPABILITY CHECK', attr_);

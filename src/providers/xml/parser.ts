@@ -97,9 +97,7 @@ export class Parser {
       obj[key] = data != null ? String(data) : "";
     }
 
-    throw Error("Part cannot be transformed")
-
-    obj.units = "Pcs" // default for single parts
+    obj.units = "PCS" // default for single parts
 
     return obj;
   }
