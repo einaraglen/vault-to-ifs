@@ -55,19 +55,24 @@ BEGIN
         &AO.Client_SYS.Set_Item_Value('CONTRACT', contract_, attr_);
         &AO.PURCHASE_PART_API.New__(info_, objid_, objversion_, attr_, 'DO');
     ELSE
-        OPEN pur_part_get_version(Prefix_Part_No__(:c01));
+        IF SUBSTR(Prefix_Part_No__(:c01), 1, 2) LIKE '16' 
+        AND SUBSTR(Prefix_Part_No__(:c01), 1, 3) NOT LIKE '166' THEN
 
-        FETCH pur_part_get_version
-            INTO objid_, objversion_;
-        CLOSE pur_part_get_version;
+            OPEN pur_part_get_version(Prefix_Part_No__(:c01));
 
-        -- QUERY FIX
-        :temp := objid_;
-        :temp := objversion_;
+            FETCH pur_part_get_version
+                INTO objid_, objversion_;
+            CLOSE pur_part_get_version;
 
-        &AO.Client_SYS.Clear_Attr(attr_);
-        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)),  attr_);
-        &AO.PURCHASE_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
+            -- QUERY FIX
+            :temp := objid_;
+            :temp := objversion_;
+
+            &AO.Client_SYS.Clear_Attr(attr_);
+            &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)),  attr_);
+            &AO.PURCHASE_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
+
+        END IF;
     END IF;
 END;
 `;

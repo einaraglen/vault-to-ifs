@@ -80,19 +80,20 @@ BEGIN
         &AO.Client_SYS.Add_To_Attr('USE_PRICE_INCL_TAX', &AO.fnd_boolean_api.Decode('FALSE'), attr_);
         &AO.SALES_PART_API.New__(info_, objid_, objversion_, attr_, 'DO');
     ELSE
-        OPEN sales_part_get_version(Prefix_Part_No__(:c01));
-        FETCH sales_part_get_version
-            INTO objid_, objversion_;
-        CLOSE sales_part_get_version;
+        IF SUBSTR(Prefix_Part_No__(:c01), 1, 2) LIKE '16' 
+        AND SUBSTR(Prefix_Part_No__(:c01), 1, 3) NOT LIKE '166' THEN
+            OPEN sales_part_get_version(Prefix_Part_No__(:c01));
+            FETCH sales_part_get_version
+                INTO objid_, objversion_;
+            CLOSE sales_part_get_version;
 
-        -- QUERY FIX
-        :temp := objid_;
-        :temp := objversion_;
-
-        &AO.Client_SYS.Clear_Attr(attr_);
-        &AO.Client_SYS.Add_To_Attr('CATALOG_DESC', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
-        &AO.SALES_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
+            &AO.Client_SYS.Clear_Attr(attr_);
+            &AO.Client_SYS.Add_To_Attr('CATALOG_DESC', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
+            &AO.SALES_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
+        END IF;
     END IF;
+
+    :temp := objid_;
 END;
 `;
 
