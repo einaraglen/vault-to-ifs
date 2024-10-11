@@ -106,10 +106,13 @@ BEGIN
         &AO.Client_SYS.Set_Item_Value('UNIT_CODE', &AO.Part_Catalog_API.Get(Prefix_Part_No__(:c01)).unit_code, attr_);
         &AO.Client_SYS.Add_To_Attr('STD_NAME_ID', '0', attr_);
 
-        IF (SUBSTR(:c01, 1, 2) NOT LIKE '16') THEN
+        IF  (SUBSTR(:c01, 1, 1) LIKE '6') OR (SUBSTR(:c01, 1, 1) LIKE '7') THEN
+            &AO.Client_SYS.Add_To_Attr('PROVIDE', 'Make', attr_);
+        ELSE
             &AO.Client_SYS.Add_To_Attr('PROVIDE', 'Buy', attr_);
-            &AO.Client_SYS.Add_To_Attr('PLANNING_METHOD', 'PMRP Planned', attr_);
         END IF;
+
+        &AO.Client_SYS.Add_To_Attr('PLANNING_METHOD', 'PMRP Planned', attr_);
 
         IF (:c02 IS NOT NULL) THEN
             &AO.Client_SYS.Set_Item_Value('FIRST_REVISION', :c02, attr_);
