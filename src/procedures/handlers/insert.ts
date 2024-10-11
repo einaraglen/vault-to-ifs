@@ -42,7 +42,6 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
       await create_purchase_part(tx, part);
       await create_sales_part(tx, part);
   
-  
       await sleep(100);
     } catch (err) {
       throw err

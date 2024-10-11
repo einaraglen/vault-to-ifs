@@ -1,5 +1,3 @@
-import { MSSQLError } from "./error";
-
 export type InMessage = {
   c01?: string | null;
   c02?: string | null;
@@ -158,7 +156,7 @@ export const build_structure_chain = (rows: ExportPart[], map: Record<string, Ex
       const parent = map[parent_key];
 
       if (!parent) {
-        throw new MSSQLError(`Cannot find parent entry for: ${parent_key}`, "Build Structure Chain");
+        throw new Error(`Cannot find parent entry for: ${parent_key}`);
       }
 
       const key = `${parent.partNumber}.${parent.revision}.${parent.state}`;
