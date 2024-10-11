@@ -12,6 +12,7 @@ import { create_sales_part } from "../procedures/parts/create_sales_part";
 import { IFSConnection } from "../providers/ifs/connection";
 import { get_misc_part_data, get_new_revision, test_get_engineering, update_misc_quantity } from "./check_functions";
 import { create_part } from "./new_create";
+import { handle_part } from "../procedures/new/handle_part";
 
 let ifs: Connection;
 let tx: Connection;
@@ -82,12 +83,7 @@ describe("Random Test", () => {
   // });
 
   it("New Create Function", async () => {
-    await expect(create_part(tx, { 
-      part_no: "1337.3",
-      description: "Lamp , Lightning fixture, Explosion protected light fitting, ExLin NE+, 2400lm, 110-277 VAC, 22W, IP66/67, 2xM25, battery",
-      unit: "PCS",
-      rev: "A01" 
-    })).resolves.not.toThrow();
+    await expect(handle_part(tx, part)).resolves.not.toThrow();
   });
 });
 

@@ -1,4 +1,4 @@
-const Create_Inventory_Part = `
+export const Create_Inventory_Part = `
     PROCEDURE Create_Inventory_Part IS
         objid_          VARCHAR2(2000);
         objversion_     VARCHAR2(2000);
@@ -14,14 +14,20 @@ const Create_Inventory_Part = `
             AND    part_no = part_;
     BEGIN
 
-        OPEN get_inventory_part(Get_Part_No(:part_no));
+        OPEN get_inventory_part(Get_Part_No(:c01));
 
             FETCH get_inventory_part
                 INTO objid_, objversion_;
 
             IF get_latest_revision%NOTFOUND THEN
-                rev_:= &AO.Eng_Part_Revision_API.Get_Last_Rev(Get_Part_No(:part_no));
-                &AO.ENG_PART_INVENT_UTIL_API.Create_Inventory_Part(site_, Get_Part_No(:part_no), site_, template_, rev_);
+                rev_:= &AO.Eng_Part_Revision_API.Get_Last_Rev(Get_Part_No(:c01));
+                &AO.ENG_PART_INVENT_UTIL_API.Create_Inventory_Part(site_, Get_Part_No(:c01), site_, template_, rev_);
+
+                Set_Mat_Cert(Get_Part_No(:c01), :c10)
+                Set_Net_Weight(Get_Part_No(:c01), :c25);
+            ELSE
+                Set_Mat_Cert(Get_Part_No(:c01), :c10)
+                Set_Net_Weight(Get_Part_No(:c01), :c25);
             END IF;
 
         CLOSE get_inventory_part;

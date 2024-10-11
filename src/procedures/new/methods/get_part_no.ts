@@ -1,4 +1,4 @@
-const Get_Part_No = `
+export const Get_Part_No = `
     FUNCTION Get_Part_No(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
         prefixed_part_no_ VARCHAR2(100);
         prefix_           VARCHAR2(5) := 'SE';

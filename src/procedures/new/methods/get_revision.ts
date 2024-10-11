@@ -1,4 +1,4 @@
-const Get_Revision = `
+export const Get_Revision = `
     FUNCTION Get_Revision(current_revision_ IN VARCHAR2) RETURN VARCHAR2 IS
         prefix VARCHAR2(1);
         num_part VARCHAR2(32767);
