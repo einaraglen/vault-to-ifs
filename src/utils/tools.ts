@@ -62,15 +62,27 @@ export const parse_supplier_part = (s_no: string | null, i_desc: string | null) 
 };
 
 export const fix_part_units = (qty: string | null, units: string | null) => {
+  if (qty != null && qty.endsWith("mm")) {
+    return "mm";
+  }
+
   if (qty != null && qty.endsWith("m")) {
     return "m";
   }
 
-  return units || "Each";
+  if (units == null) {
+    return "PCS"
+  }
+
+  if (units && units == "Each" || units.toLowerCase() == "stk") {
+    return "PCS"
+  }
+
+  return units || "PCS";
 };
 
 export const fix_part_qty = (qty: string | null) => {
-  const qty_ = qty ? qty.replace("m", "").trim() : "0";
+  const qty_ = qty ? qty.replace(/m/g, "").trim() : "0";
   return qty_.replace(/,/g, ".");
 };
 

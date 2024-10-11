@@ -12,6 +12,7 @@ import { create_sales_part } from "../procedures/parts/create_sales_part";
 import { IFSConnection } from "../providers/ifs/connection";
 import { get_misc_part_data, get_new_revision, test_get_engineering, update_misc_quantity } from "./check_functions";
 import { create_part } from "./new_create";
+import { fix_part_qty, fix_part_units } from "../utils/tools";
 
 let ifs: Connection;
 let tx: Connection;
@@ -68,7 +69,7 @@ let tx: Connection;
 //   });
 // });
 
-describe("Random Test", () => {
+describe("Helper Function Test", () => {
   // it("Add Misc Line", async () => {
   //   await expect(get_misc_part_data(tx)).resolves.not.toThrow();
   // });
@@ -81,27 +82,60 @@ describe("Random Test", () => {
   //   await expect(test_get_engineering(tx)).resolves.not.toThrow();
   // });
 
-  it("New Create Function", async () => {
-    await expect(create_part(tx, { 
-      part_no: "1337.3",
-      description: "Lamp , Lightning fixture, Explosion protected light fitting, ExLin NE+, 2400lm, 110-277 VAC, 22W, IP66/67, 2xM25, battery",
-      unit: "PCS",
-      rev: "A01" 
-    })).resolves.not.toThrow();
+
+
+  it("Check QTY parser", () => {
+    expect(fix_part_qty("1740 mm")).toBe("1740")
   });
+
+  it("Check Unit parser Each", () => {
+    expect(fix_part_units("5", "Each")).toBe("PCS")
+  });
+
+  it("Check Unit parser m QTY", () => {
+    expect(fix_part_units("5 m", "Each")).toBe("m")
+  });
+
+  it("Check Unit parser m Units", () => {
+    expect(fix_part_units("5", "m")).toBe("m")
+  });
+
+  it("Check Unit parser mn QTY", () => {
+    expect(fix_part_units("5 mm", "Each")).toBe("mm")
+  });
+
+  it("Check Unit parser mn Units", () => {
+    expect(fix_part_units("5", "mm")).toBe("mm")
+  });
+
+  it("Check Unit parser stk", () => {
+    expect(fix_part_units("5", "stk")).toBe("PCS")
+  });
+
+
+
+
+  // it("New Create Function", async () => {
+  //   await expect(create_part(tx, { 
+  //     part_no: "1337.3",
+  //     description: "Lamp , Lightning fixture, Explosion protected light fitting, ExLin NE+, 2400lm, 110-277 VAC, 22W, IP66/67, 2xM25, battery",
+  //     unit: "PCS",
+  //     rev: "A01" 
+  //   })).resolves.not.toThrow();
+  // });
 });
 
-beforeAll(async () => {
-  const ifs_connection = new IFSConnection();
-  ifs = await ifs_connection.instance();
-  tx = await ifs.BeginTransaction();
-});
+// beforeAll(async () => {
+//   const ifs_connection = new IFSConnection();
+//   ifs = await ifs_connection.instance();
+//   tx = await ifs.BeginTransaction();
+// });
 
-afterAll(async () => {
-  // await tx.Commit();
-  await tx.Rollback();
-  await ifs.EndSession();
-});
+// afterAll(async () => {
+//   // await tx.Commit();
+//   await tx.Rollback();
+//   await ifs.EndSession();
+// });
 
 const part: any = {
   "partNumber": "16610099",
