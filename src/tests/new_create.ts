@@ -46,8 +46,8 @@ const Get_Part_No = `
     END Get_Part_No;
 `
 
-const Create_Master = `
-    PROCEDURE Create_Master IS
+const Create_Master_Part = `
+    PROCEDURE Create_Master_Part IS
         info_           VARCHAR2(2000);
         attr_           VARCHAR2(2000);
         objid_          VARCHAR2(2000);
@@ -69,11 +69,11 @@ const Create_Master = `
         &AO.Client_SYS.Add_To_Attr('SERIAL_TRACKING_CODE', 'Not Serial Tracking', attr_);
 
         &AO.ENG_PART_MASTER_API.NEW__(info_, objid_, objversion_, attr_, 'DO');
-    END Create_Master;
+    END Create_Master_Part;
 `
 
-const Create_Sales = `
-    PROCEDURE Create_Sales IS
+const Create_Sales_Part = `
+    PROCEDURE Create_Sales_Part IS
         info_           VARCHAR2(2000);
         attr_           VARCHAR2(2000);
         objid_          VARCHAR2(2000);
@@ -97,31 +97,31 @@ const Create_Sales = `
         &AO.Client_SYS.Add_To_Attr('PURCHASE_PART_NO', Get_Part_No(:part_no), attr_);
 
         &AO.SALES_PART_API.New__(info_, objid_, objversion_, attr_, 'DO');
-    END Create_Sales;
+    END Create_Sales_Part;
 `
 
-const Create_Inventory = `
-    PROCEDURE Create_Inventory IS
+const Create_Inventory_Part = `
+    PROCEDURE Create_Inventory_Part IS
         site_       VARCHAR2(50) := 'SE';
         template_   VARCHAR2(50) := 'SE1PCS';
         rev_        VARCHAR2(50);
     BEGIN
         rev_:= &AO.Eng_Part_Revision_API.Get_Last_Rev(Get_Part_No(:part_no));
         &AO.ENG_PART_INVENT_UTIL_API.Create_Inventory_Part(site_, Get_Part_No(:part_no), site_, template_, rev_);
-    END Create_Inventory;
+    END Create_Inventory_Part;
 `
 
 const plsql = `
     DECLARE
         ${Get_Revision}
         ${Get_Part_No}
-        ${Create_Master}
-        ${Create_Inventory}
-        ${Create_Sales}
+        ${Create_Master_Part}
+        ${Create_Inventory_Part}
+        ${Create_Sales_Part}
     BEGIN
-        Create_Master();
-        Create_Inventory();
-        Create_Sales();
+        Create_Master_Part();
+        Create_Inventory_Part();
+        Create_Sales_Part();
         :temp := 'done';
     END;
 `;
