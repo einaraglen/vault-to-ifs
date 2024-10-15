@@ -1,5 +1,6 @@
 export const Set_Mat_Cert = `
     PROCEDURE Set_Mat_Cert(part_ IN VARCHAR2, cert_ IN VARCHAR2) IS
+        info_           VARCHAR2(2000);
         objid_          VARCHAR2(2000);
         objversion_     VARCHAR2(2000);
         attr_           VARCHAR2(2000);

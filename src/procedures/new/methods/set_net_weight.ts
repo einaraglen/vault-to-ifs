@@ -6,7 +6,7 @@ export const Set_Net_Weight = `
         objversion_             VARCHAR2(2000);
         uom_for_weight_net_     VARCHAR2(50);
 
-            CURSOR get_part(part_ IN VARCHAR2) IS
+        CURSOR get_part(part_ IN VARCHAR2) IS
             SELECT objid, objversion, uom_for_weight_net
             FROM &AO.PART_CATALOG
             WHERE part_no = part_; 

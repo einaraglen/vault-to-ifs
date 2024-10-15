@@ -91,6 +91,7 @@ BEGIN
         ELSIF r_.attribute = 'SE_CREATED_DATE' THEN
             &AO.Client_SYS.Add_To_Attr('VALUE_TEXT', SUBSTR(to_char(to_date(:c32, 'yyyy-mm-dd hh24:mi:ss"Z"'), 'yyyy-mm-dd'), 1, 20), attr_);
         END IF;
+        
         IF attr_ IS NOT NULL AND NOT &AO.TECHNICAL_OBJECT_REFERENCE_API.Check_Approved(technical_spec_no_) THEN
             &AO.TECHNICAL_SPEC_ALPHANUM_API.Modify__(info_, r_.objid, r_.objversion, attr_, 'DO');
         END IF;

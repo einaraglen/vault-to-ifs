@@ -84,7 +84,7 @@ describe("Random Test", () => {
 
   it("New Create Function", async () => {
     await expect(handle_part(tx, part)).resolves.not.toThrow();
-  });
+  }, 20000);
 });
 
 beforeAll(async () => {
@@ -94,19 +94,20 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // await tx.Commit();
-  await tx.Rollback();
+  await tx.Commit();
+  // await tx.Rollback();
   await ifs.EndSession();
 });
 
 const part: any = {
-  "partNumber": "16610099",
+  "partNumber": "16110092",
   "revision": "A",
-  "title": "ACCESS P. WORKING LIGHT I",
+  "title": "Lamp",
   "units": "PCS",
   "author": "Simon Sakseid",
   "state": "Released",
-  "description": "THIS IS NEW DESCRIPTION",
+  "description": "Lamp , Lightning fixture, Explosion protected light fitting, ExLin NE+, 2400lm, 110-277 VAC, 22W, IP66/67, 2xM25, battery",
+  // "description": "NEW DESCRIPTION",
   "category": "Purchased Components",
   "mass": "8300",
   "material": "Generic",

@@ -15,6 +15,11 @@ export const Create_Master_Part = `
             FROM &AO.ENG_PART_MASTER
             WHERE part_no = part_;
 
+        CURSOR get_catalog_part(part_ IN VARCHAR2) IS
+            SELECT objid, objversion
+            FROM &AO.PART_CATALOG
+            WHERE part_no = part_;
+
         CURSOR get_latest_revision(part_ IN VARCHAR2, rev_ IN VARCHAR2) IS
             SELECT PART_REV
             FROM &AO.ENG_PART_REVISION
@@ -28,7 +33,7 @@ export const Create_Master_Part = `
             FETCH get_master_part
                 INTO objid_, objversion_;
 
-            IF get_latest_revision%NOTFOUND THEN
+            IF get_master_part%NOTFOUND THEN
                 &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
 
                 &AO.Client_SYS.Add_To_Attr('PART_NO', Get_Part_No(:c01), attr_);
@@ -36,13 +41,13 @@ export const Create_Master_Part = `
                 &AO.Client_SYS.Add_To_Attr('FIRST_REVISION', :c02, attr_);
                 &AO.Client_SYS.Add_To_Attr('UNIT_CODE', :c03, attr_);
 
-                IF (SUBSTR(:c01, 1, 1) LIKE '6') OR (SUBSTR(:c01, 1, 1) LIKE '7') THEN
+                IF SUBSTR(:c01, 1, 1) LIKE '6' OR SUBSTR(:c01, 1, 1) LIKE '7' THEN
                     &AO.Client_SYS.Add_To_Attr('PROVIDE', 'Make', attr_);
                 ELSE
                     &AO.Client_SYS.Add_To_Attr('PROVIDE', 'Buy', attr_);
                 END IF;
 
-                IF (NVL(:c17, 'N') = 'Y') THEN
+                IF NVL(:c17, 'N') = 'Y' THEN
                     tracking_ := &AO.Part_Serial_Tracking_API.Decode('SERIAL TRACKING');
                     &AO.Client_SYS.Add_To_Attr('SERIAL_TRACKING_CODE', tracking_, attr_);
                     &AO.Client_SYS.Add_To_Attr('SERIAL_TYPE', tracking_, attr_);
@@ -60,9 +65,9 @@ export const Create_Master_Part = `
                     prefix_ := SUBSTR(:c01, 1, 2);
                     new_rev_ := :c02;
 
-                    IF (get_latest_revision%FOUND AND prefix_ NOT LIKE '16') THEN
-                        new_rev_ := Get_New_Revision__(current_part_rev_);
-                    ELSEIF (get_latest_revision%FOUND AND prefix_ LIKE '16') THEN
+                    IF get_latest_revision%FOUND AND prefix_ NOT LIKE '16' THEN
+                        new_rev_ := Get_Revision(last_rev_);
+                    ELSIF get_latest_revision%FOUND AND prefix_ LIKE '16' THEN
                         new_rev_ := last_rev_;
                     ELSE
                         last_rev_ := &AO.Eng_Part_Revision_API.Get_Last_Rev(Get_Part_No(:c01));
@@ -71,18 +76,23 @@ export const Create_Master_Part = `
                 CLOSE get_latest_revision;
 
                 -- If the new revision does not match last => create new revision
-                IF (new_rev_ NOT LIKE last_rev_) THEN
+                IF new_rev_ NOT LIKE last_rev_ THEN
                     &AO.Eng_Part_Revision_API.New_Revision_(Get_Part_No(:c01), new_rev_, last_rev_, NULL, NULL);
                 END IF;
 
+                OPEN get_catalog_part(Get_Part_No(:c01));
+                    FETCH get_catalog_part
+                        INTO objid_, objversion_;
+
+                    -- Do not update description for 16(6) | 16(7) | SE(6) | SE(7)
+                     IF prefix_ NOT LIKE '6' AND prefix_ NOT LIKE '7' THEN 
+                        &AO.Client_SYS.Add_To_Attr('DESCRIPTION', :c07, attr_);
+                        &AO.PART_CATALOG_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
+                    END IF;
+                CLOSE get_catalog_part;
+
                 prefix_ := SUBSTR(Get_Part_No(:c01), 3, 1);
 
-                -- Do not update description for 16(6) | 16(7) | SE(6) | SE(7)
-                IF (prefix_ NOT LIKE '6' AND prefix_ NOT LIKE '7') THEN 
-                    &AO.Client_SYS.Add_To_Attr('DESCRIPTION', :c07, attr_);
-                    &AO.ENG_PART_MASTER_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
-                END IF;
-           
             END IF;
 
         CLOSE get_master_part;

@@ -46,15 +46,15 @@ export const parse_part_mass = (str: string | null) => {
 };
 
 export const parse_supplier_part = (s_no: string | null, i_desc: string | null) => {
-  if (!s_no && i_desc) {
-    return i_desc;
+  let str = "";
+
+  if (s_no == null && i_desc != null) {
+    str = i_desc
   }
 
-  if (!s_no || i_desc) {
-    return "";
-  }
+  str = s_no || ""
 
-  const equal_removed = s_no.replace(/=/g, "-");
+  const equal_removed = str.replace(/=/g, "-");
 
   return equal_removed.replace(/%/g, "p");
 };
@@ -89,6 +89,14 @@ export const get_bindings = (message: InMessage, keys: string[]) => {
   return tmp;
 };
 
+const parse_title_description = (title: string, description: string | null) => {
+  if (description == null || description.length == 0) {
+    return title;
+  }
+
+  return description.length > title.length ? description : title;
+}
+
 export const convert_to_part = (row: ExportPart): InMessage => {
   return {
     c01: row.partNumber,
@@ -97,8 +105,8 @@ export const convert_to_part = (row: ExportPart): InMessage => {
     c04: "",
     c05: "", // LastModBy
     c06: "",
-    c07: row.title,
-    c08: row.description,
+    c07: parse_title_description(row.title, row.description),
+    c08: null, // description
     c09: row.supplierDescription,
     c10: row.materialCertificate,
     c11: "not-in-use",
@@ -178,27 +186,27 @@ export const sleep = (timeout: number): Promise<void> => {
 
 export type ExportPart = {
   partNumber: string,
-    revision: string,
-    title: string,
-    units: string,
-    author: string,
-    state: string,
-    description: string | null,
-    category: string | null,
-    mass: string | null,
-    material: string | null,
-    materialCertificate: string | null,
-    serialNumber: string | null,
-    childCount: string | null,
-    supplier: string | null,
-    supplierPartNumber: string | null,
-    supplierDescription: string | null,
-    isSpare: string | null,
-    isCritical: string | null,
-    isLongLead: string | null,
-    quantity: string | null,
-    position: string | null,
-    parentPartNumber: string | null,
-    parentRevision: string | null,
-    released: string
+  revision: string,
+  title: string,
+  units: string,
+  author: string,
+  state: string,
+  description: string | null,
+  category: string | null,
+  mass: string | null,
+  material: string | null,
+  materialCertificate: string | null,
+  serialNumber: string | null,
+  childCount: string | null,
+  supplier: string | null,
+  supplierPartNumber: string | null,
+  supplierDescription: string | null,
+  isSpare: string | null,
+  isCritical: string | null,
+  isLongLead: string | null,
+  quantity: string | null,
+  position: string | null,
+  parentPartNumber: string | null,
+  parentRevision: string | null,
+  released: string
 }

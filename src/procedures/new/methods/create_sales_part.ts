@@ -35,7 +35,7 @@ export const Create_Sales_Part = `
 
                 &AO.SALES_PART_API.New__(info_, objid_, objversion_, attr_, 'DO');
             ELSE
-                &AO.Client_SYS.Add_To_Attr('CATALOG_DESC', &AO.PART_CATALOG_API.Get_Description(Get_Part_No(:part_no)), attr_);
+                &AO.Client_SYS.Add_To_Attr('CATALOG_DESC', &AO.PART_CATALOG_API.Get_Description(Get_Part_No(:c01)), attr_);
                 &AO.SALES_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
             END IF;
 

@@ -19,14 +19,14 @@ export const Create_Inventory_Part = `
             FETCH get_inventory_part
                 INTO objid_, objversion_;
 
-            IF get_latest_revision%NOTFOUND THEN
+            IF get_inventory_part%NOTFOUND THEN
                 rev_:= &AO.Eng_Part_Revision_API.Get_Last_Rev(Get_Part_No(:c01));
                 &AO.ENG_PART_INVENT_UTIL_API.Create_Inventory_Part(site_, Get_Part_No(:c01), site_, template_, rev_);
 
-                Set_Mat_Cert(Get_Part_No(:c01), :c10)
+                Set_Mat_Cert(Get_Part_No(:c01), :c10);
                 Set_Net_Weight(Get_Part_No(:c01), :c25);
             ELSE
-                Set_Mat_Cert(Get_Part_No(:c01), :c10)
+                Set_Mat_Cert(Get_Part_No(:c01), :c10);
                 Set_Net_Weight(Get_Part_No(:c01), :c25);
             END IF;
 
