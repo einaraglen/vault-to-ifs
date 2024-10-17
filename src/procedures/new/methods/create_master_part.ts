@@ -83,6 +83,8 @@ export const Create_Master_Part = `
                 OPEN get_catalog_part(Get_Part_No(:c01));
                     FETCH get_catalog_part
                         INTO objid_, objversion_;
+    
+                    prefix_ := SUBSTR(Get_Part_No(:c01), 3, 1);
 
                     -- Do not update description for 16(6) | 16(7) | SE(6) | SE(7)
                      IF prefix_ NOT LIKE '6' AND prefix_ NOT LIKE '7' THEN 
@@ -91,7 +93,6 @@ export const Create_Master_Part = `
                     END IF;
                 CLOSE get_catalog_part;
 
-                prefix_ := SUBSTR(Get_Part_No(:c01), 3, 1);
 
             END IF;
 
