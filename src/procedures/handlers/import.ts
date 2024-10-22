@@ -26,27 +26,30 @@ export class Insert {
 
   public async start() {
     try {
-      const { map, list } = filter_unique_parts(this.message.parts);
+      const { map, list, root } = filter_unique_parts(this.message.parts);
       const struct_chain = build_structure_chain(this.message.parts, map);
 
       const { new_revisions, created_revisions } = await insert_unique_parts(this.tx, list);
 
       await check_obsolete(this.tx, list, new_revisions)
 
-      await this.try_commit(Stage.Parts);
+      // await this.try_commit(Stage.Parts);
 
-      this.set_revisions(created_revisions);
+      // Only add structure if there is any
+      if (list.length > 1) {
+        this.set_revisions(created_revisions);
 
-      await insert_structure_chain(this.tx, struct_chain, new_revisions);
-
-      await set_structure_state(this.tx, struct_chain, new_revisions);
+        await insert_structure_chain(this.tx, struct_chain, new_revisions, root);
+  
+        await set_structure_state(this.tx, struct_chain, new_revisions);
+      }
 
       await this.try_commit(Stage.Structs);
 
       await this.try_close();
     } catch (err) {
       await this.try_rollback();
-      await this.remove_revisions();
+      // await this.remove_revisions();
       await this.try_close();
 
       throw err;

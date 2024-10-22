@@ -1,6 +1,7 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
-import { ExportPart, sleep, StructureChain } from "../../utils/tools";
+import { ExportPart, Structure } from "../../utils/tools";
 import { change_structure_state } from "../bom/change_structure_state";
+import { check_structure_size } from "../bom/check_structure_size";
 import { create_rev_structure } from "../bom/create_rev_structure";
 import { add_manufacturer } from "../parts/add_manufacturer";
 import { add_technical_spesification } from "../parts/add_technical_spesification";
@@ -15,24 +16,25 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
   const created_revisions: Record<string, string> = {};
 
   for (const part of parts) {
+    console.log("INSERT PART", part.partNumber)
     try {
       const cat = await create_catalog_part(tx, part);
       const { unit } = cat.bindings as any;
-  
+
       if (unit && part.units && unit != part.units) {
         part.units = unit;
       }
-  
+
       await add_technical_spesification(tx, part);
       await add_manufacturer(tx, part);
-  
+
       const eng = await create_engineering_part(tx, part);
       const { part_rev, created } = eng.bindings as any;
-  
+
       if (part_rev && part.revision && part_rev != part.revision) {
-  
+
         new_revisions[part.partNumber!] = part_rev;
-  
+
         if (created == "TRUE") {
           created_revisions[part.partNumber!] = part_rev;
         }
@@ -41,9 +43,6 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
       await create_inventory_part(tx, part);
       await create_purchase_part(tx, part);
       await create_sales_part(tx, part);
-  
-  
-      await sleep(100);
     } catch (err) {
       throw err
     }
@@ -52,18 +51,18 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
   return { new_revisions, created_revisions };
 };
 
-export const insert_structure_chain = async (tx: Connection, chain: StructureChain, revisions: Record<string, string>) => {
-  for (const [parent, children] of Object.entries(chain)) {
+export const insert_structure_chain = async (tx: Connection, chain: Structure[], revisions: Record<string, string>, root: ExportPart) => {
+  for (const { parent, children } of chain) {
 
     if (children.length == 0) {
       continue;
     }
 
-    const [parent_no] = parent.split(".");
-
-    const parent_new_rev = revisions[parent_no];
+    const parent_new_rev = revisions[parent.partNumber];
 
     for (const child of children) {
+      console.log("INSERT STRUCT", child.partNumber)
+
       const child_new_rev = revisions[child.partNumber!];
 
       if (child_new_rev) {
@@ -75,20 +74,36 @@ export const insert_structure_chain = async (tx: Connection, chain: StructureCha
       }
 
       await create_rev_structure(tx, child);
-
-      await sleep(100);
     }
   }
+
+  const root_new_rev = revisions[root.partNumber!];
+
+  if (root_new_rev) {
+    root.revision = root_new_rev;
+  }
+
+  const sum = chain.reduce((sum, curr) => {
+    return sum + curr.children.length
+  }, 0)
+
+  const size = await check_structure_size(tx, root)
+
+  if (sum != size) {
+    throw new Error(`IFS Structure does not match Vault Structure: Vault=${sum}, IFS=${size}`)
+  }
+
+  console.log("Checked", root.partNumber, root.revision, "Found", size, "of", sum)
 };
 
-export const set_structure_state = async (tx: Connection, chain: StructureChain, revisions: Record<string, string>) => {
-  for (const [struct] of Object.entries(chain)) {
-    const [no, rev, state] = struct.split(".");
+export const set_structure_state = async (tx: Connection, chain: Structure[], revisions: Record<string, string>) => {
+  for (const struct of chain) {
+    const parent = struct.parent;
 
-    const new_rev = revisions[no];
-    
-    await change_structure_state(tx, { partNumber: no, revision: new_rev || rev, state } as any);
+    if (revisions[parent.partNumber]) {
+      parent.revision = revisions[parent.partNumber]
+    }
 
-    await sleep(100);
+    await change_structure_state(tx, parent);
   }
 };

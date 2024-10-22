@@ -14,6 +14,7 @@ DECLARE
   prev_part_rev_      VARCHAR2(200);
   found_              BOOLEAN := FALSE;
   change_             VARCHAR2(200);
+  position_           VARCHAR2(200);
 
   CURSOR check_sub_struct(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2, sub_part_no_ IN VARCHAR2, sub_part_rev_ IN VARCHAR2) IS
     SELECT COUNT(*)
@@ -89,26 +90,32 @@ DECLARE
   END Prefix_Part_No__;
 
 BEGIN
-  &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
-  &AO.Client_SYS.Add_To_Attr('STRUCTURE_ID', 'STD', attr_);
-  &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
-  &AO.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
-  &AO.Client_SYS.Add_To_Attr('SUB_PART_NO', Prefix_Part_No__(:c06), attr_);
-  &AO.Client_SYS.Add_To_Attr('SUB_PART_REV', :c07, attr_);
-  &AO.Client_SYS.Add_To_Attr('POS', SUBSTR(:c04, 1, 10), attr_);
-  &AO.Client_SYS.Set_Item_Value('QTY', :n01, attr_);
+  
 
-  IF :c02 NOT LIKE '16%' THEN
-    &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
-  ELSE
-    OPEN check_sub_struct(Prefix_Part_No__(:c02), :c03, Prefix_Part_No__(:c06), :c07);
+  OPEN check_sub_struct(Prefix_Part_No__(:c02), :c03, Prefix_Part_No__(:c06), :c07);
     FETCH check_sub_struct 
       INTO exists_;
-    CLOSE check_sub_struct;
+  CLOSE check_sub_struct;
 
-    IF exists_ = 0 THEN
-      &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
+  IF exists_ = 0 THEN
+    &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
+    &AO.Client_SYS.Add_To_Attr('STRUCTURE_ID', 'STD', attr_);
+    &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
+    &AO.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
+    &AO.Client_SYS.Add_To_Attr('SUB_PART_NO', Prefix_Part_No__(:c06), attr_);
+    &AO.Client_SYS.Add_To_Attr('SUB_PART_REV', :c07, attr_);
+
+    -- Fix for max POS Lenght = 10
+    position_ := :c04;
+
+    IF INSTR(:c04, '.') > 0 THEN
+      position_ := '..' || SUBSTR(:c04, INSTR(:c04, '.', -1) + 1);
     END IF;
+
+    &AO.Client_SYS.Add_To_Attr('POS', position_, attr_);
+    
+    &AO.Client_SYS.Set_Item_Value('QTY', :n01, attr_);
+    &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
   END IF;
 
   IF :c09 LIKE '1' THEN

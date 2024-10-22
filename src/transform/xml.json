@@ -1,4 +1,6 @@
 {
+  "id": "GUID",
+  "parentId": "_GUID",
   "partNumber": "Part Number",
   "revision": "Revision",
   "title": "Title",

@@ -150,40 +150,55 @@ export const convert_to_struct = (row: ExportPart): InMessage => {
 
 export const filter_unique_parts = (rows: ExportPart[]) => {
   const parts_map: Record<string, ExportPart> = {};
+  const lookup: Record<string, ExportPart> = {}
+
+  const root = rows.find((p) => p.parentPartNumber == "")
+
+  if (root == null) {
+    throw new Error(`Failed to find root part`)
+  }
 
   for (const row of rows) {
+    lookup[row.id] = row;
     parts_map[`${row.partNumber}.${row.revision}`] = row;
   }
 
   const list = Object.entries(parts_map).map((e) => e[1]);
-  return { map: parts_map, list };
+  return { map: lookup, list, root };
 };
 
 export type StructureChain = Record<string, ExportPart[]>;
+
+export type Structure = { parent: ExportPart, children: ExportPart[] }
 
 export const build_structure_chain = (rows: ExportPart[], map: Record<string, ExportPart>) => {
   const chain: StructureChain = {};
 
   for (const row of rows) {
-    if (row.parentPartNumber && row.parentRevision) {
-      const parent_key = `${row.parentPartNumber}.${row.parentRevision}`;
-      const parent = map[parent_key];
+    if (row.parentId) {
+      const parent = map[row.parentId];
 
       if (!parent) {
-        throw new MSSQLError(`Cannot find parent entry for: ${parent_key}`, "Build Structure Chain");
+        throw new MSSQLError(`Cannot find parent entry for: ${row.partNumber}-${row.revision}`, "Build Structure Chain");
       }
 
-      const key = `${parent.partNumber}.${parent.revision}.${parent.state}`;
-      chain[key] = [row, ...(chain[key] || [])];
+      chain[parent.id] = [row, ...(chain[parent.id] || [])];
     }
 
-    if (row.partNumber && !row.partNumber.startsWith("16")) {
-      const item_key = `${row.partNumber}.${row.revision}.${row.state}`;
-      chain[item_key] = [...(chain[item_key] || [])];
-    }
+    // if (row.partNumber && !row.partNumber.startsWith("16")) {
+    //   const item_key = `${row.partNumber}.${row.revision}.${row.state}`;
+    //   chain[item_key] = [...(chain[item_key] || [])];
+    // }
   }
 
-  return chain;
+  const struct: Structure[] = []
+
+  for (const key in chain) {
+    const parent = map[key]
+    struct.push({ parent, children: chain[key] })
+  }
+
+  return struct;
 };
 
 export const sleep = (timeout: number): Promise<void> => {
@@ -191,28 +206,30 @@ export const sleep = (timeout: number): Promise<void> => {
 };
 
 export type ExportPart = {
+  id: string
+  parentId: string
   partNumber: string,
-    revision: string,
-    title: string,
-    units: string,
-    author: string,
-    state: string,
-    description: string | null,
-    category: string | null,
-    mass: string | null,
-    material: string | null,
-    materialCertificate: string | null,
-    serialNumber: string | null,
-    childCount: string | null,
-    supplier: string | null,
-    supplierPartNumber: string | null,
-    supplierDescription: string | null,
-    isSpare: string | null,
-    isCritical: string | null,
-    isLongLead: string | null,
-    quantity: string | null,
-    position: string | null,
-    parentPartNumber: string | null,
-    parentRevision: string | null,
-    released: string
+  revision: string,
+  title: string,
+  units: string,
+  author: string,
+  state: string,
+  description: string | null,
+  category: string | null,
+  mass: string | null,
+  material: string | null,
+  materialCertificate: string | null,
+  serialNumber: string | null,
+  childCount: string | null,
+  supplier: string | null,
+  supplierPartNumber: string | null,
+  supplierDescription: string | null,
+  isSpare: string | null,
+  isCritical: string | null,
+  isLongLead: string | null,
+  quantity: string | null,
+  position: string | null,
+  parentPartNumber: string | null,
+  parentRevision: string | null,
+  released: string
 }

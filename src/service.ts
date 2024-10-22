@@ -50,7 +50,7 @@ export class Service {
     console.error(err)
 
     this.watcher.clean(transaction.id, event.path, false);
-    await Providers.Mailer.send(err, {...transaction, file: event.name });
+    // await Providers.Mailer.send(err, {...transaction, file: event.name });
 
     this.log(Status.Failure, event, transaction)
   }
