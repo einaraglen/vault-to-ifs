@@ -16,7 +16,6 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
   const created_revisions: Record<string, string> = {};
 
   for (const part of parts) {
-    console.log("INSERT PART", part.partNumber)
     try {
       const cat = await create_catalog_part(tx, part);
       const { unit } = cat.bindings as any;
@@ -61,7 +60,6 @@ export const insert_structure_chain = async (tx: Connection, chain: Structure[],
     const parent_new_rev = revisions[parent.partNumber];
 
     for (const child of children) {
-      console.log("INSERT STRUCT", child.partNumber)
 
       const child_new_rev = revisions[child.partNumber!];
 
@@ -92,8 +90,6 @@ export const insert_structure_chain = async (tx: Connection, chain: Structure[],
   if (sum != size) {
     throw new Error(`IFS Structure does not match Vault Structure: Vault=${sum}, IFS=${size}`)
   }
-
-  console.log("Checked", root.partNumber, root.revision, "Found", size, "of", sum)
 };
 
 export const set_structure_state = async (tx: Connection, chain: Structure[], revisions: Record<string, string>) => {
