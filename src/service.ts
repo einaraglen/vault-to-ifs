@@ -65,6 +65,7 @@ export class Service {
 
   private shutdown() {
     this.watcher.close()
+    Providers.IFS.EndSession()
     process.exit(0)
   }
 
