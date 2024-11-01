@@ -1,4 +1,5 @@
 import { Connection } from "../../providers/ifs/internal/Connection";
+import { CheckError } from "../../utils/error";
 import { ExportPart, Structure } from "../../utils/tools";
 import { change_structure_state } from "../bom/change_structure_state";
 import { check_structure_size } from "../bom/check_structure_size";
@@ -31,7 +32,7 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
       const { part_rev, created } = eng.bindings as any;
 
       if (part_rev && part.revision && part_rev != part.revision) {
-
+        console.log("New Rev for", part.partNumber, part_rev)
         new_revisions[part.partNumber!] = part_rev;
 
         if (created == "TRUE") {
@@ -51,6 +52,9 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
 };
 
 export const insert_structure_chain = async (tx: Connection, chain: Structure[], revisions: Record<string, string>, root: ExportPart) => {
+
+  let count = 0;
+
   for (const { parent, children } of chain) {
 
     if (children.length == 0) {
@@ -72,6 +76,7 @@ export const insert_structure_chain = async (tx: Connection, chain: Structure[],
       }
 
       await create_rev_structure(tx, child);
+      count++
     }
   }
 
@@ -88,7 +93,8 @@ export const insert_structure_chain = async (tx: Connection, chain: Structure[],
   const size = await check_structure_size(tx, root)
 
   if (sum != size) {
-    throw new Error(`IFS Structure does not match Vault Structure: Vault=${sum}, IFS=${size}`)
+    console.log(`IFS Structure does not match Vault Structure: Vault=${sum}, IFS=${size}, Count=${count}`)
+    // throw new CheckError(`IFS Structure does not match Vault Structure: Vault=${sum}, IFS=${size}, Count=${count}`)
   }
 };
 

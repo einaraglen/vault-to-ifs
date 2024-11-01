@@ -3,6 +3,68 @@ import { PlSqlMultiResponse, PlSqlOneResponse } from "../../providers/ifs/intern
 import { IFSError } from "../../utils/error";
 import { convert_to_struct, ExportPart, get_bind_keys, get_bindings } from "../../utils/tools";
 
+/**
+   IF :c09 LIKE '1' THEN
+    attr_ := NULL;
+    &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
+    &AO.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
+    &AO.Client_SYS.Add_To_Attr('SPARE_PART_NO', Prefix_Part_No__(:c06), attr_);
+    &AO.Client_SYS.Add_To_Attr('SPARE_PART_REV', :c07, attr_);
+    &AO.Client_SYS.Add_To_Attr('QTY', :n01, attr_);
+    &AO.Client_SYS.Add_To_Attr('INFO', 'VAULT_SERVER', attr_);
+    &AO.Eng_Part_Spare_API.New__(info_, objid_, objversion_, attr_, 'DO');
+  END IF;
+
+   OPEN get_struct_object(Prefix_Part_No__(:c02), :c03, Prefix_Part_No__(:c06), :c07);
+    FETCH get_struct_object
+      INTO objid_, objversion_;
+  CLOSE get_struct_object;
+
+  OPEN get_prev_rev(Prefix_Part_No__(:c02), :c03); 
+
+    FETCH get_prev_rev 
+        INTO prev_part_rev_;
+
+    IF get_prev_rev%NOTFOUND THEN
+      RETURN;
+    END IF;
+
+    FOR a_ IN get_prev_added(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07 ) LOOP
+      found_ := TRUE;
+    END LOOP;
+
+    IF NOT (found_) THEN
+
+      attr_ := NULL;
+      &AO.Client_SYS.Add_To_Attr('STR_COMMENT','ADDED',attr_);
+      &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
+      change_ := 'ADDED';
+    ELSE
+
+      FOR a_ IN get_prev_rev_chg(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07 ) LOOP
+        found_ := TRUE;
+        attr_ := NULL;
+        &AO.Client_SYS.Add_To_Attr('STR_COMMENT','REVISION_CHANGED',attr_);
+        &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
+        change_ := 'REVISION_CHANGED';
+      END LOOP;
+
+      IF NOT ( found_ ) THEN
+
+        FOR a_ IN get_prev_qty(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07, :n01) LOOP
+          found_ := TRUE;
+          attr_ := NULL;
+          &AO.Client_SYS.Add_To_Attr('STR_COMMENT','QTY_CHANGED',attr_);
+          &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
+          change_ := 'QTY_CHANGED';
+        END LOOP;
+
+      END IF;
+    END IF;
+    
+    CLOSE get_prev_rev;
+ */
+
 const plsql = `
 DECLARE
   info_               VARCHAR2(2000);
@@ -118,65 +180,9 @@ BEGIN
     &AO.ENG_PART_STRUCTURE_API.New__(info_, objid_, objversion_, attr_, 'DO');
   END IF;
 
-  IF :c09 LIKE '1' THEN
-    attr_ := NULL;
-    &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
-    &AO.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
-    &AO.Client_SYS.Add_To_Attr('SPARE_PART_NO', Prefix_Part_No__(:c06), attr_);
-    &AO.Client_SYS.Add_To_Attr('SPARE_PART_REV', :c07, attr_);
-    &AO.Client_SYS.Add_To_Attr('QTY', :n01, attr_);
-    &AO.Client_SYS.Add_To_Attr('INFO', 'VAULT_SERVER', attr_);
-    &AO.Eng_Part_Spare_API.New__(info_, objid_, objversion_, attr_, 'DO');
-  END IF;
+  -- SPARE PART
 
-  OPEN get_struct_object(Prefix_Part_No__(:c02), :c03, Prefix_Part_No__(:c06), :c07);
-    FETCH get_struct_object
-      INTO objid_, objversion_;
-  CLOSE get_struct_object;
-
-  OPEN get_prev_rev(Prefix_Part_No__(:c02), :c03); 
-
-    FETCH get_prev_rev 
-        INTO prev_part_rev_;
-
-    IF get_prev_rev%NOTFOUND THEN
-      RETURN;
-    END IF;
-
-    FOR a_ IN get_prev_added(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07 ) LOOP
-      found_ := TRUE;
-    END LOOP;
-
-    IF NOT (found_) THEN
-
-      attr_ := NULL;
-      &AO.Client_SYS.Add_To_Attr('STR_COMMENT','ADDED',attr_);
-      &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
-      change_ := 'ADDED';
-    ELSE
-
-      FOR a_ IN get_prev_rev_chg(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07 ) LOOP
-        found_ := TRUE;
-        attr_ := NULL;
-        &AO.Client_SYS.Add_To_Attr('STR_COMMENT','REVISION_CHANGED',attr_);
-        &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
-        change_ := 'REVISION_CHANGED';
-      END LOOP;
-
-      IF NOT ( found_ ) THEN
-
-        FOR a_ IN get_prev_qty(Prefix_Part_No__(:c02), prev_part_rev_, Prefix_Part_No__(:c06), :c07, :n01) LOOP
-          found_ := TRUE;
-          attr_ := NULL;
-          &AO.Client_SYS.Add_To_Attr('STR_COMMENT','QTY_CHANGED',attr_);
-          &AO.ENG_PART_STRUCTURE_API.Modify__( info_, objid_, objversion_, attr_, 'DO');
-          change_ := 'QTY_CHANGED';
-        END LOOP;
-
-      END IF;
-    END IF;
-    
-    CLOSE get_prev_rev;
+  -- CHANGE STATE
 
     :temp := change_;
 END;

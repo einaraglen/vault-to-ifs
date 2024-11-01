@@ -40,17 +40,19 @@ export class Service {
 
     const job = new Insert(transaction.id, parts);
     await job.start();
+
+    console.log(parts.length)
     
     this.log(Status.Completed, event, transaction)
 
-    this.watcher.clean(transaction.id, event.path, true);
+    // this.watcher.clean(transaction.id, event.path, true);
   }
 
   private async onError(event: ChangeEvent, transaction: Transaction, err: any) {
     console.error(err)
 
-    this.watcher.clean(transaction.id, event.path, false);
-    await Providers.Mailer.send(err, {...transaction, file: event.name });
+    // this.watcher.clean(transaction.id, event.path, false);
+    // await Providers.Mailer.send(err, {...transaction, file: event.name });
 
     this.log(Status.Failure, event, transaction)
   }

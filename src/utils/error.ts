@@ -35,3 +35,10 @@ export class TimeoutError extends Error {
         this.time = time;
     }
 }
+
+export class CheckError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "CheckError";
+    }
+}

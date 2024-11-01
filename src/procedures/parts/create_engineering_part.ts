@@ -137,14 +137,15 @@ BEGIN
 
             current_part_rev_ := eng_part_revision_rec_.PART_REV;
 
+            -- TODO: This is inherently wrong, 16* parts that already exist can have children! they also need quick change revisions!!
             IF get_latest_revision%FOUND AND SUBSTR(Prefix_Part_No__(:c01), 1, 2) NOT LIKE '16' THEN
-                /* Use last revision to calculate next revision */
+                --Use last revision to calculate next revision
 
                 new_rev_      := Get_New_Revision__(current_part_rev_);
                 new_revision_ := new_rev_;
 
             ELSIF get_latest_revision%FOUND AND SUBSTR(:c01, 1, 2) LIKE '16' THEN
-                /* Parts start with 16 and this revision exists. Do not create a new... */
+                --Parts start with 16 and this revision exists. Do not create a new... */
                 
                 IF current_part_rev_ != :c02 THEN
                     new_rev_      := NULL;
@@ -155,7 +156,7 @@ BEGIN
                 END IF;
 
             ELSE
-                /* This is the first revision for this letter */
+                --This is the first revision for this letter
                 new_rev_      := :c02;
                 new_revision_ := new_rev_;
                 IF current_part_rev_ IS NULL THEN
@@ -175,7 +176,7 @@ BEGIN
     objstate_   := &AO.Eng_Part_Revision_API.Get_Obj_State(Prefix_Part_No__(:c01), new_revision_);
 
     -- New 16 parts need to get state update, these will not contain children!
-    
+    -- BUT THEY MIGHT!
     IF objstate_ = 'Preliminary' AND SUBSTR(:c01, 1, 2) LIKE '16' THEN
         OPEN get_revision_object(Prefix_Part_No__(:c01), new_revision_);
 
