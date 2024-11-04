@@ -32,7 +32,7 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
       const { part_rev } = eng.bindings as any;
 
       if (part_rev && part.revision && part_rev != part.revision) {
-        console.log("New Rev for", part.partNumber, part_rev)
+        // console.log("New Rev for", part.partNumber, part_rev)
         new_revisions[part.partNumber + "_" + part.revision] = part_rev;
       }
 
