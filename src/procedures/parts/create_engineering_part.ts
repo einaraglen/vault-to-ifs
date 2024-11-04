@@ -81,7 +81,7 @@ DECLARE
         prefixed_part_no_ VARCHAR2(100);
         prefix_           VARCHAR2(5) := 'SE';
     BEGIN
-        IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+        IF SUBSTR(part_no_, 1, 1) = '1' OR SUBSTR(part_no_, 1, 2) = 'PD' THEN
             prefixed_part_no_ := part_no_;
         ELSE
             prefixed_part_no_ := prefix_ || part_no_;
@@ -106,7 +106,7 @@ BEGIN
         &AO.Client_SYS.Set_Item_Value('UNIT_CODE', &AO.Part_Catalog_API.Get(Prefix_Part_No__(:c01)).unit_code, attr_);
         &AO.Client_SYS.Add_To_Attr('STD_NAME_ID', '0', attr_);
 
-        IF  (SUBSTR(:c01, 1, 1) LIKE '6') OR (SUBSTR(:c01, 1, 1) LIKE '7') THEN
+        IF  (SUBSTR(:c01, 1, 1) LIKE '2') OR (SUBSTR(:c01, 1, 1) LIKE '7') OR (SUBSTR(:c01, 1, 1) LIKE '6') THEN
             &AO.Client_SYS.Add_To_Attr('PROVIDE', 'Make', attr_);
         ELSE
             &AO.Client_SYS.Add_To_Attr('PROVIDE', 'Buy', attr_);
@@ -138,6 +138,7 @@ BEGIN
             current_part_rev_ := eng_part_revision_rec_.PART_REV;
 
             -- TODO: This is inherently wrong, 16* parts that already exist can have children! they also need quick change revisions!!
+
             IF get_latest_revision%FOUND AND SUBSTR(Prefix_Part_No__(:c01), 1, 2) NOT LIKE '16' THEN
                 --Use last revision to calculate next revision
 
@@ -177,6 +178,13 @@ BEGIN
 
     -- New 16 parts need to get state update, these will not contain children!
     -- BUT THEY MIGHT!
+
+
+    :created            := created_;
+    :part_rev           := new_revision_;
+END;
+`;
+/**
     IF objstate_ = 'Preliminary' AND SUBSTR(:c01, 1, 2) LIKE '16' THEN
         OPEN get_revision_object(Prefix_Part_No__(:c01), new_revision_);
 
@@ -193,11 +201,8 @@ BEGIN
 
         CLOSE get_revision_object;
     END IF;
+ */
 
-    :created            := created_;
-    :part_rev           := new_revision_;
-END;
-`;
 
 export const create_engineering_part = async (client: Connection, row: ExportPart) => {
   const message = convert_to_part(row);

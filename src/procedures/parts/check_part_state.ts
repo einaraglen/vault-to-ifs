@@ -11,17 +11,11 @@ DECLARE
   objversion_         VARCHAR2(2000);
   objstate_           VARCHAR2(200);
 
-    CURSOR get_revision_object(p_part_no_ IN VARCHAR2, p_part_rev_ IN VARCHAR2) IS
-        SELECT objid, objversion
-        FROM   &AO.ENG_PART_REVISION
-        WHERE  part_no = p_part_no_
-        AND    part_rev = p_part_rev_;
-
   FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
       prefixed_part_no_ VARCHAR2(100);
       prefix_           VARCHAR2(5) := 'SE';
   BEGIN
-      IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+      IF SUBSTR(part_no_, 1, 1) = '1' OR SUBSTR(part_no_, 1, 2) = 'PD' THEN
           prefixed_part_no_ := part_no_;
       ELSE
           prefixed_part_no_ := prefix_ || part_no_;

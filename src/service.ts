@@ -41,8 +41,6 @@ export class Service {
     const job = new Insert(transaction.id, parts);
     await job.start();
 
-    console.log(parts.length)
-    
     this.log(Status.Completed, event, transaction)
 
     // this.watcher.clean(transaction.id, event.path, true);
