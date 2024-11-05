@@ -2,6 +2,7 @@ import { render } from "@react-email/components";
 import nodemailer, { Transporter } from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 import ErrorEmail from "../../../emails/Error";
+import { Transaction } from "../../refactor/transaction";
 
 const config: SMTPTransport.Options = {
   host: process.env.SMTP_HOST,
@@ -27,11 +28,11 @@ export class MailerConnection {
     return this;
   }
 
-  public async send(error: any, transaction: { file: string; id: string }) {
+  public async send(error: any, transaction: Transaction) {
     try {
-      const args = { file: transaction.file, transaction: transaction.id, error };
+      const args = { file: transaction.event.name, transaction: transaction.id, error };
       const html = render(ErrorEmail(args));
-      await this.client.sendMail(this.error_message(transaction.file, html));
+      await this.client.sendMail(this.error_message(transaction.event.name, html));
     } catch (err) {
       console.error(err);
     }

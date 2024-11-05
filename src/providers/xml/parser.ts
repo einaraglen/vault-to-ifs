@@ -40,7 +40,22 @@ export class Parser {
       this.read(obj.Export)
     }
 
-    return this.rows;
+    return this.collect();
+  }
+
+  private collect() {
+    const unique: Record<string, ExportPart> = {}
+
+    const children = [...this.rows]
+
+    const rootIndex = children.findIndex((part) => part.parentPartNumber == "")
+    children.splice(rootIndex, 1)
+
+    for (const part of this.rows) {
+      unique[part.partNumber + "_" + part.revision] = part;
+    }
+
+    return { unique: Object.values(unique), children }
   }
 
   private read(data: Record<string, Component>) {

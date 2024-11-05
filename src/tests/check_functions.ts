@@ -1,4 +1,6 @@
 import { Connection } from "../providers/ifs/internal/Connection";
+import { IFSError } from "../utils/error";
+import { get_bind_keys, get_bindings } from "../utils/tools";
 
 const plsql = `
 DECLARE
@@ -57,7 +59,7 @@ export const get_prefix_part_no = async (client: Connection, part_no: string) =>
     DECLARE
       part_no_      VARCHAR2(200);
 
-      FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
+      FUNCTION Get_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
           prefixed_part_no_ VARCHAR2(100);
           prefix_           VARCHAR2(5) := 'SE';
       BEGIN
@@ -67,10 +69,10 @@ export const get_prefix_part_no = async (client: Connection, part_no: string) =>
               prefixed_part_no_ := prefix_ || part_no_;
           END IF;
           RETURN(prefixed_part_no_);
-      END Prefix_Part_No__;
+      END Get_Part_No__;
 
     BEGIN
-            part_no_    := Prefix_Part_No__(:arg);
+            part_no_    := Get_Part_No__(:arg);
             :state      := part_no_;
     END
     `, { arg: part_no, state: "" });
@@ -82,4 +84,13 @@ export const get_prefix_part_no = async (client: Connection, part_no: string) =>
   const { state } = res.bindings as any;
 
   return state;
+};
+
+export const test_plsql = async (client: Connection, sql: string, message: any) => {
+  const bind = get_bindings(message, get_bind_keys(sql));
+  const res = await client.PlSql(sql, { ...bind });
+
+  if (!res.ok) {
+    throw new IFSError(res.errorText, "Part Handler Exec", message);
+  }
 };
