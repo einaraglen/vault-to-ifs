@@ -12,13 +12,13 @@ PROCEDURE Create_Inventory_Part__ IS
     CURSOR invpart_get_rev(part_ IN VARCHAR2) IS
         SELECT objid, objversion
         FROM   &AO.PART_REVISION
-        WHERE  contract = contract_
+        WHERE  contract = g_contract_
         AND    part_no = part_
         AND    eng_chg_level = 1;
 BEGIN
     obj_ := Get_Inventory_Part__(Get_Part_No__(:c01));
 
-    IF obj_.objid = NULL  THEN
+    IF obj_.found = FALSE  THEN
         &AO.Client_SYS.Clear_Attr(attr_);
 
         IF :c18 = 'Obsolete' THEN
@@ -27,7 +27,7 @@ BEGIN
             &AO.Client_SYS.Add_To_Attr('PART_STATUS', 'A', attr_);
         END IF;
 
-        &AO.Client_SYS.Add_To_Attr('CONTRACT', contract_, attr_);
+        &AO.Client_SYS.Add_To_Attr('CONTRACT', g_contract_, attr_);
         &AO.Client_SYS.Add_To_Attr('ASSET_CLASS', 'S', attr_);
         &AO.Client_SYS.Add_To_Attr('STOCK_MANAGEMENT_DB', 'SYSTEM MANAGED INVENTORY', attr_);
         &AO.Client_SYS.Add_To_Attr('DOP_CONNECTION',
@@ -86,7 +86,7 @@ BEGIN
             &AO.Client_SYS.Add_To_Attr('QTY_CALC_ROUNDING', 16, attr_);
         END IF;
 
-        &AO.Client_SYS.Set_Item_Value('CONTRACT', contract_, attr_);
+        &AO.Client_SYS.Set_Item_Value('CONTRACT', g_contract_, attr_);
         &AO.INVENTORY_PART_API.New__(info_, objid_, objversion_, attr_, 'DO');
 
         attr_ := NULL;
@@ -105,7 +105,7 @@ BEGIN
         IF :c10 = '3.1' THEN
             &AO.Client_SYS.Add_To_Attr('TECHNICAL_COORDINATOR_ID', 'MATCERT31', attr_);
         ELSIF :c10 = '3.2' THEN
-            &AO.Client_SYS.Add_To_Attr('TECHNICAL_COORDINATOR_ID', 'MATCERT31', attr_);
+            &AO.Client_SYS.Add_To_Attr('TECHNICAL_COORDINATOR_ID', 'MATCERT32', attr_);
         END IF;
 
         &AO.INVENTORY_PART_API.Modify__(info_, obj_.objid, obj_.objversion, attr_, 'DO');

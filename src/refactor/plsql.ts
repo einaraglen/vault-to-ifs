@@ -22,10 +22,6 @@ export class PLSQL {
         return PLSQL.parseFile(PLSQL.FUNCTIONS, PLSQL.getFunctionPath())
     }
 
-    public static get Check_Child_Count__() {
-        return PLSQL.parseFile(PLSQL.FUNCTIONS, PLSQL.getFunctionPath())
-    }
-
     public static get Check_Editable__() {
         return PLSQL.parseFile(PLSQL.FUNCTIONS, PLSQL.getFunctionPath())
     }
@@ -47,6 +43,10 @@ export class PLSQL {
         return PLSQL.parseFile(PLSQL.FUNCTIONS, PLSQL.OBJECTS, PLSQL.getFunctionPath())
     }
 
+    public static get Check_Engineering_Part__() {
+        return PLSQL.parseFile(PLSQL.FUNCTIONS, PLSQL.OBJECTS, PLSQL.getFunctionPath())
+    }
+    
     public static get Get_Inventory_Part__() {
         return PLSQL.parseFile(PLSQL.FUNCTIONS, PLSQL.OBJECTS, PLSQL.getFunctionPath())
     }
@@ -98,6 +98,10 @@ export class PLSQL {
     }
 
     public static get Set_Struct_State__() {
+        return PLSQL.parseFile(PLSQL.STRUCT, PLSQL.getFunctionPath())
+    }
+
+    public static get Check_Child_Count__() {
         return PLSQL.parseFile(PLSQL.STRUCT, PLSQL.getFunctionPath())
     }
 

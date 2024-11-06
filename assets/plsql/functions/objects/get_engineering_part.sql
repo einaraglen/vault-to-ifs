@@ -7,8 +7,11 @@ FUNCTION Get_Engineering_Part__(part_no_ IN VARCHAR2, part_rev_ IN VARCHAR2) RET
         WHERE part_no = part_no_
         AND part_rev = part_rev_;
 BEGIN
+    obj_.found := FALSE;
+
     OPEN get_engineering_object_;
-        FETCH get_engineering_object_ INTO obj_;
+        FETCH get_engineering_object_ INTO obj_.objid, obj_.objversion;
+        obj_.found := get_engineering_object_%FOUND;
     CLOSE get_engineering_object_;
 
     RETURN obj_;

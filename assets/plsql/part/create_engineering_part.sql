@@ -10,10 +10,9 @@ PROCEDURE Create_Engineering_Part__ IS
 
     error_message     VARCHAR2(20000);
 BEGIN
-    obj_ := Get_Engineering_Part__(Get_Part_No__(:c01), :c02);
     rev_ := Get_Engineering_Latest__(Get_Part_No__(:c01), :c02);
 
-    IF obj_.objid IS NULL THEN
+    IF Check_Engineering_Part__(Get_Part_No__(:c01)) = FALSE THEN
         &AO.Client_SYS.Clear_Attr(attr_);
         &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
         &AO.Client_SYS.Add_To_Attr('PART_NO', Get_Part_No__(:c01), attr_);
@@ -63,12 +62,11 @@ BEGIN
         END IF;
     END IF;
 
-    -- RETURN THESE AS FUNCTION
-    --:part_rev           := rev_.new_rev;
+    g_new_rev_ := rev_.new_rev;
 
 EXCEPTION
     WHEN OTHERS THEN
         error_message := SQLERRM;
 
-g_error_message := 'Create_Engineering_Part__:' || error_message;
+g_error_message := rev_.new_rev || 'Create_Engineering_Part__:' || error_message;
 END Create_Engineering_Part__;

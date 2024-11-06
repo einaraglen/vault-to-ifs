@@ -4,7 +4,8 @@ import { ChangeEvent } from "../utils/watcher";
 import { Connection } from "../providers/ifs/internal/Connection";
 import { PartHandler } from "./part_handler";
 import { StructHandler } from "./struct_handler";
-import { CommitError } from "../utils/error";
+import { CommitError, TimeoutError } from "../utils/error";
+import { sleep } from "../utils/tools";
 
 export enum Status {
     Starting = "Starting",
@@ -30,24 +31,38 @@ export class Transaction {
 
         this.parser = new Parser(this.event.path)
         this.partHandler = new PartHandler(tx)
-        this.structHandler = new StructHandler(tx)
+        this.structHandler = new StructHandler(tx, this.partHandler)
     }
 
     public async exec() {
         try {
-            const { unique, children } = this.parser.parse();
+            const { unique, children, root } = this.parser.parse();
 
             for (const part of unique) {
                 await this.partHandler.exec(part)
+                await sleep()
             }
 
-            // haha scary fast, breaks IFS
-            // await Promise.all(unique.map((part) => ))
+            // Throws if there are obsolete parts
+            this.partHandler.checkObsolete();
 
-            // TODO: should we have a map here, then set state after all direct children are added?
-            // await Promise.all(children.map((part) => this.structHandler.exec(part)))
+            if (children != null) {
+                for (const child of children) {
+                    await this.structHandler.exec_child(child)
+                    await sleep()
+                }
 
-            await this.commit()
+                for (const child of [root, ...children]) {
+                    await this.structHandler.exec_state(child)
+                    await sleep()
+                }
+
+                // Throws if there are differences between IFS and Export data
+                this.structHandler.checkChildCount(children)
+            }
+
+            // await this.commit()
+            await this.rollback()
         } catch (err) {
             console.error(err)
             await this.rollback()
@@ -63,18 +78,26 @@ export class Transaction {
         }
     }
 
-    private rollback() {
-        return this.tx.Rollback()
+    private async rollback() {
+        const rollback = this.tx.Rollback().then(() => true)
+        const timeout = sleep(10000).then(() => false)
+
+        const ok = await Promise.race([rollback, timeout])
+
+        if (!ok) {
+            throw new TimeoutError("Failed to rollback changes!", 10000)
+        }
     }
 
     public close(status: Status) {
+        // Stop further exec
         this.partHandler.stop()
         this.structHandler.stop()
 
         // Rollback all that is un-commited
         this.tx.Rollback()
+            .then(() => this.tx.EndSession())
 
-        this.tx.EndSession();
         console.log(`${status} [${this.event.name}] [${this.id}]`)
     }
 }

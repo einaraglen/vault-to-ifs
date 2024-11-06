@@ -29,6 +29,10 @@ export class MailerConnection {
   }
 
   public async send(error: any, transaction: Transaction) {
+    if (process.env.NODE_ENV == "development") {
+      return;
+    }
+    
     try {
       const args = { file: transaction.event.name, transaction: transaction.id, error };
       const html = render(ErrorEmail(args));

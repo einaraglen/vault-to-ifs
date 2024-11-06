@@ -10,9 +10,9 @@ PROCEDURE Create_Sales_Part__ IS
 BEGIN
     obj_ := Get_Sales_Part__(Get_Part_No__(:c01));
 
-    IF obj_.objid = NULL THEN
+    IF obj_.found = FALSE THEN
         &AO.Client_SYS.Clear_Attr(attr_);
-        &AO.Client_SYS.Add_To_Attr('CONTRACT', contract_, attr_);
+        &AO.Client_SYS.Add_To_Attr('CONTRACT', g_contract_, attr_);
         &AO.Client_SYS.Add_To_Attr('CATALOG_TYPE_DB', 'INV', attr_);
         &AO.Client_SYS.Add_To_Attr('PRIMARY_CATALOG_DB', 'FALSE', attr_);
         &AO.Client_SYS.Add_To_Attr('ACTIVEIND_DB', 'Y', attr_);

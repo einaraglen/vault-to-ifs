@@ -184,11 +184,6 @@ export const build_structure_chain = (rows: ExportPart[], map: Record<string, Ex
 
       chain[parent.id] = [row, ...(chain[parent.id] || [])];
     }
-
-    // if (row.partNumber && !row.partNumber.startsWith("16")) {
-    //   const item_key = `${row.partNumber}.${row.revision}.${row.state}`;
-    //   chain[item_key] = [...(chain[item_key] || [])];
-    // }
   }
 
   const struct: Structure[] = []
@@ -201,7 +196,7 @@ export const build_structure_chain = (rows: ExportPart[], map: Record<string, Ex
   return struct;
 };
 
-export const sleep = (timeout: number): Promise<void> => {
+export const sleep = (timeout: number = 100): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 };
 
@@ -229,7 +224,7 @@ export type ExportPart = {
   isLongLead: string | null,
   quantity: string | null,
   position: string | null,
-  parentPartNumber: string | null,
-  parentRevision: string | null,
+  parentPartNumber: string,
+  parentRevision: string,
   released: string
 }

@@ -45,17 +45,18 @@ export class Parser {
 
   private collect() {
     const unique: Record<string, ExportPart> = {}
-
     const children = [...this.rows]
 
     const rootIndex = children.findIndex((part) => part.parentPartNumber == "")
+    const root = children[rootIndex]
+
     children.splice(rootIndex, 1)
 
     for (const part of this.rows) {
       unique[part.partNumber + "_" + part.revision] = part;
     }
 
-    return { unique: Object.values(unique), children }
+    return { unique: Object.values(unique), children: children.length == 0 ? null : children, root }
   }
 
   private read(data: Record<string, Component>) {

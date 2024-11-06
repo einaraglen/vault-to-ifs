@@ -1,6 +1,7 @@
 TYPE PART_REC IS RECORD (
     objid          VARCHAR2(2000),
-    objversion     VARCHAR2(2000)
+    objversion     VARCHAR2(2000),
+    found          BOOLEAN
 );
 
 TYPE REV_REC IS RECORD (

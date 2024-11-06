@@ -10,7 +10,7 @@ PROCEDURE Create_Catalog_Part__ IS
 BEGIN
     obj_ := Get_Catalog_Part__(Get_Part_No__(:c01));
 
-    IF obj_.objid IS NULL THEN
+    IF obj_.found = FALSE THEN
         &AO.PART_CATALOG_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
         &AO.Client_SYS.Add_To_Attr('PART_NO', Get_Part_No__(:c01), attr_);
         &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Get_Part_No__(:c01)),  attr_);

@@ -42,12 +42,12 @@ export class Service {
     this.transactions.delete(transaction.id)
 
     // this.watcher.clean(transaction, false);
-    // this.mailer.send(err, transaction);
+    this.mailer.send(err, transaction);
   }
 
   private async close() {
     for (const tx of this.transactions) {
-      // If transaction is running on shutdown, it fails
+      // If transaction is running on shutdown, it should be rolled back fails
       await tx[1].close(Status.Failure)
     }
   }
@@ -66,8 +66,6 @@ export class Service {
 
   public async run() {
     await this.connection.connect()
-
-    console.log(process.env.DEV)
 
     process.on("SIGTERM", () => this.onShutdown())
     process.on("SIGINT", () => this.onShutdown())
