@@ -92,6 +92,7 @@ export class Connection implements ConnectionInterface {
             fullConnectionString += "fndext/clientgateway";
         }
         fullConnectionString += `/${ifsInterface}/${operation}`;
+
         return fullConnectionString;
     }
 

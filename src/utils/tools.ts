@@ -126,7 +126,7 @@ export const convert_to_part = (row: ExportPart): InMessage => {
     c19: "", // Revision
     c20: parse_boolean(row.isCritical),
     c21: parse_boolean(row.isLongLead),
-    c22: parse_supplier_part(row.supplierPartNumber, row.supplierDescription),
+    c22: row.supplierPartNumber,
     c23: row.material,
     c24: "", // Project
     c25: parse_part_mass(row.mass),

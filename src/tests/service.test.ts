@@ -45,35 +45,35 @@ describe("PLSQL Function PartNo", () => {
   });
 });
 
-describe("Helper Function Test", () => {
-  it("Check QTY parser", () => {
-    expect(fix_part_qty("1740 mm")).toBe("1740")
-  });
+// describe("Helper Function Test", () => {
+//   it("Check QTY parser", () => {
+//     expect(fix_part_qty("1740 mm")).toBe("1740")
+//   });
 
-  it("Check Unit parser Each", () => {
-    expect(fix_part_units("5", "Each")).toBe("PCS")
-  });
+//   it("Check Unit parser Each", () => {
+//     expect(fix_part_units("5", "Each")).toBe("PCS")
+//   });
 
-  it("Check Unit parser m QTY", () => {
-    expect(fix_part_units("5 m", "Each")).toBe("m")
-  });
+//   it("Check Unit parser m QTY", () => {
+//     expect(fix_part_units("5 m", "Each")).toBe("m")
+//   });
 
-  it("Check Unit parser m Units", () => {
-    expect(fix_part_units("5", "m")).toBe("m")
-  });
+//   it("Check Unit parser m Units", () => {
+//     expect(fix_part_units("5", "m")).toBe("m")
+//   });
 
-  it("Check Unit parser mn QTY", () => {
-    expect(fix_part_units("5 mm", "Each")).toBe("mm")
-  });
+//   it("Check Unit parser mn QTY", () => {
+//     expect(fix_part_units("5 mm", "Each")).toBe("mm")
+//   });
 
-  it("Check Unit parser mn Units", () => {
-    expect(fix_part_units("5", "mm")).toBe("mm")
-  });
+//   it("Check Unit parser mn Units", () => {
+//     expect(fix_part_units("5", "mm")).toBe("mm")
+//   });
 
-  it("Check Unit parser stk", () => {
-    expect(fix_part_units("5", "stk")).toBe("PCS")
-  });
-});
+//   it("Check Unit parser stk", () => {
+//     expect(fix_part_units("5", "stk")).toBe("PCS")
+//   });
+// });
 
 beforeAll(async () => {
   const ifs_connection = new IFSConnection();

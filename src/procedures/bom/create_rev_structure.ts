@@ -3,19 +3,6 @@ import { PlSqlMultiResponse, PlSqlOneResponse } from "../../providers/ifs/intern
 import { IFSError } from "../../utils/error";
 import { convert_to_struct, ExportPart, get_bind_keys, get_bindings } from "../../utils/tools";
 
-/**
-   IF :c09 LIKE '1' THEN
-    attr_ := NULL;
-    &AO.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(:c02), attr_);
-    &AO.Client_SYS.Add_To_Attr('PART_REV', :c03, attr_);
-    &AO.Client_SYS.Add_To_Attr('SPARE_PART_NO', Prefix_Part_No__(:c06), attr_);
-    &AO.Client_SYS.Add_To_Attr('SPARE_PART_REV', :c07, attr_);
-    &AO.Client_SYS.Add_To_Attr('QTY', :n01, attr_);
-    &AO.Client_SYS.Add_To_Attr('INFO', 'VAULT_SERVER', attr_);
-    &AO.Eng_Part_Spare_API.New__(info_, objid_, objversion_, attr_, 'DO');
-  END IF;
- */
-
 const plsql = `
 DECLARE
   info_               VARCHAR2(2000);

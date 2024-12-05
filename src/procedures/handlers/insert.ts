@@ -49,8 +49,6 @@ export const insert_unique_parts = async (tx: Connection, parts: ExportPart[]) =
 
 export const insert_structure_chain = async (tx: Connection, chain: Structure[], revisions: Record<string, string>, root: ExportPart) => {
 
-  let count = 0;
-
   for (const { children } of chain) {
     for (const child of children) {
       const parent_new_rev = revisions[child.parentPartNumber + "_" + child.parentRevision]
@@ -65,7 +63,6 @@ export const insert_structure_chain = async (tx: Connection, chain: Structure[],
       }
 
       await create_rev_structure(tx, child);
-      count++
     }
   }
 
@@ -103,7 +100,7 @@ export const insert_structure_chain = async (tx: Connection, chain: Structure[],
   const size = await check_structure_size(tx, root)
 
   if (sum != size) {
-    throw new CheckError(`IFS Structure does not match Vault Structure: Vault=${sum}, IFS=${size}, Count=${count}`)
+    throw new CheckError(`IFS Structure does not match Vault Structure: Vault=${sum}, IFS=${size}`)
   }
 };
 
