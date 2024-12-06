@@ -1,7 +1,7 @@
 import { Connection } from "../providers/ifs/internal/Connection";
 import { IFSError, TimeoutError } from "../utils/error";
 import { convert_to_part, ExportPart, get_bind_keys, get_bindings, sleep } from "../utils/tools";
-import { PLSQL } from "./plsql";
+import { PLSQL } from "../utils/plsql";
 
 const plsql = `
 DECLARE
@@ -105,9 +105,10 @@ export class PartHandler {
 
         const bind = get_bindings(message, get_bind_keys(plsql));
         const cmd = this.tx.PlSql(plsql, { ...bind, state: "", rev: "", error: "" });
-        const timeout = sleep(10000).then(() => null)
+        // const timeout = sleep(10000).then(() => null)
 
-        const res = await Promise.race([cmd, timeout])
+        const res = await Promise.race([cmd])
+        // const res = await Promise.race([cmd, timeout])
 
         if (res == null) {
             throw new TimeoutError(`Function Part Handler Exec took to long to complete!`, 10000)
@@ -117,6 +118,8 @@ export class PartHandler {
             throw new IFSError(res.errorText, "Part Handler Exec", part);
         }
 
+        // TODO: do not throw! ya dink
+        // keep list of errors per part, build full error log or export
         if ((res.bindings as any).error != null && (res.bindings as any).error != "") {
             const func = (res.bindings as any).error.split(":")[0]
             const message = (res.bindings as any).error.replace(func + ":", "")

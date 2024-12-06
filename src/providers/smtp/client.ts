@@ -2,7 +2,7 @@ import { render } from "@react-email/components";
 import nodemailer, { Transporter } from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 import ErrorEmail from "../../../emails/Error";
-import { Transaction } from "../../refactor/transaction";
+import { Transaction } from "../../utils/transaction";
 
 const config: SMTPTransport.Options = {
   host: process.env.SMTP_HOST,
@@ -29,9 +29,9 @@ export class MailerConnection {
   }
 
   public async send(error: any, transaction: Transaction) {
-    if (process.env.NODE_ENV == "development") {
-      return;
-    }
+    // if (process.env.NODE_ENV == "development") {
+    //   return;
+    // }
     
     try {
       const args = { file: transaction.event.name, transaction: transaction.id, error };
@@ -49,7 +49,7 @@ export class MailerConnection {
   private error_message(file: string, html: string) {
     const args: any = {
       from: "vault.import@seaonicsas.onmicrosoft.com",
-      to: process.env.SMTP_GROUP,
+      to: "einar.aglen@seaonics.com", // process.env.SMTP_GROUP,
       subject: `Failed Import - ${file}`,
       html: html,
     };

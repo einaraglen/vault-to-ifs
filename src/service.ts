@@ -1,7 +1,7 @@
 import { IFSConnection } from "./providers/ifs/connection";
 import { MailerConnection } from "./providers/smtp/client";
 import { ChangeEvent, Watcher } from "./utils/watcher";
-import { Status, Transaction } from "./refactor/transaction";
+import { Status, Transaction } from "./utils/transaction";
 
 export class Service {
   private watcher: Watcher;
@@ -42,12 +42,12 @@ export class Service {
     this.transactions.delete(transaction.id)
 
     // this.watcher.clean(transaction, false);
-    this.mailer.send(err, transaction);
+    // this.mailer.send(err, transaction);
   }
 
   private async close() {
     for (const tx of this.transactions) {
-      // If transaction is running on shutdown, it should be rolled back fails
+      // If transaction is running on shutdown, it should be stopped as a Failure
       await tx[1].close(Status.Failure)
     }
   }
@@ -56,10 +56,7 @@ export class Service {
     console.log("Shutting down service...")
     
     this.watcher.close()
-    this.connection.close()
-    this.mailer.close()
-
-    await this.close()
+    // await this.close()
 
     process.exit(0)
   }

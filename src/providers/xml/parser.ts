@@ -2,6 +2,8 @@ import { XMLParser } from "fast-xml-parser";
 import fs from "fs";
 import { ExportPart } from "../../utils/tools";
 
+type Transform = Record<string, { property: string, defaultValue: any | null }>
+
 type FileProperties = { VaultFilePath: string; LinkedFolders: string };
 
 type Properties = {
@@ -22,7 +24,7 @@ export class Parser {
   private reader: XMLParser;
   private filePath: string;
   private rows: ExportPart[] = [];
-  private connections: Record<string, string>;
+  private connections: Transform
 
   constructor(filePath: string) {
     this.connections = JSON.parse(fs.readFileSync(process.env.XML_TRANSFORM_PATH, "utf-8"));
@@ -47,7 +49,7 @@ export class Parser {
     const unique: Record<string, ExportPart> = {}
     const children = [...this.rows]
 
-    const rootIndex = children.findIndex((part) => part.parentPartNumber == "")
+    const rootIndex = children.findIndex((part) => part.parentPartNumber == null)
     const root = children[rootIndex]
 
     children.splice(rootIndex, 1)
@@ -76,11 +78,6 @@ export class Parser {
   private traverse(obj: Component, parent: Component | null, props: Properties | null) {
     let data = this.assignAssemblyProps(obj, parent, props);
 
-    // All drawing should be in standard UoM
-    if (!data.partNumber.startsWith("16")) {
-      data.units = "PCS";
-    }
-
     this.rows.push(data);
 
     if (obj.Structures == null) {
@@ -104,16 +101,15 @@ export class Parser {
     const obj: any = {};
 
     for (const [key, value] of Object.entries(this.connections)) {
+      const { property, defaultValue } = value
       let data = null;
 
-      if (!value.startsWith("_")) {
-        data = (part as any)[value];
+      if (!property.startsWith("_")) {
+        data = (part as any)[property] ?? defaultValue;
       }
 
-      obj[key] = data != null ? String(data) : "";
+      obj[key] = data;
     }
-
-    obj.units = "PCS" // default for single parts
 
     return obj;
   }
@@ -122,15 +118,20 @@ export class Parser {
     const obj: any = {};
 
     for (const [key, value] of Object.entries(this.connections)) {
+      const { property, defaultValue } = value
       let data = null;
 
-      if (value.startsWith("_") && parent) {
-        data = (parent as any)[value.replace("_", "")];
+      if (property.startsWith("_") && parent) {
+        data = (parent as any)[property.replace("_", "")] ?? defaultValue;
       } else {
-        data = (part as any)[value];
+        data = (part as any)[property] ?? defaultValue;
       }
 
-      obj[key] = data != null ? String(data) : "";
+      obj[key] = data;
+    }
+
+    if (obj.units == "Each") {
+      obj.units = "PCS"
     }
 
     return obj;

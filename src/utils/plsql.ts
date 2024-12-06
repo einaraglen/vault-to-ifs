@@ -1,6 +1,6 @@
 import fs from "fs"
 import path from "path"
-import { FileNotFoundError } from "../utils/error";
+import { FileNotFoundError } from "./error";
 
 export class PLSQL {
     private static HOME = "assets\\plsql";

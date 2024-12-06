@@ -1,6 +1,6 @@
 import fs from "fs";
 import { join, dirname, sep, extname, parse } from "path";
-import { Transaction } from "../refactor/transaction";
+import { Transaction } from "./transaction";
 
 export type ChangeEvent = { name: string, path: string }
 

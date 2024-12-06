@@ -105,46 +105,46 @@ export const get_bindings = (message: InMessage, keys: string[]) => {
 
 export const convert_to_part = (row: ExportPart): InMessage => {
   return {
-    c01: row.partNumber,
-    c02: row.revision,
-    c03: fix_part_units(row.quantity, row.units),
+    c01: String(row.partNumber),
+    c02: String(row.revision),
+    c03: fix_part_units(String(row.quantity), String(row.units)),
     c04: "",
     c05: "", // LastModBy
     c06: "",
-    c07: row.title,
-    c08: row.description,
-    c09: row.supplierDescription,
-    c10: row.materialCertificate,
+    c07: String(row.title),
+    c08: String(row.description),
+    c09: String(row.supplierDescription),
+    c10: String(row.materialCertificate),
     c11: "not-in-use",
     c12: "not-in-use",
     c13: "not-in-use",
     c14: "not-in-use",
-    c15: parse_spare_part(row.isSpare),
-    c16: row.supplier,
-    c17: row.serialNumber,
-    c18: row.state,
+    c15: parse_spare_part(String(row.isSpare)),
+    c16: String(row.supplier),
+    c17: String(row.serialNumber),
+    c18: String(row.state),
     c19: "", // Revision
-    c20: parse_boolean(row.isCritical),
-    c21: parse_boolean(row.isLongLead),
-    c22: parse_supplier_part(row.supplierPartNumber, row.supplierDescription),
-    c23: row.material,
+    c20: parse_boolean(String(row.isCritical)),
+    c21: parse_boolean(String(row.isLongLead)),
+    c22: parse_supplier_part(String(row.supplierPartNumber), String(row.supplierDescription)),
+    c23: String(row.material),
     c24: "", // Project
-    c25: parse_part_mass(row.mass),
+    c25: parse_part_mass(String(row.mass)),
     c30: "", // TransactionId
     c31: "ReleasedBy",
-    c32: row.released,
+    c32: String(row.released),
   };
 };
 
 export const convert_to_struct = (row: ExportPart): InMessage => {
   return {
-    c02: row.parentPartNumber,
-    c03: row.parentRevision,
-    c04: row.position,
-    c06: row.partNumber,
-    c07: row.revision,
-    c09: parse_spare_part(row.isSpare),
-    n01: fix_part_qty(row.quantity),
+    c02: String(row.parentPartNumber),
+    c03: String(row.parentRevision),
+    c04: String(row.position),
+    c06: String(row.partNumber),
+    c07: String(row.revision),
+    c09: parse_spare_part(String(row.isSpare)),
+    n01: fix_part_qty(String(row.quantity)),
   };
 };
 
@@ -202,7 +202,7 @@ export const sleep = (timeout: number = 100): Promise<void> => {
 
 export type ExportPart = {
   id: string
-  parentId: string
+  parentId: string | null
   partNumber: string,
   revision: string,
   title: string,
@@ -224,7 +224,7 @@ export type ExportPart = {
   isLongLead: string | null,
   quantity: string | null,
   position: string | null,
-  parentPartNumber: string,
-  parentRevision: string,
+  parentPartNumber: string | null,
+  parentRevision: string | null,
   released: string
 }

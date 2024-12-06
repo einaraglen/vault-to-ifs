@@ -30,7 +30,7 @@
     "fast-xml-parser": "^4.5.0",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.14",
-    "react-email": "2.1.5",
+    "react-email": "^3.0.3",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "uuid": "^10.0.0",

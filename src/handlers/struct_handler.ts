@@ -2,7 +2,7 @@ import { Connection } from "../providers/ifs/internal/Connection";
 import { IFSError, TimeoutError } from "../utils/error";
 import { convert_to_part, convert_to_struct, ExportPart, get_bind_keys, get_bindings, InMessage, sleep } from "../utils/tools";
 import { PartHandler } from "./part_handler";
-import { PLSQL } from "./plsql";
+import { PLSQL } from "../utils/plsql";
 
 const child_plsql = `
 DECLARE
@@ -100,7 +100,7 @@ export class StructHandler {
 
         for (const part of parts) {
             part_lookup[part.id] = part;
-            if (part.parentId != "") {
+            if (part.parentId != null) {
                 const prev = count_lookup[part.parentId] ?? []
                 count_lookup[part.parentId] = [...prev, part]
             }
