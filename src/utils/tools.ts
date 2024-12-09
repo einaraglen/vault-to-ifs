@@ -201,7 +201,7 @@ export const build_structure_chain = (rows: ExportPart[], map: Record<string, Ex
   return struct;
 };
 
-export const sleep = (timeout: number): Promise<void> => {
+export const sleep = (timeout: number = 100): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 };
 

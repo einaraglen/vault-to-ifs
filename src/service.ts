@@ -1,80 +1,62 @@
-import { Insert } from "./procedures/handlers/import";
 import { IFSConnection } from "./providers/ifs/connection";
 import { MailerConnection } from "./providers/smtp/client";
-import { Parser } from "./providers/xml/parser";
-import { Providers } from "./utils/providers";
+import { Status, Transaction } from "./utils/transaction";
 import { ChangeEvent, Watcher } from "./utils/watcher";
-import { v4 as uuidv4 } from "uuid";
-
-export type Transaction = { id: string }
-
-enum Status {
-  Starting = "Starting",
-  Completed = "Completed",
-  Failure = "Failure"
-}
 
 export class Service {
   private watcher: Watcher;
+  private connection: IFSConnection
+  private mailer: MailerConnection;
+
+  private transactions: Map<string, Transaction> = new Map()
 
   constructor() {
     this.watcher = new Watcher();
+    this.connection = new IFSConnection()
+    this.mailer = new MailerConnection()
+
     this.watcher.on = (event) => this.onFile(event);
   }
 
   private async onFile(event: ChangeEvent) {
-    let transaction = this.getTransaction();
+    const transaction = new Transaction(event, this.connection.begin())
+    this.transactions.set(transaction.id, transaction)
 
     try {
-      await this.onEvent(event, transaction);
+      await this.onEvent(transaction);
     } catch (err) {
-      await this.onError(event, transaction, err);
+      await this.onError(transaction, err);
     }
   }
 
-  private async onEvent(event: ChangeEvent, transaction: Transaction) {
-    this.log(Status.Starting, event, transaction)
-
-    const parser = new Parser(event.path);
-    const parts = parser.parse();
-
-    const job = new Insert(transaction.id, parts);
-    await job.start();
-
-    this.log(Status.Completed, event, transaction)
-
-    this.watcher.clean(transaction.id, event.path, true);
+  private async onEvent(transaction: Transaction) {
+    await transaction.exec()
+    transaction.close(Status.Completed)
+    this.transactions.delete(transaction.id)
+    
+    // this.watcher.clean(transaction, true);
   }
 
-  private async onError(event: ChangeEvent, transaction: Transaction, err: any) {
-    console.error(err)
+  private async onError(transaction: Transaction, err: any) {
+    transaction.close(Status.Failure)
+    this.transactions.delete(transaction.id)
 
-    this.watcher.clean(transaction.id, event.path, false);
-    // await Providers.Mailer.send(err, {...transaction, file: event.name });
-
-    this.log(Status.Failure, event, transaction)
+    // this.watcher.clean(transaction, false);
+    this.mailer.send(err, transaction);
   }
 
-  private log(status: Status, event: ChangeEvent, transaction: Transaction) {
-    console.log(`${status} [${event.name}] [${transaction.id}]`)
-  }
-
-  private getTransaction() {
-    return { id: uuidv4() };
-  }
-
-  private shutdown() {
+  private async onShutdown() {
+    console.log("Shutting down service...")
+    
     this.watcher.close()
-    Providers.IFS.EndSession()
     process.exit(0)
   }
 
   public async run() {
-    await Providers.register(new IFSConnection());
-    await Providers.register(new MailerConnection());
+    await this.connection.connect()
 
-    process.on("SIGTERM", () => this.shutdown())
-    process.on("SIGINT", () => this.shutdown())
+    process.on("SIGTERM", () => this.onShutdown())
+    process.on("SIGINT", () => this.onShutdown())
 
     this.watcher.start();
   }

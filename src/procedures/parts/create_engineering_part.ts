@@ -42,6 +42,11 @@ DECLARE
         WHERE  part_no = p_part_no_
         AND    part_rev = p_part_rev_;
 
+    CURSOR get_master_object(p_part_no_ IN VARCHAR2) IS
+        SELECT objid, objversion
+        FROM   &AO.ENG_PART_MASTER
+        WHERE  part_no = p_part_no_;
+
     eng_part_revision_rec_ get_eng_part_revision%ROWTYPE;
 
     new_rev_ VARCHAR2(200);
@@ -118,7 +123,8 @@ BEGIN
             &AO.Client_SYS.Set_Item_Value('FIRST_REVISION', :c02, attr_);
         END IF;
 
-        IF (NVL(:c17, 'N') = 'Y') THEN
+        -- TODO: this might need to be done as a update aswell
+        IF (NVL(:c17, 'N') = 'Y' OR SUBSTR(Prefix_Part_No__(:c01), 1, 2) NOT LIKE '16') THEN
             &AO.Client_SYS.Add_To_Attr('SERIAL_TRACKING_CODE',
             &AO.Part_Serial_Tracking_API.Decode('SERIAL TRACKING'), attr_);
             &AO.Client_SYS.Add_To_Attr('SERIAL_TYPE',
@@ -167,6 +173,26 @@ BEGIN
             END IF;
 
         CLOSE get_latest_revision;
+
+        IF SUBSTR(Prefix_Part_No__(:c01), 1, 2) NOT LIKE '16' THEN
+
+            -- TODO: FIX THIS SHIT
+            -- Fuck my dick, we need to find the top most parent that is not serial tracked and start with that...
+            -- since we cannot set a child as serial tracked when in a struct...
+
+            OPEN get_master_object(Prefix_Part_No__(:c01));
+                FETCH get_master_object
+                    INTO objid_, objversion_;
+            CLOSE get_master_object;
+
+            &AO.Client_SYS.Clear_Attr(attr_);
+
+            &AO.Client_SYS.Add_To_Attr('SERIAL_TRACKING_CODE',
+            &AO.Part_Serial_Tracking_API.Decode('SERIAL TRACKING'), attr_);
+            &AO.Client_SYS.Add_To_Attr('SERIAL_TYPE', &AO.Part_Serial_Tracking_API.Decode('SERIAL TRACKING'), attr_);
+
+            &AO.ENG_PART_MASTER_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
+        END IF;
 
         IF new_rev_ IS NOT NULL THEN
             &AO.Eng_Part_Revision_API.New_Revision_(Prefix_Part_No__(:c01), new_rev_, current_part_rev_, NULL, NULL);

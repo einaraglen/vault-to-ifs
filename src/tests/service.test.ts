@@ -77,7 +77,7 @@ describe("PLSQL Function PartNo", () => {
 
 beforeAll(async () => {
   const ifs_connection = new IFSConnection();
-  ifs = await ifs_connection.instance();
+  ifs = await ifs_connection.client
   tx = await ifs.BeginTransaction();
 });
 
