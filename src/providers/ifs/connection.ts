@@ -29,8 +29,7 @@ export class IFSConnection {
   }
 
   public async connect() {
-    const tx = await this.client_.BeginTransaction()
-    const res = await tx.Rollback()
+    const res = await this.client_.Sql(`SELECT 1 FROM DUAL`)
 
     if (!res.ok) {
       throw Error(res.errorText)

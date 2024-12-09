@@ -56,6 +56,11 @@ BEGIN
         &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)),  attr_);
         &AO.Client_SYS.Add_To_Attr('UNIT_CODE', :c03, attr_);
         &AO.Client_SYS.Add_To_Attr('STD_NAME_ID', '0', attr_);
+
+        -- ALLOW SUB PARTS TO BE SERIAL TRACKED
+        &AO.Client_SYS.Add_To_Attr('ALLOW_AS_NOT_CONSUMED_DB', 'TRUE', attr_);
+        &AO.Client_SYS.Add_To_Attr('ENG_SERIAL_TRACKING_CODE_DB', 'SERIAL TRACKING', attr_);
+
         &AO.PART_CATALOG_API.New__(info_, objid_, objversion_, attr_, 'DO');
     ELSE
         IF SUBSTR(Prefix_Part_No__(:c01), 1, 2) LIKE '16' 
@@ -67,14 +72,12 @@ BEGIN
                 INTO objid_, objversion_;
             CLOSE partca_get_version;
 
-            --objstate_   := IFSAPP.Eng_Part_Revision_API.Get_Obj_State(:c02, :c03);
-            
             -- QUERY FIX
             :temp := objid_;
             :temp := objversion_;
             
             &AO.Client_SYS.Clear_Attr(attr_);
-            
+            -- This should govern all descriptions!
             &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
 
             &AO.PART_CATALOG_API.Modify__(info_, objid_, objversion_, attr_, 'DO');

@@ -117,12 +117,12 @@ export class Transaction {
         // this.structHandler.checkChildCount(children);
       }
 
-      if (Object.keys(this.errors).length != null) {
+      if (Object.keys(this.errors).length != 0) {
         throw new IFSError("One or more parts has issues", "Build Assembly Structure", this.errors)
       }
 
-      // await this.commit()
-      await this.rollback();
+      await this.commit()
+      // await this.rollback();
     } catch (err) {
       console.error(err);
       await this.rollback();

@@ -87,9 +87,9 @@ BEGIN
                 INTO objid_, objversion_;
             CLOSE sales_part_get_version;
 
-            &AO.Client_SYS.Clear_Attr(attr_);
-            &AO.Client_SYS.Add_To_Attr('CATALOG_DESC', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
-            &AO.SALES_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
+            --&AO.Client_SYS.Clear_Attr(attr_);
+            --&AO.Client_SYS.Add_To_Attr('CATALOG_DESC', NVL(:c07, 'Description does not exist in Vault for article ' || Prefix_Part_No__(:c01)), attr_);
+            --&AO.SALES_PART_API.Modify__(info_, objid_, objversion_, attr_, 'DO');
         END IF;
     END IF;
 
