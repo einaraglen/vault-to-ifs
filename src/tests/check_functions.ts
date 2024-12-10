@@ -119,7 +119,7 @@ export const get_object = async (client: Connection, part_no: string) => {
   console.log(res.bindings)
 }
 
-export const get_all_parents = async (client: Connection, part_no: string, part_rev: string) => {
+export const set_serial_tracking = async (client: Connection, part_no: string, part_rev: string) => {
 
   const res = await client.PlSql(`
     DECLARE
@@ -171,4 +171,76 @@ export const get_all_parents = async (client: Connection, part_no: string, part_
   }
 
   console.log(res.bindings)
+}
+
+export const insert_in_message = async (client: Connection, id: string, part_no: string, part_rev: string) => {
+  const res = await client.PlSql(`
+    DECLARE
+        info_ VARCHAR2(2000);
+        attr_ VARCHAR2(2000);
+        objid_ VARCHAR2(2000);
+        objversion_ VARCHAR2(2000);
+    BEGIN
+       
+        &AO.Client_SYS.Add_To_Attr('MESSAGE_ID', 1, attr_ );
+        &AO.Client_SYS.Add_To_Attr('CLASS_ID', 'SE_PART_INFO', attr_ );
+        &AO.Client_SYS.Add_To_Attr('RECEIVER', 'CONNECT', attr_ );
+        &AO.Client_SYS.Add_To_Attr('SENDER', :id, attr_ );
+        &AO.Client_SYS.Add_To_Attr('SENDER_MESSAGE_ID', :part_no, attr_ );
+        &AO.Client_SYS.Add_To_Attr('APPLICATION_MESSAGE_ID', :part_rev, attr_ );
+        &AO.Client_SYS.Add_To_Attr('RECEIVED_TIME', SYSDATE, attr_ );
+        &AO.Client_SYS.Add_To_Attr('VERSION', :part_no ||'/'|| :part_rev, attr_ );
+        &AO.Client_SYS.Add_To_Attr('CONNECTIVITY_VERSION', '1.0', attr_ );
+        &AO.Client_SYS.Add_To_Attr('SENDER_ID', 'SEVA02', attr_ );
+        &AO.In_Message_API.New__(info_, objid_, objversion_, attr_, 'DO' );
+
+        :ok := 'true';
+    END;
+    `, { id, part_no, part_rev, ok: "false" })
+
+  if (!res.ok) {
+    throw Error(res.errorText);
+  }
+
+  console.log(res.bindings)
+}
+
+export const get_in_message = async (client: Connection, id: string) => {
+  const res = await client.Sql(`
+    SELECT *
+    FROM &AO.IN_MESSAGE
+      WHERE SENDER = :id
+    `, { id })
+
+  if (!res.ok) {
+    throw Error(res.errorText);
+  }
+
+  console.log(res.result)
+}
+
+export const get_parents = async (client: Connection, part_no: string) => {
+  const res = await client.Sql(`
+    SELECT DISTINCT
+                EPS.PART_NO,
+                LEVEL
+            FROM
+                &AO.ENG_PART_STRUCTURE EPS
+            JOIN 
+                &AO.PART_CATALOG PC 
+                ON PC.PART_NO LIKE EPS.PART_NO
+                AND PC.ENG_SERIAL_TRACKING_CODE_DB = 'NOT SERIAL TRACKING'
+            START WITH 
+                EPS.SUB_PART_NO = :part_no
+            CONNECT BY PRIOR 
+                EPS.PART_NO = EPS.SUB_PART_NO 
+                AND PRIOR EPS.PART_REV = EPS.SUB_PART_REV
+            ORDER BY LEVEL DESC
+    `, { part_no })
+
+  if (!res.ok) {
+    throw Error(res.errorText);
+  }
+
+  console.log(res.result)
 }

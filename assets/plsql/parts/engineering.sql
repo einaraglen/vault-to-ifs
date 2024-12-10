@@ -1,23 +1,46 @@
--- NEW
-IFSAPP.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
-IFSAPP.Client_SYS.Add_To_Attr('PART_NO', Prefix_Part_No__(rec_.c01), attr_);
+PROCEDURE Engineering__ IS
 
--- TODO: Keep this as some generic desc since main will be from CATALOG?
-IFSAPP.Client_SYS.Add_To_Attr('DESCRIPTION', 'Engineering Part', attr_);
+    info_           VARCHAR2(2000);
+    attr_           VARCHAR2(2000);
+    objid_          VARCHAR2(2000);
+    objversion_     VARCHAR2(2000);
+   
+    CURSOR get_master_obj(part_no_ IN VARCHAR2) IS
+        SELECT *
+        FROM &AO.ENG_PART_MASTER 
+        WHERE part_no = part_no_;
 
-IFSAPP.Client_SYS.Set_Item_Value('UNIT_CODE', IFSAPP.PART_CATALOG_API.Get(Prefix_Part_No__(rec_.c01)).unit_code, attr_);
-IFSAPP.Client_SYS.Add_To_Attr('STD_NAME_ID', '0', attr_);
+    m_obj_          get_master_obj%ROWTYPE;
 
-IF (rec_.c02 IS NOT NULL) THEN
-    IFSAPP.Client_SYS.Set_Item_Value('FIRST_REVISION', rec_.c02, attr_);
-END IF;
+BEGIN
 
-IF (NVL(rec_.C17, 'N') = 'Y') THEN
-    IFSAPP.Client_SYS.Add_To_Attr('SERIAL_TRACKING_CODE', IFSAPP.PART_SERIAL_TRACKING_API.Decode('SERIAL TRACKING'), attr_);
-    IFSAPP.Client_SYS.Add_To_Attr('SERIAL_TYPE', IFSAPP.PART_SERIAL_TRACKING_API.Decode('SERIAL TRACKING'), attr_);
-END IF;
+    OPEN get_master_obj(Part_Number__(:c01));
+        FETCH get_master_obj INTO m_obj_;
+        
+        IF get_master_obj%NOTFOUND THEN
+            &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'PREPARE');
 
-IFSAPP.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'DO');
+            &AO.Client_SYS.Add_To_Attr('PART_NO', Part_Number__(:c01), attr_);
+            &AO.Client_SYS.Add_To_Attr('DESCRIPTION', 'Engineering Part', attr_);
+            &AO.Client_SYS.Set_Item_Value('UNIT_CODE', &AO.PART_CATALOG_API.Get(Part_Number__(:c01)).unit_code, attr_);
+            &AO.Client_SYS.Add_To_Attr('STD_NAME_ID', '0', attr_);
+            &AO.Client_SYS.Set_Item_Value('FIRST_REVISION', :c02, attr_);
 
--- UPDATE
-IFSAPP.ENG_PART_REVISION_API.New_Revision_(Prefix_Part_No__(rec_.c01), new_rev_, current_part_rev_, NULL, NULL);
+            &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'DO');
+        ELSE
+            IF g_revision_.new_rev_ IS NOT NULL 
+                AND g_revision_.current_part_rev_ IS NOT NULL 
+                AND g_revision_.current_part_rev_ != g_revision_.new_rev_ THEN
+
+                &AO.Eng_Part_Revision_API.New_Revision_(Part_Number__(:c01), g_revision_.new_rev_, g_revision_.current_part_rev_, NULL, NULL);
+            
+            END IF;
+        END IF;
+
+    CLOSE get_master_obj;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20002, 'EngineeringPart' || CHR(10) ||SQLERRM);
+
+END Engineering__;

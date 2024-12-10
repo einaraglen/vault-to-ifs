@@ -13,8 +13,11 @@ import { check_obsolete } from "../procedures/handlers/check_obsolete";
 import { create_rev_structure } from "../procedures/bom/create_rev_structure";
 import { change_structure_state } from "../procedures/bom/change_structure_state";
 import { check_part_state } from "../procedures/parts/check_part_state";
-import { ExportPart } from "./tools";
+import { ExportPart, sleep } from "./tools";
 import { IFSError } from "./error";
+import { PartHandler } from "../handlers/part";
+import { StructureHandler } from "../handlers/structure";
+import { SerialHandler } from "../handlers/serial";
 
 export enum Status {
   Starting = "Starting",
@@ -27,7 +30,7 @@ export class Transaction {
   public parser: Parser;
   public event: ChangeEvent;
   public tx: Connection;
-  
+
   private revisions: Record<string, string> = {}
   private errors: Record<string, any[]> = {}
 
@@ -45,84 +48,55 @@ export class Transaction {
     try {
       const { unique, children, root } = this.parser.parse();
 
+      const partHandler = new PartHandler(this.tx)
+      const serialHandler = new SerialHandler(this.tx)
+      const structHandler = new StructureHandler(this.tx)
+
+      const dependencies = children?.reduce<Record<string, string[]>>((res, curr) => {
+        const child_key = `${curr.partNumber}_${curr.revision}`
+        const parent_key = `${curr.parentPartNumber}_${curr.parentRevision}`
+
+        const prev = res[child_key] || []
+        res[child_key] = [...prev, parent_key]
+        return res;
+      }, {})
+
+      const serial_needed = new Set<string>()
+
       for (const part of unique) {
-        console.log("Insert Part", part.partNumber)
-        const cat = await create_catalog_part(this.tx, part)
-        const { unit } = cat.bindings as any;
+        const tracked = await partHandler.part(part)
+        await sleep(100)
 
-        if (unit && part.units && unit != part.units) {
-          part.units = unit;
+        if (tracked == "SERIAL TRACKING") {
+          const key = `${part.partNumber}_${part.revision}`
+          const parents = dependencies![key]
+
+          for (const parent of parents) {
+            serial_needed.add(parent)
+          }
         }
-
-        await add_technical_spesification(this.tx, part)
-        // await add_manufacturer(this.tx, part)
-
-        const eng = await create_engineering_part(this.tx, part) as any
-
-        let revision = part.revision
-
-        if (eng?.bindings?.part_rev && part.revision && eng?.bindings?.part_rev != part.revision) {
-          revision = eng?.bindings?.part_rev
-          this.revisions[part.partNumber + "_" + part.revision] = eng?.bindings?.part_rev;
-        }
-
-        await create_inventory_part(this.tx, part)
-        await create_purchase_part(this.tx, part)
-        await create_sales_part(this.tx, part)
-
-        const check = await check_part_state(this.tx, { ...part, revision } as any)
-        const { state } = check.bindings as any;
-
-        if (state == "Obsolete") {
-          this.setError(part, new Error("Part Revisions is Obsolete"))
-        }
-      }
-
-      if (Object.keys(this.errors).length != 0) {
-        throw new IFSError("One or more parts has issues", "Insert Unique Parts", this.errors)
       }
 
       if (children != null) {
         for (const child of children) {
-          const tmp = { ...child }
+          const prev_child = child.revision;
+          const prev_parent = child.parentRevision
 
-          if (this.revisions[tmp.partNumber + "_" + tmp.revision]) {
-            tmp.revision = this.revisions[tmp.partNumber + "_" + tmp.revision]
+          if (partHandler.result.has(child.partNumber + "_" + child.revision)) {
+            child.revision = partHandler.result.get(child.partNumber + "_" + child.revision)!
           }
 
-          if (this.revisions[tmp.parentPartNumber + "_" + tmp.parentRevision]) {
-            tmp.parentRevision = this.revisions[tmp.parentPartNumber + "_" + tmp.parentRevision]
+          if (partHandler.result.has(child.parentPartNumber + "_" + child.parentRevision)) {
+            child.parentRevision = partHandler.result.get(child.parentPartNumber + "_" + child.parentRevision)!
           }
 
-          console.log("Insert Struct", tmp.partNumber)
-          await create_rev_structure(this.tx, tmp)
+          console.log(`${child.parentPartNumber}(${prev_parent}=>${child.parentRevision}) => ${child.partNumber}(${prev_child}=>${child.revision})`)
+          await structHandler.part(child)
+          await sleep(100)
         }
-
-        for (const child of [root, ...children]) {
-          const tmp = { ...child }
-
-          if (this.revisions[tmp.partNumber + "_" + tmp.revision]) {
-            tmp.revision = this.revisions[tmp.partNumber + "_" + tmp.revision]
-          }
-
-          if (this.revisions[tmp.parentPartNumber + "_" + tmp.parentRevision]) {
-            tmp.parentRevision = this.revisions[tmp.parentPartNumber + "_" + tmp.parentRevision]
-          }
-
-          console.log("Change Struct", tmp.partNumber)
-          await change_structure_state(this.tx, tmp)
-        }
-
-        // Throws if there are differences between IFS and Export data
-        // this.structHandler.checkChildCount(children);
       }
 
-      if (Object.keys(this.errors).length != 0) {
-        throw new IFSError("One or more parts has issues", "Build Assembly Structure", this.errors)
-      }
-
-      await this.commit()
-      // await this.rollback();
+      await this.rollback();
     } catch (err) {
       console.error(err);
       await this.rollback();

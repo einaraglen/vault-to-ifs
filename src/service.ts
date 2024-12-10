@@ -42,7 +42,7 @@ export class Service {
     this.transactions.delete(transaction.id)
 
     // this.watcher.clean(transaction, false);
-    this.mailer.send(err, transaction);
+    // this.mailer.send(err, transaction);
   }
 
   private async onShutdown() {

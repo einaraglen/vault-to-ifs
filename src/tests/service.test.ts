@@ -3,7 +3,7 @@ dotenv.config();
 
 import { Connection } from "../providers/ifs/internal/Connection";
 import { IFSConnection } from "../providers/ifs/connection";
-import { get_all_parents, get_new_revision, get_object, get_prefix_part_no } from "./check_functions";
+import { set_serial_tracking, get_in_message, get_new_revision, get_object, get_prefix_part_no, insert_in_message, get_parents } from "./check_functions";
 import { fix_part_qty, fix_part_units } from "../utils/tools";
 
 let ifs: Connection;
@@ -46,16 +46,22 @@ let tx: Connection;
 // });
 
 describe("PLSQL Function GetObj", () => {
-  // it("Should set Serial Tracking", async () => {
-  //   await expect(get_object(tx, "1337.1337")).resolves.not.toThrow();
-  // });
 
   it("Should get all parents", async () => {
-    await expect(get_all_parents(tx, "SE2131923", "A03")).resolves.not.toThrow();
+    await expect(get_parents(tx, "SE2174601")).resolves.not.toThrow();
   });
 
-  // GET ALL PARENTS TEST
-  // SE2090814
+  // it("Should get all parents", async () => {
+  //   await expect(set_serial_tracking(tx, "SE2205511", "B")).resolves.not.toThrow();
+  // });
+
+  // it("Should add IN_MESSAGE", async () => {
+  //   await expect(insert_in_message(tx, "test", "SE2131923", "A03")).resolves.not.toThrow();
+  // });
+
+  // it("Should return IN_MESSAGE", async () => {
+  //   await expect(get_in_message(tx, "test")).resolves.not.toThrow();
+  // });
 });
 
 // describe("Helper Function Test", () => {
