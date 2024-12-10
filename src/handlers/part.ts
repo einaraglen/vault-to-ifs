@@ -49,12 +49,10 @@ export class PartHandler {
             :state      := g_state_;
             :tracked    := g_tracked_;
 
-            -- SET ALL PARENTS TO SERIAL!
             IF SUBSTR(Part_Number__(:c01), 1, 1) != '1' THEN
                 Serial_Tracking__(Part_Number__(:c01));
             END IF;
 
-            -- CREATE OR UPDATE SERIAL!
             Catalog__();
 
             Engineering__();
