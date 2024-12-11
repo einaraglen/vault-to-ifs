@@ -3,7 +3,7 @@ dotenv.config();
 
 import { Connection } from "../providers/ifs/internal/Connection";
 import { IFSConnection } from "../providers/ifs/connection";
-import { set_serial_tracking, get_in_message, get_new_revision, get_object, get_prefix_part_no, insert_in_message, get_parents } from "./check_functions";
+import { set_serial_tracking, get_in_message, get_new_revision, get_object, get_prefix_part_no, insert_in_message, get_parents, multi_param_test } from "./check_functions";
 import { fix_part_qty, fix_part_units } from "../utils/tools";
 
 let ifs: Connection;
@@ -47,9 +47,13 @@ let tx: Connection;
 
 describe("PLSQL Function GetObj", () => {
 
-  it("Should get all parents", async () => {
-    await expect(get_parents(tx, "SE2174601")).resolves.not.toThrow();
+  it("MultiParam", async () => {
+    await expect(multi_param_test(tx)).resolves.not.toThrow();
   });
+
+  // it("Should get all parents", async () => {
+  //   await expect(get_parents(tx, "SE2174601")).resolves.not.toThrow();
+  // });
 
   // it("Should get all parents", async () => {
   //   await expect(set_serial_tracking(tx, "SE2205511", "B")).resolves.not.toThrow();

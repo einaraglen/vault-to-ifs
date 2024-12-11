@@ -5,21 +5,19 @@ import { ChangeEvent, Watcher } from "./utils/watcher";
 
 export class Service {
   private watcher: Watcher;
-  private connection: IFSConnection
   private mailer: MailerConnection;
 
   private transactions: Map<string, Transaction> = new Map()
 
   constructor() {
     this.watcher = new Watcher();
-    this.connection = new IFSConnection()
     this.mailer = new MailerConnection()
 
     this.watcher.on = (event) => this.onFile(event);
   }
 
   private async onFile(event: ChangeEvent) {
-    const transaction = new Transaction(event, this.connection.begin())
+    const transaction = new Transaction(event)
     this.transactions.set(transaction.id, transaction)
 
     try {
@@ -34,15 +32,15 @@ export class Service {
     transaction.close(Status.Completed)
     this.transactions.delete(transaction.id)
     
-    // this.watcher.clean(transaction, true);
+    this.watcher.clean(transaction, true);
   }
 
   private async onError(transaction: Transaction, err: any) {
     transaction.close(Status.Failure)
     this.transactions.delete(transaction.id)
 
-    // this.watcher.clean(transaction, false);
-    // this.mailer.send(err, transaction);
+    this.watcher.clean(transaction, false);
+    this.mailer.send(err, transaction);
   }
 
   private async onShutdown() {
@@ -53,8 +51,6 @@ export class Service {
   }
 
   public async run() {
-    await this.connection.connect()
-
     process.on("SIGTERM", () => this.onShutdown())
     process.on("SIGINT", () => this.onShutdown())
 

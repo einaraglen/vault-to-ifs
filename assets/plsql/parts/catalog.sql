@@ -46,7 +46,7 @@ BEGIN
 
                 prefix_ := SUBSTR(Part_Number__(:c01), 1, 3);
 
-                IF SUBSTR(prefix_, 1, 3) != '166' AND SUBSTR(prefix_, 1, 3) != '167' THEN
+                IF prefix_ = '160' OR prefix_ != '161' OR prefix_ = 'SE2' OR prefix_ = 'SEM' THEN
                     &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'MISSING'), attr_);
                 END IF;
 

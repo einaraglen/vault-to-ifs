@@ -13,7 +13,6 @@ declare namespace NodeJS {
     
     VAULT_EXCHANGE_PATH: string
     VAULT_COMPLETE_PATH: string
-    XML_TRANSFORM_PATH: string
   }
 
   interface IConnection {}

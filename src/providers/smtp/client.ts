@@ -29,10 +29,6 @@ export class MailerConnection {
   }
 
   public async send(error: any, transaction: Transaction) {
-    // if (process.env.NODE_ENV == "development") {
-    //   return;
-    // }
-    
     try {
       const args = { file: transaction.event.name, transaction: transaction.id, error };
       const html = render(ErrorEmail(args));
@@ -49,7 +45,7 @@ export class MailerConnection {
   private error_message(file: string, html: string) {
     const args: any = {
       from: "vault.import@seaonicsas.onmicrosoft.com",
-      to: "einar.aglen@seaonics.com", // process.env.SMTP_GROUP,
+      to: process.env.SMTP_GROUP,
       subject: `Failed Import - ${file}`,
       html: html,
     };

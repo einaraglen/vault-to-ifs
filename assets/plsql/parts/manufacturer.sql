@@ -1,3 +1,4 @@
+-- UN USED!!
 DECLARE
     info_                      VARCHAR2(2000);
     attr_                      VARCHAR2(2000);
@@ -16,13 +17,13 @@ DECLARE
         SELECT COUNT(1) FROM &AO.PART_MANU_PART_NO WHERE part_no = part_ AND man_no_ = manufacturer_no AND man_part_no_ = manu_part_no;
 
     CURSOR get_manufacturer(vendor_ IN VARCHAR2) IS
-        SELECT manufacturer_id, name FROM &AO.MANUFACTURER_INFO WHERE (LOWER(name) LIKE '%' || LOWER(vendor_) || '%');
+        SELECT manufacturer_id, name FROM &AO.MANUFACTURER_INFO WHERE (name LIKE '%' || vendor_ || '%');
 
     FUNCTION Prefix_Part_No__(part_no_ IN VARCHAR2) RETURN VARCHAR2 IS
         prefixed_part_no_ VARCHAR2(100);
         prefix_           VARCHAR2(5) := 'SE';
     BEGIN
-        IF ((part_no_ IS NULL) OR (SUBSTR(part_no_, 1, LENGTH(prefix_)) = prefix_) OR ((LENGTH(part_no_) = 7) AND (SUBSTR(part_no_, 1, 1) != '2')) OR (LENGTH(part_no_) != 7)) THEN
+        IF SUBSTR(part_no_, 1, 1) = '1' OR SUBSTR(part_no_, 1, 2) = 'PD' THEN
             prefixed_part_no_ := part_no_;
         ELSE
             prefixed_part_no_ := prefix_ || part_no_;

@@ -19,13 +19,14 @@ type Component = {
 };
 
 export class Parser {
+  private transformFile = "assets\\transform\\xml.json";
   private reader: XMLParser;
   private filePath: string;
   private rows: ExportPart[] = [];
   private connections: Record<string, { property: string, defaultValue: any }>;
 
   constructor(filePath: string) {
-    this.connections = JSON.parse(fs.readFileSync(process.env.XML_TRANSFORM_PATH, "utf-8"));
+    this.connections = JSON.parse(fs.readFileSync(this.transformFile, "utf-8"));
     this.filePath = filePath;
     this.reader = new XMLParser({ ignoreAttributes: false });
   }
@@ -55,7 +56,6 @@ export class Parser {
     for (const part of this.rows) {
       unique[part.partNumber + "_" + part.revision] = part;
     }
-
     return { unique: Object.values(unique), children: children.length == 0 ? null : children, root }
   }
 

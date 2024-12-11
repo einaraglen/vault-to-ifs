@@ -244,3 +244,18 @@ export const get_parents = async (client: Connection, part_no: string) => {
 
   console.log(res.result)
 }
+
+export const multi_param_test = async (client: Connection) => {
+  const res = await client.PlSql(`
+      DECLARE
+      BEGIN
+        :test := :part_no;
+      END;
+    `, [{ part_no: "123", test: "" }, { part_no: "321", test: "" }])
+
+  if (!res.ok) {
+    throw Error(res.errorText);
+  }
+
+  console.log(res.bindings)
+}

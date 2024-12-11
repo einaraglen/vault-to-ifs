@@ -41,14 +41,6 @@ BEGIN
         attr_ := NULL;
         IF r_.attribute = 'SE_INTDESC' THEN
             &AO.Client_SYS.Add_To_Attr('INFO', SUBSTR(:c09, 1, 2000), attr_);
-        ELSIF r_.attribute = 'SE_CAT1' THEN
-            &AO.Client_SYS.Add_To_Attr('VALUE_TEXT', SUBSTR(:c11, 1, 20), attr_);
-        ELSIF r_.attribute = 'SE_CAT2' THEN
-            &AO.Client_SYS.Add_To_Attr('VALUE_TEXT', SUBSTR(:c12, 1, 20), attr_);
-        ELSIF r_.attribute = 'SE_CAT3' THEN
-            &AO.Client_SYS.Add_To_Attr('VALUE_TEXT', SUBSTR(:c13, 1, 20), attr_);
-        ELSIF r_.attribute = 'SE_CAT4' THEN
-            &AO.Client_SYS.Add_To_Attr('VALUE_TEXT', SUBSTR(:c14, 1, 20), attr_);
         ELSIF r_.attribute = 'SE_CRITIC_ITEM' THEN
             &AO.Client_SYS.Add_To_Attr('VALUE_TEXT', SUBSTR(:c20, 1, 20), attr_);
         ELSIF r_.attribute = 'SE_LLI' THEN

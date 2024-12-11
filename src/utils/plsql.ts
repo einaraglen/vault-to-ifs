@@ -24,6 +24,10 @@ export class PLSQL {
     return PLSQL.parseFile(PLSQL.FUNCTIONS, PLSQL.getFunctionPath())
   }
 
+  public static get Part_Children__() {
+    return PLSQL.parseFile(PLSQL.FUNCTIONS, PLSQL.getFunctionPath())
+  }
+
 
   /* PART PROCEDURES */
   public static get Serial_Tracking__() {
@@ -55,6 +59,10 @@ export class PLSQL {
   }
 
   public static get Structure__() {
+    return PLSQL.parseFile(PLSQL.STRUCTS, PLSQL.getFunctionPath())
+  }
+
+  public static get State__() {
     return PLSQL.parseFile(PLSQL.STRUCTS, PLSQL.getFunctionPath())
   }
 

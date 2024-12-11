@@ -1,8 +1,8 @@
+import { BindingMultiParameterType } from "../providers/ifs/internal/Bindings";
 import { Connection } from "../providers/ifs/internal/Connection";
 import { IFSError } from "../utils/error";
 import { PLSQL } from "../utils/plsql";
 import { convert_to_part, ExportPart, get_bind_keys, get_bindings } from "../utils/tools";
-
 
 export class PartHandler {
     private tx: Connection
@@ -19,13 +19,13 @@ export class PartHandler {
 
             g_revision_         REV_REV;
             g_revision_used_    VARCHAR2(20);
-            g_tracked_          VARCHAR2(100);  
             g_state_            VARCHAR2(100);  
 
             ${PLSQL.Part_Number__}
             ${PLSQL.Part_Revision__}
             ${PLSQL.Part_State__}
-            ${PLSQL.Part_Tracked__}
+
+            ${PLSQL.Serial_Tracking__}
 
             ${PLSQL.Catalog__}
             ${PLSQL.Engineering__}
@@ -34,34 +34,29 @@ export class PartHandler {
             ${PLSQL.Sales__}
             ${PLSQL.Technical__}
 
-            ${PLSQL.Serial_Tracking__}
-
         BEGIN
 
             g_revision_ := Part_Revision__(Part_Number__(:c01), :c02);
-
             g_revision_used_ := g_revision_.new_revision_;
-
             g_state_    := Part_State__(Part_Number__(:c01), g_revision_used_);
-            g_tracked_  := Part_Tracked__(Part_Number__(:c01));
             
             :revision   := g_revision_used_;
-            :state      := g_state_;
-            :tracked    := g_tracked_;
+            :key        := :c01 || '_' || :c02;
+
+            IF g_state_ = 'Obsolete' THEN
+                RAISE_APPLICATION_ERROR(-20002, 'Part is Obsolete');
+            END IF;
 
             IF SUBSTR(Part_Number__(:c01), 1, 1) != '1' THEN
                 Serial_Tracking__(Part_Number__(:c01));
             END IF;
 
             Catalog__();
-
             Engineering__();
-
             Inventory__();
             Purchase__();
             Sales__();
             Technical__();
-
 
             EXCEPTION
                 WHEN OTHERS THEN
@@ -78,43 +73,39 @@ export class PartHandler {
         return this.result_;
     }
 
-    public async part(part: ExportPart) {
-        const message = convert_to_part(part);
+    public async part(parts: ExportPart[]) {
+        const binds: BindingMultiParameterType = [];
 
-        const bind = get_bindings(message, get_bind_keys(this.plsql));
-        const res: any = await this.tx.PlSql(this.plsql, { ...bind, revision: "", state: "", tracked: "", error_message: "" });
+        for (const part of parts) {
+            const message = convert_to_part(part);
+            const bind = get_bindings(message, get_bind_keys(this.plsql));
+            binds.push({ ...bind, key: "", revision: "", error_message: "" })
+        }
+       
+        const res: any = await this.tx.PlSql(this.plsql, binds);
 
         if (!res.ok) {
-            const regex = /line (\d+), column (\d+)/;
-            const match = regex.exec(res.errorText);
+            throw new IFSError(res.errorText, "PartHandler", { message: "Request Error" });
+        }
 
-            if (match) {
-                const line = Number(match[1])
-                const column = Number(match[2])
-                const issue = this.plsql.split("\n").slice(line - 1, line)[0].trim()
-                const tmp = Array(issue.length).fill(" ");
-                tmp[column - 2] = "^"
+        const errors: Record<string, string> = {};
 
-                console.log("\n## ISSUE LINE START ##\n")
-                console.log(issue)
-                console.log(tmp.join(""))
-                console.log("## ISSUE LINE END ##\n")
+        for (const result of res.bindings) {
+            if (result.error_message != null && result.error_message.trim().length != null) {
+                errors[result.key] = result.error_message;
             }
 
-            throw new IFSError(res.errorText, "Insert Unique Part", part);
+            this.result_.set(result.key, result.revision)
         }
 
-        if (res.bindings.tracked == "SERIAL TRACKING") {
-            console.log(part.partNumber, part.revision, { tracked: res.bindings.tracked })
-        }
+        if (Object.keys(errors).length != 0) {
+            const formatted = Object.keys(errors).map((key) => { 
+                const [part, rev] = key.split("_")
+                return { part, rev, error: errors[key] }
+            })
 
-        if (res.bindings.error_message != null && res.bindings.error_message.trim().length != null) {
-            throw new IFSError(res.bindings.error_message, "Insert Unique Part", part);
+            throw new IFSError("Found Issues", "PartHandler", formatted)
         }
-
-        const key = `${part.partNumber}_${part.revision}`
-        const data = res.bindings.revision
-        this.result_.set(key, data)
 
         return res.bindings.tracked;
     }
