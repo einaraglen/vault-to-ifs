@@ -47,12 +47,14 @@ export class Transaction {
       // console.log("Starting Unique Insert...")
       await partHandler.part(unique)
 
+    
+      this.writeLatest(root, partHandler)
+
       if (children == null) {
+        await stateHandler.part(unique)
         await this.commit();
         return;
       }
-
-      this.writeLatest(root, partHandler)
 
       for (const child of children) {
         this.writeLatest(child, partHandler)
