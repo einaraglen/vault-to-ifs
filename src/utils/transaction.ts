@@ -48,6 +48,7 @@ export class Transaction {
       await partHandler.part(unique)
 
       if (children == null) {
+        await this.commit();
         return;
       }
 

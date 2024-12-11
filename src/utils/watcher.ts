@@ -137,7 +137,7 @@ export class Watcher {
       const fileExtension = extname(transaction.event.path)
       const fileName = parse(transaction.event.path).name
 
-      const completeName = `${complete ? "DONE" : "FAIL"}-${transaction}${fileExtension}`
+      const completeName = `${complete ? "DONE" : "FAIL"}-${transaction.id}${fileExtension}`
       const destinationFolder = join(destination, fileName)
 
       fs.mkdirSync(destinationFolder, { recursive: true });

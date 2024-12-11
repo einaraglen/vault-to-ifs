@@ -132,7 +132,7 @@ export const convert_to_part = (row: ExportPart): InMessage => {
     c24: "", // Project
     c25: parse_part_mass(row.mass),
     c30: "", // TransactionId
-    c31: "ReleasedBy",
+    c31: row.author,
     c32: row.released,
     c33: row.childCount,
   };
