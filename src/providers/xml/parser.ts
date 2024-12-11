@@ -19,13 +19,14 @@ type Component = {
 };
 
 export class Parser {
+  private transformFile = "assets\\transform\\xml.json";
   private reader: XMLParser;
   private filePath: string;
   private rows: ExportPart[] = [];
-  private connections: Record<string, string>;
+  private connections: Record<string, { property: string, defaultValue: any }>;
 
   constructor(filePath: string) {
-    this.connections = JSON.parse(fs.readFileSync(process.env.XML_TRANSFORM_PATH, "utf-8"));
+    this.connections = JSON.parse(fs.readFileSync(this.transformFile, "utf-8"));
     this.filePath = filePath;
     this.reader = new XMLParser({ ignoreAttributes: false });
   }
@@ -40,7 +41,22 @@ export class Parser {
       this.read(obj.Export)
     }
 
-    return this.rows;
+    return this.collect();
+  }
+
+  private collect() {
+    const unique: Record<string, ExportPart> = {}
+    const children = [...this.rows]
+
+    const rootIndex = children.findIndex((part) => part.parentPartNumber == "")
+    const root = children[rootIndex]
+
+    children.splice(rootIndex, 1)
+
+    for (const part of this.rows) {
+      unique[part.partNumber + "_" + part.revision] = part;
+    }
+    return { unique: Object.values(unique), children: children.length == 0 ? null : children, root }
   }
 
   private read(data: Record<string, Component>) {
@@ -88,10 +104,12 @@ export class Parser {
     const obj: any = {};
 
     for (const [key, value] of Object.entries(this.connections)) {
+      const { property, defaultValue } = value
+
       let data = null;
 
-      if (!value.startsWith("_")) {
-        data = (part as any)[value];
+      if (!property.startsWith("_")) {
+        data = (part as any)[property] ?? defaultValue;
       }
 
       obj[key] = data != null ? String(data) : "";
@@ -106,12 +124,13 @@ export class Parser {
     const obj: any = {};
 
     for (const [key, value] of Object.entries(this.connections)) {
+      const { property, defaultValue } = value
       let data = null;
 
-      if (value.startsWith("_") && parent) {
-        data = (parent as any)[value.replace("_", "")];
+      if (property.startsWith("_") && parent) {
+        data = (parent as any)[property.replace("_", "")] ?? defaultValue;
       } else {
-        data = (part as any)[value];
+        data = (part as any)[property] ?? defaultValue;
       }
 
       obj[key] = data != null ? String(data) : "";

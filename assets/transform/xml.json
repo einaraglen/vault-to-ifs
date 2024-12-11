@@ -1,0 +1,106 @@
+{
+  "id": {
+    "property": "GUID",
+    "defaultValue": null
+  },
+  "parentId": {
+    "property": "_GUID",
+    "defaultValue": null
+  },
+  "partNumber": {
+    "property": "Part Number",
+    "defaultValue": null
+  },
+  "revision": {
+    "property": "Revision",
+    "defaultValue": null
+  },
+  "title": {
+    "property": "Title",
+    "defaultValue": null
+  },
+  "units": {
+    "property": "Base Units",
+    "defaultValue": "PCS"
+  },
+  "author": {
+    "property": "Created By",
+    "defaultValue": null
+  },
+  "state": {
+    "property": "State",
+    "defaultValue": "Work in Progress"
+  },
+  "description": {
+    "property": "Description",
+    "defaultValue": null
+  },
+  "category": {
+    "property": "Category Name",
+    "defaultValue": null
+  },
+  "mass": {
+    "property": "Mass_g",
+    "defaultValue": null
+  },
+  "material": {
+    "property": "Material",
+    "defaultValue": null
+  },
+  "materialCertificate": {
+    "property": "MaterialCertificate",
+    "defaultValue": null
+  },
+  "serialNumber": {
+    "property": "SerialNo",
+    "defaultValue": null
+  },
+  "childCount": {
+    "property": "Child item count",
+    "defaultValue": null
+  },
+  "supplier": {
+    "property": "Vendor",
+    "defaultValue": null
+  },
+  "supplierPartNumber": {
+    "property": "Supplier Part No",
+    "defaultValue": null
+  },
+  "supplierDescription": {
+    "property": "Internal Description",
+    "defaultValue": null
+  },
+  "isSpare": {
+    "property": "Sparepart",
+    "defaultValue": false
+  },
+  "isCritical": {
+    "property": "Critical_Item",
+    "defaultValue": false
+  },
+  "isLongLead": {
+    "property": "Long_Lead_Item",
+    "defaultValue": false
+  },
+  "quantity": {
+    "property": "Quantity",
+    "defaultValue": null
+  },
+  "position": {
+    "property": "Item Number",
+    "defaultValue": null
+  },
+  "parentPartNumber": {
+    "property": "Parent Part Number",
+    "defaultValue": null
+  },
+  "parentRevision": {
+    "property": "_Revision",
+    "defaultValue": null
+  },
+  "released": {
+    "property": "Checked In",
+    "defaultValue": null
+  }
+}

@@ -1,5 +1,6 @@
 import fs from "fs";
 import { join, dirname, sep, extname, parse } from "path";
+import { Transaction } from "./transaction";
 
 export type ChangeEvent = { name: string, path: string }
 
@@ -128,20 +129,20 @@ export class Watcher {
     this.listener?.close()
   }
 
-  public clean(transaction: string, filePath: string, complete: boolean) {
+  public clean(transaction: Transaction, complete: boolean) {
     try {
       const root = join(process.env.VAULT_EXCHANGE_PATH);
       const destination = join(process.env.VAULT_COMPLETE_PATH)
-      const parent = dirname(filePath);
-      const fileExtension = extname(filePath)
-      const fileName = parse(filePath).name
+      const parent = dirname(transaction.event.path);
+      const fileExtension = extname(transaction.event.path)
+      const fileName = parse(transaction.event.path).name
 
       const completeName = `${complete ? "DONE" : "FAIL"}-${transaction}${fileExtension}`
       const destinationFolder = join(destination, fileName)
 
       fs.mkdirSync(destinationFolder, { recursive: true });
-      fs.copyFileSync(filePath, join(destinationFolder, completeName))
-      fs.unlinkSync(filePath);
+      fs.copyFileSync(transaction.event.path, join(destinationFolder, completeName))
+      fs.unlinkSync(transaction.event.path);
 
       if (!root.includes(parent.split(sep).reverse()[0])) {
         const files = fs.readdirSync(parent);

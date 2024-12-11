@@ -17,46 +17,30 @@ const config: IFSConfig = {
 };
 
 export class IFSConnection {
-  private options: IFSConfig | null = null;
-  private client: Connection | null = null;
+  private client_: Connection;
 
   constructor() {
-    this.options = config;
+    const { server, user, password, version, os_user } = config;
+    this.client_ = new Connection(server, user, password, version, os_user);
   }
 
-  public async instance() {
-    if (this.options == null) {
-      throw Error("Cannot return instance when options is null");
-    }
-
-    const { server, user, password, version, os_user } = this.options;
-
-    this.client = new Connection(server, user, password, version, os_user);
-
-    await this.connect()
-
-    return this.client;
+  public get client() {
+    return this.client_;
   }
 
-  private async connect() {
-    if (this.client == null) {
-      throw Error("Cannot connect IFS when client is null");
-    }
-
-    // Simple transaction + rollback to test connection
-    const tx = await this.client.BeginTransaction()
-    const res = await tx.Rollback()
+  public async connect() {
+    const res = await this.client_.Sql(`SELECT 1 FROM DUAL`)
 
     if (!res.ok) {
       throw Error(res.errorText)
     }
   }
 
-  public close() {
-    if (this.client == null) {
-      throw Error("Cannot close IFS when client is null");
-    }
+  public begin() {
+    return this.client.BeginTransaction();
+  }
 
-    return this.client.EndSession();
+  public close() {
+    return this.client_.EndSession();
   }
 }

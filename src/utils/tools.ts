@@ -29,6 +29,7 @@ export type InMessage = {
   c30?: string | null;
   c31?: string | null;
   c32?: string | null;
+  c33?: string | null;
   n01?: string | null;
 };
 
@@ -115,10 +116,10 @@ export const convert_to_part = (row: ExportPart): InMessage => {
     c08: row.description,
     c09: row.supplierDescription,
     c10: row.materialCertificate,
-    c11: "not-in-use",
-    c12: "not-in-use",
-    c13: "not-in-use",
-    c14: "not-in-use",
+    // c11: "not-in-use",
+    // c12: "not-in-use",
+    // c13: "not-in-use",
+    // c14: "not-in-use",
     c15: parse_spare_part(row.isSpare),
     c16: row.supplier,
     c17: row.serialNumber,
@@ -133,6 +134,7 @@ export const convert_to_part = (row: ExportPart): InMessage => {
     c30: "", // TransactionId
     c31: "ReleasedBy",
     c32: row.released,
+    c33: row.childCount,
   };
 };
 
@@ -184,11 +186,6 @@ export const build_structure_chain = (rows: ExportPart[], map: Record<string, Ex
 
       chain[parent.id] = [row, ...(chain[parent.id] || [])];
     }
-
-    // if (row.partNumber && !row.partNumber.startsWith("16")) {
-    //   const item_key = `${row.partNumber}.${row.revision}.${row.state}`;
-    //   chain[item_key] = [...(chain[item_key] || [])];
-    // }
   }
 
   const struct: Structure[] = []
@@ -201,7 +198,7 @@ export const build_structure_chain = (rows: ExportPart[], map: Record<string, Ex
   return struct;
 };
 
-export const sleep = (timeout: number): Promise<void> => {
+export const sleep = (timeout: number = 100): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 };
 
@@ -232,4 +229,22 @@ export type ExportPart = {
   parentPartNumber: string | null,
   parentRevision: string | null,
   released: string
+}
+
+export const parse_oracle_error = (err: string, plsql: string) => {
+  const regex = /line (\d+), column (\d+)/;
+  const match = regex.exec(err);
+
+  if (match) {
+      const line = Number(match[1])
+      const column = Number(match[2])
+      const issue = plsql.split("\n").slice(line - 1, line)[0].trim()
+      const tmp = Array(issue.length).fill(" ");
+      tmp[column - 2] = "^"
+
+      console.log("## ISSUE LINE START ##")
+      console.log(issue.replace("\n", ""))
+      console.log(tmp.join(""))
+      console.log("## ISSUE LINE END ##")
+  }
 }
