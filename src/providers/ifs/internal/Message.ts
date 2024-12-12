@@ -6,7 +6,6 @@ import { UTF8Length } from "../buffer/utf8";
 import { ConnectionInterface } from "./ConnectionInterface"
 import { SqlOneResponse } from './PlSqlCommandTypes';
 import { _PlSqlCommand } from './PlSqlCommand';
-import fetch from 'node-fetch';
 
 export interface Message {
     get connection(): ConnectionInterface;
