@@ -32,7 +32,7 @@ export class Service {
     await transaction.exec()
     transaction.close(Status.Completed)
     this.transactions.delete(transaction.id)
-    
+
     this.watcher.clean(transaction, true);
   }
 
@@ -44,16 +44,20 @@ export class Service {
     this.mailer.send(err, transaction);
   }
 
-  private async onShutdown() {
-    console.log("Shutting down service...")
-    
-    this.watcher.close()
-    process.exit(0)
-  }
-
   public async run() {
-    process.on("SIGTERM", () => this.onShutdown())
-    process.on("SIGINT", () => this.onShutdown())
+    process.on('SIGTERM', () => {
+      console.log("Shutting down service...")
+      this.watcher.close()
+      this.mailer.close()
+      process.exit();
+    });
+
+    process.on('SIGINT', () => {
+      console.log("Shutting down service...")
+      this.watcher.close()
+      this.mailer.close()
+      process.exit();
+    });
 
     this.watcher.start();
   }

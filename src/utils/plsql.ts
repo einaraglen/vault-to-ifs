@@ -69,14 +69,15 @@ export class PLSQL {
   /* PRIVATE HELPERS */
   private static getFunctionPath() {
     const err = new Error();
+    const regex = /at (?:get|call)?\s*([\w$][\w\d_$]*)/
     const stackLines = err.stack?.split("\n");
 
     if (stackLines == null || stackLines.length < 3) {
-      throw new Error("Failed to get caller name")
+      throw new Error("Missing Stack Lines")
     }
 
     const callerLine = stackLines[2].trim();
-    const nameMatch = callerLine.match(/\[as\s+(\w+)\]/);
+    const nameMatch = callerLine.match(regex);
 
     if (nameMatch == null) {
       throw new Error("Failed to get caller name")
