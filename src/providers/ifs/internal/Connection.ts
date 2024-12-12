@@ -7,11 +7,8 @@ import { CmdBlock, _CmdBlock } from "./CmdBlock"
 import { ConnectionInterface, IfsVersion } from "./ConnectionInterface"
 import { AttachmentsInterface } from "./AttachmentsInterface"
 import { Attachments } from "./Attachments"
-//import { AttrFunc, AttrType, ActionType } from "./AttrFunc"
 
 export type ConnectionOptions = ({ locale? : string, runAs? : string, ifsVersion?: (string|IfsVersion), timeout?:number});
-
-
 
 export class Connection implements ConnectionInterface {
     protected static _clientId = "IFS.Node.AP";

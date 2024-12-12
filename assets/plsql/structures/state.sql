@@ -22,7 +22,9 @@ BEGIN
     
         IF get_revision_object%FOUND AND objstate_ = 'Preliminary' AND :c18 = 'Released' THEN
             &AO.ENG_PART_REVISION_API.Set_Active__(info_, obj_.objid, obj_.objversion, attr_, 'DO');
-            &AO.ENG_PART_REVISION_API.Release_From_Active__(info_, obj_.objid, obj_.objversion, attr_, 'DO');
+
+            -- All Children must be RELEASED for this to work..
+            --&AO.ENG_PART_REVISION_API.Release_From_Active__(info_, obj_.objid, obj_.objversion, attr_, 'DO');
         END IF;
 
     CLOSE get_revision_object;

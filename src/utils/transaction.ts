@@ -18,7 +18,6 @@ export class Transaction {
   private connection: IFSConnection
 
   public id: string;
-  public parser: Parser;
   public event: ChangeEvent;
   public tx: Connection;
 
@@ -32,22 +31,24 @@ export class Transaction {
     this.tx = this.connection.begin();
 
     console.log(`${Status.Starting} [${this.event.name}] [${this.id}]`);
-
-    this.parser = new Parser(this.event.path);
   }
 
   public async exec() {
     try {
-      const { unique, children, root } = this.parser.parse();
+
+      await this.connection.connect()
+
+      const parser = new Parser(this.event.path);
 
       const partHandler = new PartHandler(this.tx);
       const structHandler = new StructureHandler(this.tx);
       const stateHandler = new StateHandler(this.tx);
 
+      const { unique, children, root } = parser.parse();
+
       // console.log("Starting Unique Insert...")
       await partHandler.part(unique)
 
-    
       this.writeLatest(root, partHandler)
 
       if (children == null) {
@@ -76,9 +77,16 @@ export class Transaction {
 
       await this.commit();
     } catch (err) {
-      console.error(err);
+      let error = err;
+
+      if (error instanceof TypeError && error.message == "fetch failed") {
+        error = new Error("Request Timeout, took more than 5 minutes!")
+      }
+      
+      console.error(error);
+      
       await this.rollback();
-      throw err;
+      throw error;
     }
   }
 

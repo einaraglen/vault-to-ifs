@@ -7,7 +7,6 @@ import { ConnectionInterface } from "./ConnectionInterface"
 import { SqlOneResponse } from './PlSqlCommandTypes';
 import { _PlSqlCommand } from './PlSqlCommand';
 
-
 export interface Message {
     get connection(): ConnectionInterface;
     get multipleQuery(): boolean;
@@ -153,7 +152,8 @@ export abstract class _Message implements Message {
         const messageOptions = {
             method: 'POST',
             headers: headers,
-            body: body
+            body: body,
+            // signal: AbortSignal.timeout(10 * 1000) // might have to use this!
         };
         return await fetch(this._connection.GetFullConnectionString(this._interface, this._operation), messageOptions as any)
     } 

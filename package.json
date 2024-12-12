@@ -33,6 +33,7 @@
     "react-email": "^3.0.3",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "undici": "^7.1.0",
     "uuid": "^10.0.0",
     "vault-to-ifs": "file:"
   }

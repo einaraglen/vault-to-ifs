@@ -21,7 +21,9 @@ export class IFSConnection {
 
   constructor() {
     const { server, user, password, version, os_user } = config;
-    this.client_ = new Connection(server, user, password, version, os_user);
+    const options = { timeout: 3e5 }
+
+    this.client_ = new Connection(server, user, password, version, os_user, options);
   }
 
   public get client() {
@@ -32,7 +34,7 @@ export class IFSConnection {
     const res = await this.client_.Sql(`SELECT 1 FROM DUAL`)
 
     if (!res.ok) {
-      throw Error(res.errorText)
+      throw Error("Failed to connect to IFS")
     }
   }
 
