@@ -23,6 +23,8 @@ export class Service {
       await this.onEvent(transaction);
     } catch (err) {
       await this.onError(transaction, err);
+    } finally {
+      this.watcher.unlock()
     }
   }
 
@@ -31,15 +33,15 @@ export class Service {
     transaction.close(Status.Completed)
     this.transactions.delete(transaction.id)
     
-    // this.watcher.clean(transaction, true);
+    this.watcher.clean(transaction, true);
   }
 
   private async onError(transaction: Transaction, err: any) {
     transaction.close(Status.Failure)
     this.transactions.delete(transaction.id)
 
-    // this.watcher.clean(transaction, false);
-    // this.mailer.send(err, transaction);
+    this.watcher.clean(transaction, false);
+    this.mailer.send(err, transaction);
   }
 
   private async onShutdown() {

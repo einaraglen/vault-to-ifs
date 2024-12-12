@@ -1,6 +1,7 @@
 import fs from "fs";
 import { join, dirname, sep, extname, parse } from "path";
 import { Transaction } from "./transaction";
+import { Future } from "./future";
 
 export type ChangeEvent = { name: string, path: string }
 
@@ -12,6 +13,11 @@ export class Watcher {
   private _on?: ChangeCallback;
   private directory: string;
   private listener: fs.FSWatcher | null = null
+
+  private buffer: Set<string> = new Set()
+  private lock_: Future | null = null
+
+  public running: boolean = true
 
   constructor() {
     this.directory = process.env.VAULT_EXCHANGE_PATH;
@@ -37,7 +43,9 @@ export class Watcher {
 
     const backlog = this.loadBacklog(this.directory);
 
-    await this.flushBacklog(backlog);
+    for (const file of backlog) {
+      this.buffer.add(file)
+    }
 
     this.listener = fs.watch(this.directory, (type, name) => {
       if (type != this.FILE_EVENT || name == null) {
@@ -54,8 +62,50 @@ export class Watcher {
         this.waitForFiles(path);
       }
 
-      this.emit(path);
+      this.buffer.add(path)
     });
+
+    while (this.running) {
+
+      const file = this.pop();
+
+      if (file) {
+        this.lock();
+        this.emit(file)
+        await this.wait()
+      }
+
+      await new Promise((r) => setTimeout(r, 1000))
+    }
+  }
+
+  public unlock() {
+    if (this.lock_ != null) {
+      this.lock_.complete();
+      this.lock_ = null;
+    }
+  }
+
+  public lock() {
+    if (this.lock_ == null) {
+      this.lock_ = new Future()
+    }
+  }
+
+  private async wait() {
+    if (this.lock_ != null) {
+      await this.lock_.wait()
+    }
+  }
+
+  private pop() {
+    const file = this.buffer.values().next().value;
+
+    if (file) {
+      this.buffer.delete(file)
+    }
+
+    return file
   }
 
   private isAccessable(path: string) {
@@ -104,13 +154,6 @@ export class Watcher {
     }, delay);
   }
 
-  private async flushBacklog(arr: string[]) {
-    for (const path of arr) {
-      await new Promise((r) => setTimeout(r, 1000));
-      this.emit(path);
-    }
-  }
-
   private loadBacklog(path: string, arr: string[] = []) {
     const files = fs.readdirSync(path);
 
@@ -125,7 +168,9 @@ export class Watcher {
 
     return arr;
   }
+  
   public close() {
+    this.running = false;
     this.listener?.close()
   }
 
