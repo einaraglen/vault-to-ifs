@@ -66,10 +66,23 @@ export class PLSQL {
     return PLSQL.parseFile(PLSQL.STRUCTS, PLSQL.getFunctionPath())
   }
 
+  private static getCallerV1(line: string) {
+      const regex = /\[as\s+(\w+)\]/;
+      const nameMatch = line.match(regex);
+
+      return nameMatch;
+  }
+
+  private static getCallerV2(line: string) {
+    const regex = /at (?:get|call)?\s*([\w$][\w\d_$]*)/
+    const nameMatch = line.match(regex);
+
+    return nameMatch;
+}
+
   /* PRIVATE HELPERS */
   private static getFunctionPath() {
     const err = new Error();
-    const regex = /at (?:get|call)?\s*([\w$][\w\d_$]*)/
     const stackLines = err.stack?.split("\n");
 
     if (stackLines == null || stackLines.length < 3) {
@@ -77,7 +90,7 @@ export class PLSQL {
     }
 
     const callerLine = stackLines[2].trim();
-    const nameMatch = callerLine.match(regex);
+    const nameMatch = this.getCallerV1(callerLine) ?? this.getCallerV2(callerLine)
 
     if (nameMatch == null) {
       throw new Error("Failed to get caller name")
