@@ -34,7 +34,7 @@ export class MailerConnection {
       const html = render(ErrorEmail(args));
       await this.client.sendMail(this.error_message(transaction.event.name, html));
     } catch (err) {
-      console.error(err);
+      console.error("Mail Error:", err);
     }
   }
 

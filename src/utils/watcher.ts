@@ -197,7 +197,7 @@ export class Watcher {
         }
       }
     } catch (err) {
-      console.error("File Cleanup Failure", err);
+      console.error("WatcherError:", err);
     }
   }
 }

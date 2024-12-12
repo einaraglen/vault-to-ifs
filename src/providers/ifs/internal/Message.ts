@@ -6,6 +6,7 @@ import { UTF8Length } from "../buffer/utf8";
 import { ConnectionInterface } from "./ConnectionInterface"
 import { SqlOneResponse } from './PlSqlCommandTypes';
 import { _PlSqlCommand } from './PlSqlCommand';
+import fetch from 'node-fetch';
 
 export interface Message {
     get connection(): ConnectionInterface;
@@ -153,9 +154,9 @@ export abstract class _Message implements Message {
             method: 'POST',
             headers: headers,
             body: body,
-            // signal: AbortSignal.timeout(10 * 1000) // might have to use this!
         };
-        return await fetch(this._connection.GetFullConnectionString(this._interface, this._operation), messageOptions as any)
+
+        return await fetch(this._connection.GetFullConnectionString(this._interface, this._operation), messageOptions as any) as any
     } 
 
     protected SizeOfRequestBidings( index : number ): number {

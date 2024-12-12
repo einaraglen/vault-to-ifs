@@ -21,7 +21,8 @@ export class IFSConnection {
 
   constructor() {
     const { server, user, password, version, os_user } = config;
-    const options = { timeout: 3e5 }
+    const options = { timeout: 1.8e6 } // 30 minutes
+    // const options = { timeout: 60 * 1000 } // 1 minute
 
     this.client_ = new Connection(server, user, password, version, os_user, options);
   }

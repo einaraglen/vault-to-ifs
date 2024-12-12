@@ -77,16 +77,9 @@ export class Transaction {
 
       await this.commit();
     } catch (err) {
-      let error = err;
-
-      if (error instanceof TypeError && error.message == "fetch failed") {
-        error = new Error("Request Timeout, took more than 5 minutes!")
-      }
-      
-      console.error(error);
-      
+      console.error("TransactionError", err);
       await this.rollback();
-      throw error;
+      throw err;
     }
   }
 
