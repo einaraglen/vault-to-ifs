@@ -32,7 +32,7 @@ BEGIN
                     &AO.Client_SYS.Add_To_Attr('WEIGHT_NET', :c25, attr_);
                 END IF;
 
-                IF SUBSTR(Part_Number__(:c01), 1, 1) != '1' THEN
+                IF SUBSTR(Part_Number__(:c01), 1, 1) != '1' AND obj_.unit_code != 'm' AND obj_.unit_code != 'mm' THEN
                     &AO.Client_SYS.Add_To_Attr('ALLOW_AS_NOT_CONSUMED_DB', 'TRUE', attr_);
                     &AO.Client_SYS.Add_To_Attr('ENG_SERIAL_TRACKING_CODE_DB', 'SERIAL TRACKING', attr_);
                 END IF;
@@ -50,7 +50,7 @@ BEGIN
                     &AO.Client_SYS.Add_To_Attr('DESCRIPTION', NVL(:c07, 'MISSING'), attr_);
                 END IF;
 
-                IF SUBSTR(Part_Number__(:c01), 1, 1) != '1' THEN
+                IF SUBSTR(Part_Number__(:c01), 1, 1) != '1' AND obj_.unit_code != 'm' AND obj_.unit_code != 'mm' THEN
                     &AO.Client_SYS.Add_To_Attr('ALLOW_AS_NOT_CONSUMED_DB', 'TRUE', attr_);
                     &AO.Client_SYS.Add_To_Attr('ENG_SERIAL_TRACKING_CODE_DB', 'SERIAL TRACKING', attr_);
                 END IF;
