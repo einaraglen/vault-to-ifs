@@ -26,9 +26,13 @@ export class Future {
         }
     }
 
-    public error() {
+    public error(message?: string) {
         if (this.reject_) {
-            this.reject_()
+            if (message) {
+                this.reject_(message)
+            } else {
+                this.reject_()
+            }
         }
     }
 }

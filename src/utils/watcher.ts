@@ -3,21 +3,21 @@ import { join, dirname, sep, extname, parse } from "path";
 import { Transaction } from "./transaction";
 import { Future } from "./future";
 
-export type ChangeEvent = { name: string, path: string }
+export type ChangeEvent = { name: string; path: string };
 
-type ChangeCallback = (event: ChangeEvent) => void | Promise<void>;
+type ChangeCallback = (transaction: Transaction) => void | Promise<void>;
 
 export class Watcher {
   private readonly FILE_EVENT = "rename";
   private readonly FILE_EXT = ".xml";
   private _on?: ChangeCallback;
   private directory: string;
-  private listener: fs.FSWatcher | null = null
+  private listener: fs.FSWatcher | null = null;
 
-  private buffer: Set<string> = new Set()
-  private lock_: Future | null = null
+  private buffer: Set<Transaction> = new Set();
+  private lock_: Future | null = null;
 
-  public running: boolean = true
+  public running: boolean = true;
 
   constructor() {
     this.directory = process.env.VAULT_EXCHANGE_PATH;
@@ -27,24 +27,25 @@ export class Watcher {
     this._on = callback;
   }
 
-  private emit(filePath: string) {
-    if (this._on && extname(filePath) == this.FILE_EXT) {
-    const name = parse(filePath).name
-      this._on({ name, path: filePath });
+  private emit(transaction: Transaction) {
+    if (this._on) {
+      this._on(transaction);
     }
   }
 
   public async start() {
     if (!this.isAccessable(this.directory)) {
-      throw new Error("Failed to start watch, does this directory exist?: " + this.directory);
+      throw new Error(
+        "Failed to start watch, does this directory exist?: " + this.directory
+      );
     }
 
-    console.log("Watching for files...")
+    console.log("Watching for files...");
 
     const backlog = this.loadBacklog(this.directory);
 
     for (const file of backlog) {
-      this.buffer.add(file)
+      this.queue(file);
     }
 
     this.listener = fs.watch(this.directory, (type, name) => {
@@ -52,30 +53,37 @@ export class Watcher {
         return;
       }
 
-      const path = join(this.directory, name);
+      const file = join(this.directory, name);
 
-      if (!this.isAccessable(path)) {
+      if (!this.isAccessable(file)) {
         return;
       }
 
-      if (this.isDirectory(path)) {
-        this.waitForFiles(path);
+      if (this.isDirectory(file)) {
+        this.waitForFiles(file);
       }
 
-      this.buffer.add(path)
+      this.queue(file);
     });
 
     while (this.running) {
-
       const file = this.pop();
 
       if (file) {
         this.lock();
-        this.emit(file)
-        await this.wait()
+        this.emit(file);
+        await this.wait();
       }
 
-      await new Promise((r) => setTimeout(r, 1000))
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+
+  private queue(path: string) {
+    if (extname(path) == this.FILE_EXT) {
+      const name = parse(path).name;
+      const transaction = new Transaction({ name, path: path });
+      this.buffer.add(transaction);
     }
   }
 
@@ -88,13 +96,13 @@ export class Watcher {
 
   public lock() {
     if (this.lock_ == null) {
-      this.lock_ = new Future()
+      this.lock_ = new Future();
     }
   }
 
   private async wait() {
     if (this.lock_ != null) {
-      await this.lock_.wait()
+      await this.lock_.wait();
     }
   }
 
@@ -102,10 +110,10 @@ export class Watcher {
     const file = this.buffer.values().next().value;
 
     if (file) {
-      this.buffer.delete(file)
+      this.buffer.delete(file);
     }
 
-    return file
+    return file;
   }
 
   private isAccessable(path: string) {
@@ -141,7 +149,7 @@ export class Watcher {
 
           files.forEach((file) => {
             const filePath = join(path, file);
-            this.emit(filePath);
+            this.queue(filePath);
           });
         } else {
           attempt++;
@@ -168,25 +176,30 @@ export class Watcher {
 
     return arr;
   }
-  
+
   public close() {
     this.running = false;
-    this.listener?.close()
+    this.listener?.close();
   }
 
   public clean(transaction: Transaction, complete: boolean) {
     try {
       const root = join(process.env.VAULT_EXCHANGE_PATH);
-      const destination = join(process.env.VAULT_COMPLETE_PATH)
+      const destination = join(process.env.VAULT_COMPLETE_PATH);
       const parent = dirname(transaction.event.path);
-      const fileExtension = extname(transaction.event.path)
-      const fileName = parse(transaction.event.path).name
+      const fileExtension = extname(transaction.event.path);
+      const fileName = parse(transaction.event.path).name;
 
-      const completeName = `${complete ? "DONE" : "FAIL"}-${transaction.id}${fileExtension}`
-      const destinationFolder = join(destination, fileName)
+      const completeName = `${complete ? "DONE" : "FAIL"}-${
+        transaction.id
+      }${fileExtension}`;
+      const destinationFolder = join(destination, fileName);
 
       fs.mkdirSync(destinationFolder, { recursive: true });
-      fs.copyFileSync(transaction.event.path, join(destinationFolder, completeName))
+      fs.copyFileSync(
+        transaction.event.path,
+        join(destinationFolder, completeName)
+      );
       fs.unlinkSync(transaction.event.path);
 
       if (!root.includes(parent.split(sep).reverse()[0])) {
