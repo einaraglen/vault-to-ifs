@@ -55,11 +55,6 @@ export class Transaction {
 
       await this.database.updateTransaction(children ? children.length : 1);
 
-
-      if (1 == 1) {
-        throw new IFSError("THis is a message", "FunctionName", { some: "data" })
-      }
-
       // console.log("Starting Unique Insert...")
       await partHandler.part(unique);
 

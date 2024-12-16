@@ -27,14 +27,14 @@ export class Service {
     await transaction.exec()
     transaction.close(Status.Completed)
 
-    // this.watcher.clean(transaction, true);
+    this.watcher.clean(transaction, true);
   }
 
   private async onError(transaction: Transaction, err: any) {
     transaction.close(Status.Failure)
 
-    // this.watcher.clean(transaction, false);
-    // this.mailer.send(err, transaction);
+    this.watcher.clean(transaction, false);
+    this.mailer.send(err, transaction);
   }
 
   public async run() {
