@@ -8,9 +8,9 @@ import { StructureHandler } from "../handlers/structure";
 import { StateHandler } from "../handlers/state";
 import { IFSConnection } from "../providers/ifs/connection";
 import { MSSQLClient } from "../providers/database/client";
-import { IFSError } from "./error";
 
 export enum Status {
+  Pending = "Pending",
   Starting = "Starting",
   Completed = "Completed",
   Failure = "Failure",
@@ -36,12 +36,12 @@ export class Transaction {
     this.id = uuidv4();
     this.event = event;
     this.tx = this.connection.begin();
-
-    console.log(`${Status.Starting} [${this.event.name}] [${this.id}]`);
   }
 
   public async exec() {
     try {
+      console.log(`${Status.Starting} [${this.event.name}] [${this.id}]`);
+  
       await this.database.startTransaction();
       await this.connection.connect();
 

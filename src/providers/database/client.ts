@@ -3,7 +3,6 @@ import { Transaction } from "../../utils/transaction";
 import { Future } from "../../utils/future";
 
 export class MSSQLClient {
-  private pool?: sql.ConnectionPool;
   private connected: Future;
   private created: Future;
   private transaction: Transaction;
@@ -24,12 +23,14 @@ export class MSSQLClient {
       },
     };
 
+    if (sql.pool && sql.pool.connected) {
+      this.connected.complete()
+      return;
+    }
+
     sql
       .connect(options)
-      .then((pool) => {
-        this.pool = pool;
-        this.connected.complete();
-      })
+      .then(() => this.connected.complete())
       .catch(() => this.connected.error("Failed to connecto to MSSQL Server"));
   }
 
@@ -37,9 +38,7 @@ export class MSSQLClient {
     try {
       await this.connected.wait();
 
-      const pool = this.getPool();
-
-      const request = await pool.request();
+      const request = new sql.Request();
 
       request.input("part", this.transaction.event.name);
       request.input("transaction", this.transaction.id);
@@ -67,9 +66,7 @@ export class MSSQLClient {
       await this.connected.wait();
       await this.created.wait();
 
-      const pool = this.getPool();
-
-      const request = await pool.request();
+      const request = new sql.Request();
 
       request.input("part", this.transaction.event.name);
       request.input("transaction", this.transaction.id);
@@ -96,9 +93,7 @@ export class MSSQLClient {
       await this.connected.wait();
       await this.created.wait();
 
-      const pool = this.getPool();
-
-      const request = await pool.request();
+      const request = new sql.Request();
 
       request.input("part", this.transaction.event.name);
       request.input("transaction", this.transaction.id);
@@ -124,9 +119,7 @@ export class MSSQLClient {
       await this.connected.wait();
       await this.created.wait();
 
-      const pool = this.getPool();
-
-      const request = await pool.request();
+      const request = new sql.Request();
 
       request.input("part", this.transaction.event.name);
       request.input("transaction", this.transaction.id);
@@ -144,7 +137,6 @@ export class MSSQLClient {
 
       await request.query(statement);
 
-      await this.close();
     } catch (err) {
       console.error("## MSSQL ERROR ##\n", err);
     }
@@ -155,9 +147,7 @@ export class MSSQLClient {
       await this.connected.wait();
       await this.created.wait();
 
-      const pool = this.getPool();
-
-      const request = await pool.request();
+      const request = new sql.Request();
 
       request.input("part", this.transaction.event.name);
       request.input("transaction", this.transaction.id);
@@ -177,7 +167,6 @@ export class MSSQLClient {
 
       await request.query(statement);
 
-      await this.close();
     } catch (err) {
       console.error("## MSSQL ERROR ##\n", err);
     }
@@ -207,19 +196,5 @@ export class MSSQLClient {
     }
 
     return JSON.stringify(obj)
-  }
-
-  public async close() {
-    if (this.pool != null) {
-      await this.pool.close();
-    }
-  }
-
-  private getPool() {
-    if (this.pool == null) {
-      throw new Error("Failed to get MSSQL Client");
-    }
-
-    return this.pool;
   }
 }
