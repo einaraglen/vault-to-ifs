@@ -26,6 +26,11 @@ BEGIN
             &AO.Client_SYS.Add_To_Attr('STD_NAME_ID', '0', attr_);
             &AO.Client_SYS.Set_Item_Value('FIRST_REVISION', :c02, attr_);
 
+            -- Important to set!!
+            &AO.Client_SYS.Add_To_Attr('PROVIDE', 'Buy', attr_);
+            &AO.Client_SYS.Add_To_Attr('AQUISITION_CODE', 'Demand', attr_);
+            &AO.Client_SYS.Add_To_Attr('PLANNING_METHOD', 'PMRP Planned', attr_);
+
             &AO.ENG_PART_MASTER_API.New__(info_, objid_, objversion_, attr_, 'DO');
         ELSE
             IF g_revision_.new_rev_ IS NOT NULL 
